@@ -99,8 +99,20 @@ Antes de publicar:
 
 1. Sintaxis: extraé el contenido del `<script>` a un archivo aparte en el directorio
    temporal y corré `node --check`.
-2. Emojis: `grep -P '[\x{1F300}-\x{1FAFF}\x{2600}-\x{27BF}\x{FE0F}]' demos/<slug>/public/index.html`
-   no tiene que devolver nada.
+2. Emojis. **No uses `grep -P` con rangos unicode: en Windows devuelve 0 siempre**, aunque el
+   archivo esté lleno de emojis. Usá esto, que tiene que imprimir `0`:
+
+   ```bash
+   node -e 'const s=require("fs").readFileSync(process.argv[1],"utf8");const m=s.match(/\p{Extended_Pictographic}/gu)||[];console.log(m.length,[...new Set(m)].join(" "))' demos/<slug>/public/index.html
+   ```
+
+   Y que tampoco queden caracteres haciendo de icono:
+
+   ```bash
+   node -e 'const s=require("fs").readFileSync(process.argv[1],"utf8");for(const c of ["✓","✔","×","✕","•","▲","▼","→","←","★"]){const n=s.split(c).length-1;if(n)console.log(c,n)}' demos/<slug>/public/index.html
+   ```
+
+   El guión largo como "sin dato" en una tabla puede quedarse: eso es tipografía, no un icono.
 3. Nativos: `grep -nE '\b(prompt|confirm|alert)\(' demos/<slug>/public/index.html` tampoco.
 4. Acentos: `grep -c 'Ã' demos/<slug>/public/index.html` tiene que dar 0.
 5. Levantalo local (`PORT=3999 node server.js`) y pedí la portada con curl: tiene que venir
