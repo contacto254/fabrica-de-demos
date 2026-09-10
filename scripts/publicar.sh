@@ -7,7 +7,7 @@
 # El slug define la direccion final: <slug>demo.customerp.dev
 set -uo pipefail
 
-export PATH="/c/Program Files/nodejs:$HOME/AppData/Roaming/npm:$PATH"
+. "$(dirname "$0")/entorno.sh"
 
 SLUG="${1:?Falta el slug. Ej: bash scripts/publicar.sh petsmiles ./demos/petsmiles}"
 DIR="${2:?Falta la carpeta del demo}"

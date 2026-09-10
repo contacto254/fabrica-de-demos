@@ -49,6 +49,10 @@ Tienen que dar OK las cinco líneas.
 
 ---
 
+> **¿El vendedor va a trabajar desde Chrome, sin instalar nada?**
+> Entonces esta sección no aplica: la configuración es otra y está en
+> [ENTORNO-WEB.md](ENTORNO-WEB.md).
+
 ## Hacer un demo
 
 Abrí Claude Code en esta carpeta:
@@ -118,6 +122,7 @@ unos 40 y lleva guiones. Volvé al punto 2.
 ## Qué hay acá adentro
 
 ```
+ENTORNO-WEB.md                 para usarlo desde el navegador, sin instalar nada
 .claude/skills/nuevo-demo/     la receta que sigue Claude Code
   SKILL.md                     el paso a paso
   referencias/diseno.md        cómo tiene que verse
@@ -125,6 +130,8 @@ unos 40 y lleva guiones. Volvé al punto 2.
 plantilla/                     el esqueleto de cada demo
 scripts/
   requisitos.sh                chequea que esté todo instalado
+  entorno.sh                   deja el PATH y el CLI listos en Windows y en Linux
+  setup-nube.sh                arranque del entorno de Claude Code en el navegador
   publicar.sh                  sube a Railway y crea el DNS
   verificar.sh                 confirma que el link responde
 demos/                         los demos que vayas creando

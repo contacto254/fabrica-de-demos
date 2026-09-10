@@ -3,7 +3,7 @@
 # Uso: bash scripts/verificar.sh <slug>
 set -uo pipefail
 
-export PATH="/c/Program Files/nodejs:$HOME/AppData/Roaming/npm:$PATH"
+. "$(dirname "$0")/entorno.sh"
 
 SLUG="${1:?Falta el slug. Ej: bash scripts/verificar.sh petsmiles}"
 HOST="${SLUG}demo.customerp.dev"
