@@ -22,17 +22,18 @@ Dos cosas no vienen resueltas y hay que configurarlas:
 
 ## Los cuatro pasos
 
-### 1. Dar acceso al repositorio
+### 1. La cuenta de GitHub
 
-El vendedor necesita ver `fabrica-de-demos` en GitHub. Con su usuario a mano:
+El vendedor entra con la cuenta `contacto254`, la misma de siempre, así que los repositorios
+privados los ve sin más trámite. La primera vez que abra claude.ai/code le va a pedir conectar
+GitHub: se conecta con esa cuenta y listo.
+
+Si en algún momento conviene que tenga la suya propia, se lo agrega como colaborador:
 
 ```bash
 gh repo add-collaborator contacto254/fabrica-de-demos <usuario> --permission push
 gh repo add-collaborator contacto254/customerp-demos  <usuario> --permission push
 ```
-
-Le llega una invitación por correo que tiene que aceptar. La primera vez que entre a
-claude.ai/code le va a pedir conectar su cuenta de GitHub.
 
 ### 2. Crear el entorno en la nube
 
