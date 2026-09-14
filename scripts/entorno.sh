@@ -19,10 +19,11 @@ if ! command -v railway >/dev/null 2>&1; then
 fi
 
 # Autenticacion sin navegador: el CLI toma el token de la variable de entorno.
-# RAILWAY_API_TOKEN es de cuenta (sirve para crear proyectos y servicios).
-# RAILWAY_TOKEN es de un proyecto puntual.
+# RAILWAY_TOKEN es de un proyecto puntual: es el que usa GitHub Actions, y alcanza
+# para desplegar y crear servicios dentro de customerp-demos.
+# RAILWAY_API_TOKEN es de cuenta, y sirve ademas para crear proyectos nuevos.
 if [ -z "${RAILWAY_API_TOKEN:-}" ] && [ -z "${RAILWAY_TOKEN:-}" ]; then
   if ! railway whoami >/dev/null 2>&1; then
-    echo "  Aviso: Railway sin credenciales. Falta RAILWAY_API_TOKEN en el entorno."
+    echo "  Aviso: Railway sin credenciales. Falta RAILWAY_TOKEN o RAILWAY_API_TOKEN."
   fi
 fi

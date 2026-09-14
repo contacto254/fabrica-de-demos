@@ -124,16 +124,54 @@ punto preguntate si algo puede romperse o quedar vacío.
 
 ## Paso 5 — Publicar
 
-```
-CF_TOKEN=<token> bash scripts/publicar.sh <slug> demos/<slug>
+Hay dos caminos y **no elegís vos**: depende de si este entorno llega a Railway y a
+Cloudflare. En el navegador la salida a internet está filtrada y no llega, así que probá
+primero:
+
+```bash
+bash scripts/requisitos.sh
 ```
 
-El script sube el servicio a Railway, le da el subdominio, crea el CNAME y el TXT de
-verificación en Cloudflare, y espera a que el certificado quede emitido. Termina
-imprimiendo el link.
+### Si da todo OK — publicás vos, directo
 
-Si el certificado tarda, corré `bash scripts/verificar.sh <slug>` unos minutos después. No
-entregues el link sin haber visto que responde.
+```bash
+bash scripts/publicar.sh <slug> demos/<slug>
+```
+
+Sube el servicio a Railway, le da el subdominio, crea el CNAME y el TXT de verificación en
+Cloudflare y espera el certificado. Termina imprimiendo el link.
+
+Si el certificado tarda, `bash scripts/verificar.sh <slug>` unos minutos después.
+
+### Si falta Railway o Cloudflare — publica GitHub por vos
+
+Es lo normal cuando corrés en el navegador, y no es un error: el entorno llega a GitHub pero
+no a las otras dos. **No intentes arreglar el entorno ni pidas tokens.** Empujá el trabajo y
+el publicado arranca solo:
+
+```bash
+git add demos/<slug>
+git commit -m "Demo de <Empresa>"
+git push origin HEAD
+```
+
+El flujo `Publicar demo` levanta con cada push que toque `demos/`. Miralo terminar:
+
+```bash
+gh run watch --exit-status
+```
+
+Tarda unos cuatro minutos. Cuando termina, el link queda en el resumen:
+
+```bash
+gh run view --json displayTitle,url --jq '.url'
+```
+
+Si el flujo falla por secretos faltantes, el resumen lo dice con los comandos exactos para
+cargarlos. Eso lo hace el administrador una sola vez; vos no puedes, y no pasa nada: avisá y
+seguí.
+
+**No entregues un link sin haber visto que responde**, sea cual sea el camino.
 
 ## Paso 6 — Entregar
 
