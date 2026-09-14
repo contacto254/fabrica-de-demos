@@ -1,0 +1,121 @@
+name: Publicar demo
+
+# Publica los demos sin depender de la maquina donde se escribieron.
+#
+# Existe porque Claude Code en el navegador corre con la salida a internet filtrada: llega a
+# GitHub, pero no a Railway ni a Cloudflare. Entonces el que arma el demo solo empuja a la
+# rama, y el publicado ocurre aca, donde no hay filtro y los tokens estan guardados como
+# secretos del repositorio en vez de en el entorno de cada persona.
+
+on:
+  push:
+    paths:
+      - 'demos/**'
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'Slug del demo a publicar (ej: petsmiles). Vacio = los que cambiaron.'
+        required: false
+        type: string
+
+concurrency:
+  # Dos publicados a la vez sobre el mismo proyecto de Railway se pisan.
+  group: publicar-demos
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Comprobar que estan los secretos
+        env:
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          FALTA=0
+          [ -z "$CF_TOKEN" ]      && { echo "::error::Falta el secreto CF_TOKEN.";      FALTA=1; }
+          [ -z "$RAILWAY_TOKEN" ] && { echo "::error::Falta el secreto RAILWAY_TOKEN."; FALTA=1; }
+          if [ "$FALTA" = "1" ]; then
+            {
+              echo "## No puedo publicar todavia"
+              echo
+              echo "Faltan secretos en el repositorio. Se cargan una sola vez, en"
+              echo "**Settings → Secrets and variables → Actions**, o por linea de comandos:"
+              echo
+              echo '```bash'
+              echo 'gh secret set CF_TOKEN      --repo ${{ github.repository }}'
+              echo 'gh secret set RAILWAY_TOKEN --repo ${{ github.repository }}'
+              echo '```'
+              echo
+              echo "Como sacar cada uno esta en [ENTORNO-WEB.md](../blob/main/ENTORNO-WEB.md)."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "Secretos presentes."
+
+      - name: Instalar el cliente de Railway
+        run: npm install -g @railway/cli
+
+      - name: Decidir que demos publicar
+        id: cuales
+        run: |
+          if [ -n "${{ inputs.slug }}" ]; then
+            SLUGS="${{ inputs.slug }}"
+          else
+            # Los demos tocados por este push. El primer commit de un repo no tiene padre.
+            if git rev-parse HEAD~1 >/dev/null 2>&1; then RANGO="HEAD~1 HEAD"; else RANGO="HEAD"; fi
+            SLUGS=$(git diff --name-only $RANGO -- demos/ \
+                    | awk -F/ '$1=="demos" && NF>2 {print $2}' | sort -u | tr '\n' ' ')
+          fi
+          SLUGS=$(echo "$SLUGS" | xargs)
+          echo "slugs=$SLUGS" >> "$GITHUB_OUTPUT"
+          if [ -z "$SLUGS" ]; then
+            echo "Ningun demo cambio en este push." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "A publicar: $SLUGS"
+          fi
+
+      - name: Publicar
+        if: steps.cuales.outputs.slugs != ''
+        env:
+          CF_TOKEN: ${{ secrets.CF_TOKEN }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          INSTALAR_RAILWAY: '0'
+        run: |
+          FALLO=0
+          echo "## Demos publicados" >> "$GITHUB_STEP_SUMMARY"
+          echo >> "$GITHUB_STEP_SUMMARY"
+          for SLUG in ${{ steps.cuales.outputs.slugs }}; do
+            echo "::group::$SLUG"
+            if [ ! -f "demos/$SLUG/public/index.html" ]; then
+              echo "::warning::demos/$SLUG no tiene public/index.html, lo salteo."
+              echo "::endgroup::"
+              continue
+            fi
+            if bash scripts/publicar.sh "$SLUG" "demos/$SLUG"; then
+              echo "- **$SLUG** → https://${SLUG}demo.customerp.dev" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "- **$SLUG** → fallo, mira el registro de este paso" >> "$GITHUB_STEP_SUMMARY"
+              FALLO=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $FALLO
+
+      - name: Verificar que responden
+        if: steps.cuales.outputs.slugs != ''
+        run: |
+          echo >> "$GITHUB_STEP_SUMMARY"
+          for SLUG in ${{ steps.cuales.outputs.slugs }}; do
+            bash scripts/verificar.sh "$SLUG" || true
+          done

@@ -34,7 +34,11 @@ else
   railway add --service "$SLUG" >/dev/null 2>&1
   echo "     creado"
 fi
-railway link --project "$PROYECTO" --environment production --service "$SLUG" >/dev/null 2>&1
+# Con un token de proyecto (RAILWAY_TOKEN) el proyecto ya viene fijado por el token, y
+# 'railway link' no tiene con que sesion resolver el nombre: solo se linkea si no hay token.
+if [ -z "${RAILWAY_TOKEN:-}" ]; then
+  railway link --project "$PROYECTO" --environment production --service "$SLUG" >/dev/null 2>&1
+fi
 
 echo
 echo "2/5  Subiendo (tarda 1-2 minutos)"
