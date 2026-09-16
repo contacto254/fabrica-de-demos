@@ -174,6 +174,49 @@ td b{font-weight:700}
 .leg i{width:9px;height:9px;border-radius:3px;display:block}
 
 /* ---------- ficha ---------- */
+/* ---- contexto: el establecimiento manda ---- */
+.ctx{display:block;width:100%;text-align:left;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:var(--r);padding:9px 11px;margin:2px 0 4px;cursor:pointer;transition:background .15s,border-color .15s}
+.ctx:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.26)}
+.ctx__p{display:block;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:#7FA0A8;font-weight:700}
+.ctx__n{display:flex;align-items:center;gap:7px;color:#fff;font-size:14.5px;font-weight:800;margin:3px 0 1px}
+.ctx__n .ic{width:15px;height:15px;flex:none;opacity:.85}
+.ctx__c{margin-left:auto;width:13px;height:13px;opacity:.6}
+.ctx__d{display:block;font-size:11px;color:#9DB6BC;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctx__camps{display:flex;gap:5px;margin:0 0 8px}
+.ctx__camp{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#9DB6BC;border-radius:var(--r-sm);padding:5px 4px;font:700 11px Manrope;cursor:pointer}
+.ctx__camp.is-on{background:var(--gold);border-color:var(--gold);color:#3A2C08}
+
+/* ---- elegir establecimiento ---- */
+.pick{display:flex;flex-direction:column;gap:7px}
+.pick__i{display:grid;grid-template-columns:1fr auto;gap:2px 12px;text-align:left;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;cursor:pointer;transition:border-color .15s,background .15s}
+.pick__i:hover{border-color:var(--brand-2);background:#fff}
+.pick__i.is-on{border-color:var(--brand-2);background:var(--brand-soft)}
+.pick__n{font-weight:800;font-size:14px;color:var(--ink)}
+.pick__d{grid-column:1;font-size:11.5px;color:var(--ink-2);font-weight:600}
+.pick__p{grid-row:1/3;align-self:center;font-weight:800;font-size:17px;color:var(--brand-2)}
+
+/* ---- distribucion de paricion: el titular del sistema ---- */
+.dist{display:flex;height:30px;border-radius:var(--r-sm);overflow:hidden;background:var(--line-2)}
+.dist--big{height:58px}
+.dist__s{display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;line-height:1.15;overflow:hidden;transition:width .4s}
+.dist__s b{font-size:13px;font-weight:800}
+.dist--big .dist__s b{font-size:19px}
+.dist__s span{font-size:9px;letter-spacing:.09em;text-transform:uppercase;opacity:.85;font-weight:700}
+.dist__s--cabeza{background:var(--ok)}
+.dist__s--cuerpo{background:var(--brand-2)}
+.dist__s--cola{background:var(--bad)}
+.dist__leg{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:11px;font-size:12px;font-weight:600;color:var(--ink-2)}
+.dist__leg span{display:flex;align-items:center;gap:6px}
+.sw{width:10px;height:10px;border-radius:3px;flex:none}
+.sw--cabeza{background:var(--ok)} .sw--cuerpo{background:var(--brand-2)} .sw--cola{background:var(--bad)}
+.cmp__t{display:block;font-size:11.5px;font-weight:700;color:var(--ink-3);margin-bottom:6px}
+.cmp .dist{opacity:.55}
+
+/* ---- variacion contra la campana anterior ---- */
+.dl{display:inline-flex;align-items:center;gap:3px;font-weight:700}
+.dl .ic{width:12px;height:12px}
+.dl--ok{color:var(--ok)} .dl--bad{color:var(--bad)} .dl--mute{color:var(--ink-3)}
+
 .tl{position:relative;padding-left:26px}
 .tl::before{content:"";position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--line)}
 .tl__i{position:relative;padding:0 0 18px}
@@ -322,6 +365,7 @@ td b{font-weight:700}
         <div class="nav__sub">Servicios veterinarios</div>
       </div>
     </div>
+    <div id="nav-ctx"></div>
     <div id="nav-links"></div>
     <div class="nav__foot">
       <b>Campaña 2025-26</b><br>
@@ -405,6 +449,8 @@ const CAMPOS = [
     kmPersona:{gabriel:2562, santiago:1368, alejo:932},
     honPersona:{gabriel:2550, santiago:600, alejo:550},
     fact:7664.4, honTotal:3700, viaTotal:972.4, beneficio:2992,
+    dist:{cabeza:37, cuerpo:33, cola:30},
+    previa:{camp:'2024-25', pct:74, cabeza:31, cuerpo:32, cola:37, evaluadas:1612},
     resumen:{entoradas:1684, evaluadas:1669, prenadas:1304, vacias:365, pct:78} },
 
   { id:'elcastillo', n:'El Castillo', productor:'The Land Group', loc:'Belén', lotes:4, vacas:1492, km:5230,
@@ -412,6 +458,8 @@ const CAMPOS = [
     kmPersona:{gabriel:2400, santiago:950, alejo:1400, mateo:480},
     honPersona:{gabriel:3750, santiago:750, alejo:600, mateo:500},
     fact:11490, honTotal:5600, viaTotal:1046, beneficio:4844,
+    dist:{cabeza:40, cuerpo:32, cola:28},
+    previa:{camp:'2024-25', pct:80, cabeza:46, cuerpo:30, cola:24, evaluadas:2380},
     resumen:{entoradas:966, evaluadas:955, prenadas:735, vacias:220, pct:77} },
 
   { id:'villalucero', n:'Villa Lucero', productor:'The Land Group', loc:'Pueblo del Barro', lotes:4, vacas:742, km:4510,
@@ -419,6 +467,8 @@ const CAMPOS = [
     kmPersona:{gabriel:1600, santiago:1800, alejo:1000, rodrigo:110},
     honPersona:{gabriel:1100, santiago:1300, alejo:750, rodrigo:100},
     fact:6096, honTotal:3250, viaTotal:902, beneficio:1944,
+    dist:{cabeza:63, cuerpo:25, cola:12},
+    previa:{camp:'2024-25', pct:88, cabeza:58, cuerpo:27, cola:15, evaluadas:1180},
     resumen:{entoradas:844, evaluadas:835, prenadas:753, vacias:82, pct:91} },
 
   { id:'elcencerro', n:'El Cencerro', productor:'Federico García', loc:'Tiatucura', lotes:3, vacas:783, km:1560,
@@ -426,6 +476,8 @@ const CAMPOS = [
     kmPersona:{gabriel:1260, santiago:300},
     honPersona:{gabriel:2500, santiago:150, alejo:300, fernando:200},
     fact:7671, honTotal:3150, viaTotal:624, beneficio:3897,
+    dist:{cabeza:45, cuerpo:31, cola:24},
+    previa:{camp:'2024-25', pct:75, cabeza:40, cuerpo:32, cola:28, evaluadas:1205},
     resumen:{entoradas:783, evaluadas:778, prenadas:614, vacias:164, pct:79} },
 
   { id:'lacapilla', n:'La Capilla', productor:'Álvaro Ferrés', loc:'Capilla del Sauce', lotes:1, vacas:398, km:2406,
@@ -433,6 +485,8 @@ const CAMPOS = [
     kmPersona:{gabriel:366, santiago:1200, alejo:840},
     honPersona:{gabriel:250, santiago:1000, alejo:400},
     fact:4942.4, honTotal:1650, viaTotal:962.4, beneficio:2330,
+    dist:{cabeza:44, cuerpo:33, cola:23},
+    previa:{camp:'2024-25', pct:81, cabeza:47, cuerpo:31, cola:22, evaluadas:640},
     resumen:{entoradas:398, evaluadas:395, prenadas:312, vacias:83, pct:79} },
 
   { id:'aguara', n:'Aguará', productor:'Javiro', loc:'Arévalo', lotes:2, vacas:357, km:1895,
@@ -440,6 +494,8 @@ const CAMPOS = [
     kmPersona:{santiago:980, matias:195, rodrigo:720},
     honPersona:{santiago:900, matias:240, rodrigo:360},
     fact:3971, honTotal:1500, viaTotal:758, beneficio:1713,
+    dist:{cabeza:36, cuerpo:32, cola:32},
+    previa:{camp:'2024-25', pct:73, cabeza:33, cuerpo:31, cola:36, evaluadas:572},
     resumen:{entoradas:357, evaluadas:352, prenadas:268, vacias:84, pct:76} },
 
   { id:'posadas', n:'Embrión Paraíso', productor:'Posadas', loc:'Carlos Reyles', lotes:2, vacas:259, km:886,
@@ -447,6 +503,8 @@ const CAMPOS = [
     kmPersona:{gabriel:675, alejo:211},
     honPersona:{gabriel:1150, alejo:100, fernando:200},
     fact:2774, honTotal:1450, viaTotal:443, beneficio:881,
+    dist:{cabeza:41, cuerpo:34, cola:25},
+    previa:{camp:'2024-25', pct:79, cabeza:43, cuerpo:33, cola:24, evaluadas:410},
     resumen:{entoradas:259, evaluadas:257, prenadas:198, vacias:59, pct:77} },
 
   { id:'dimatteo', n:'Don Alfonzo', productor:'Di Matteo', loc:'Sarandí Grande', lotes:2, vacas:127, km:108,
@@ -454,6 +512,8 @@ const CAMPOS = [
     kmPersona:{rodrigo:108},
     honPersona:{santiago:600, rodrigo:120},
     fact:1186.2, honTotal:720, viaTotal:43.2, beneficio:423,
+    dist:{cabeza:42, cuerpo:33, cola:25},
+    previa:{camp:'2024-25', pct:72, cabeza:35, cuerpo:33, cola:32, evaluadas:198},
     resumen:{entoradas:127, evaluadas:126, prenadas:98, vacias:28, pct:78} }
 ];
 const CAMPO = id => CAMPOS.find(c => c.id === id);
@@ -630,13 +690,15 @@ const cap = s => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
 
 /* ---------- estado vivo ---------- */
 const S = {
-  vista: 'hoy',
+  vista: 'resumen',
+  est: 'lavictoria',
+  camp: '2025-26',
   ficha: null,
   campo: null,
   informe: null,
   filtros: { campo: 'todos', estado: 'todos', q: '' },
   vientres: CRUDO.vientres.map((v, i) => Object.assign({ _i: i, alertas: [] }, v)),
-  toros: CRUDO.toros.map((t, i) => Object.assign({ _i: i, asignado: null }, t)),
+  toros: CRUDO.toros.map((t, i) => Object.assign({ _i: i, asignado: null, est: repartoToros(i) }, t)),
   jornadas: CRUDO.jornadas.map((j, i) => Object.assign({ _i: i, id: 'j' + i }, j)),
   trabajos: TRABAJOS.map(t => Object.assign({}, t)),
   informes: INFORMES.map(i => Object.assign({}, i)),
@@ -730,20 +792,35 @@ function csv(nombre, cabeceras, filas) {
 }
 
 /* ---------- navegación ---------- */
+/* El establecimiento es el contexto, no un modulo: lo de arriba se lee siempre
+   dentro del campo y la campana elegidos. Abajo va lo que es de Reprogen y
+   cruza todos los campos: la agenda del equipo y lo que se cobra. */
+const CAMPANAS = ['2024-25', '2025-26'];
+
+/* La planilla de toros no trae en que campo esta cada uno, asi que los
+   repartimos por tamano de rodeo y queda fijo. */
+function repartoToros(i) {
+  const pesos = CAMPOS.map(c => ({ id: c.id, n: Math.max(1, Math.round(43 * c.vacas / 5114)) }));
+  const bolsa = [];
+  pesos.forEach(x => { for (let k = 0; k < x.n; k++) bolsa.push(x.id); });
+  return bolsa[i % bolsa.length];
+}
+
 const VISTAS = [
-  { g: 'Operación' },
+  { g: 'Establecimiento' },
+  { id:'resumen',      n:'Resumen',           i:'campo' },
+  { id:'iatf',         n:'IATF',              i:'eco' },
+  { id:'repaso',       n:'Repaso',            i:'toro' },
+  { id:'vientres',     n:'Vientres',          i:'vaca' },
+  { id:'toros',        n:'Toros',             i:'toro' },
+  { id:'analitica',    n:'Analítica',         i:'graf' },
+  { id:'informes',     n:'Informes',          i:'inf' },
+  { g: 'Reprogen' },
   { id:'hoy',          n:'Hoy',               i:'hoy' },
   { id:'calendario',   n:'Calendario',        i:'cal' },
   { id:'trabajos',     n:'Trabajos de manga', i:'manga' },
-  { g: 'Rodeo' },
-  { id:'campos',       n:'Establecimientos',  i:'campo' },
-  { id:'vientres',     n:'Vientres',          i:'vaca' },
-  { id:'toros',        n:'Toros',             i:'toro' },
-  { g: 'Salidas' },
-  { id:'informes',     n:'Informes',          i:'inf' },
-  { id:'analitica',    n:'Analítica',         i:'graf' },
+  { id:'campos',       n:'Todos los campos',  i:'mapa' },
   { id:'honorarios',   n:'Honorarios',        i:'plata' },
-  { g: 'Sistema' },
   { id:'config',       n:'Configuración',     i:'cfg' }
 ];
 
@@ -759,6 +836,56 @@ function pintarNav() {
   $$('#nav-links .nav__link').forEach(b => b.onclick = () => ir(b.dataset.v));
 }
 
+/* ---------- contexto: establecimiento + campana ---------- */
+function campoActual() { return S.campos.find(c => c.id === S.est) || S.campos[0]; }
+
+/* Los vientres y los toros del campo que esta elegido arriba. Las vistas de
+   arriba de la navegacion leen siempre por aca: fuera del establecimiento los
+   numeros no quieren decir nada. */
+function enCampo() { return S.vientres.filter(v => v.est === S.est); }
+function torosDelCampo() { return S.toros.filter(t => t.est === S.est); }
+
+function pintarCtx() {
+  const c = campoActual();
+  $('#nav-ctx').innerHTML =
+    '<button class="ctx" id="ctx-b" aria-label="Cambiar de establecimiento">' +
+      '<span class="ctx__p">Establecimiento</span>' +
+      '<span class="ctx__n">' + ic('campo') + '<b>' + esc(c.n) + '</b>' + ic('bajar', 'ctx__c') + '</span>' +
+      '<span class="ctx__d">' + esc(c.productor) + ' · ' + esc(c.loc) + '</span>' +
+    '</button>' +
+    '<div class="ctx__camps">' + CAMPANAS.map(k =>
+      '<button class="ctx__camp' + (S.camp === k ? ' is-on' : '') + '" data-camp="' + k + '">' + esc(k) + '</button>'
+    ).join('') + '</div>';
+  $('#ctx-b').onclick = elegirCampo;
+  $$('#nav-ctx .ctx__camp').forEach(b => b.onclick = () => {
+    S.camp = b.dataset.camp;
+    aviso('Campana ' + S.camp);
+    pintarCtx(); render();
+  });
+}
+
+/* Cambiar de campo no cambia de pantalla: se queda donde estabas, con los
+   numeros del campo nuevo. Es como se recorre en una reunion. */
+function elegirCampo() {
+  modal({
+    titulo: 'Cambiar de establecimiento',
+    sub: 'Todo lo que veas queda dentro del que elijas',
+    cuerpo: '<div class="pick">' + S.campos.map(c =>
+      '<button class="pick__i' + (c.id === S.est ? ' is-on' : '') + '" data-campo="' + c.id + '">' +
+        '<span class="pick__n">' + esc(c.n) + '</span>' +
+        '<span class="pick__d">' + esc(c.productor) + ' · ' + esc(c.loc) + ' · ' + nf0.format(c.vacas) + ' vientres</span>' +
+        '<span class="pick__p">' + c.resumen.pct + '%</span>' +
+      '</button>').join('') + '</div>'
+  });
+  $$('#modal-b .pick__i').forEach(b => b.onclick = () => {
+    S.est = b.dataset.campo;
+    S.ficha = null; S.informe = null;
+    cerrarModal();
+    aviso(campoActual().n);
+    pintarCtx(); render();
+  });
+}
+
 function ir(vista, extra) {
   S.vista = vista;
   if (extra) Object.assign(S, extra);
@@ -769,7 +896,7 @@ function ir(vista, extra) {
 
 const RENDER = {};
 function render() {
-  const f = RENDER[S.vista] || RENDER.hoy;
+  const f = RENDER[S.vista] || RENDER.resumen;
   const r = f();
   $('#top-t').textContent = r.titulo;
   $('#top-s').textContent = r.sub || '';
@@ -809,7 +936,7 @@ function perdioPreñez(v) {
 
 /* Las que estaban preñadas al eco de 30: es el denominador correcto de la pérdida embrionaria */
 function preñadasAl30() {
-  return S.vientres.filter(v => {
+  return enCampo().filter(v => {
     const e30 = v.ev.find(x => /30/.test(x.tipo));
     return e30 && estadoPreñez(e30.res) === 'prenada';
   });
@@ -870,7 +997,7 @@ function recalcularAvisos() {
 /* Preñez por toro sobre los vientres cargados */
 function preñezPorToro() {
   const m = {};
-  S.vientres.forEach(v => v.ev.forEach(e => {
+  enCampo().forEach(v => v.ev.forEach(e => {
     if (!e.toro || e.toro.length < 3 || /^[-\u2014\s]+$/.test(e.toro)) return;
     const t = cap(e.toro);
     m[t] = m[t] || { n: t, tot: 0, pr: 0 };
@@ -982,6 +1109,240 @@ function vacio(txt, sub, btn) {
 }
 function barra(p, mod) { return '<div class="bar' + (mod ? ' bar--' + mod : '') + '"><i style="width:' + Math.max(0, Math.min(100, p)) + '%"></i></div>'; }
 function tag(mod, txt) { return '<span class="tag tag--' + mod + '">' + esc(txt) + '</span>'; }
+
+/* ============================================================
+   El establecimiento como contexto
+   Todo lo de aca adentro se lee dentro del campo y la campana
+   elegidos arriba. Un total cruzado entre campos no le sirve a
+   nadie: el productor viene a hablar del suyo.
+   ============================================================ */
+
+/* Cuanto vale adelantar un parto. Una vaca que se prena en la cabeza
+   pare unos dos meses antes que una de la cola, y ese ternero llega al
+   destete con esos dias de mas encima. Los numeros se tocan en
+   Configuracion: cada productor tiene los suyos. */
+const SUPUESTOS = { dias: 60, ganancia: 0.75, precioKg: 2.4 };
+const kgPorTercio = () => Math.round(SUPUESTOS.dias * SUPUESTOS.ganancia);
+
+/* La distribucion de parto: cabeza, cuerpo y cola.
+   Si el campo tiene vientres cargados la calculamos de los eventos;
+   si no, la tomamos del informe de cierre. */
+function tercios(id) {
+  const vs = S.vientres.filter(v => v.est === id);
+  const cuenta = { cabeza: 0, cuerpo: 0, cola: 0 };
+  let con = 0;
+  vs.forEach(v => {
+    const fin = ultimoEvento(v);
+    if (!fin || estadoPreñez(fin.res) !== 'prenada') return;
+    const t = String(fin.res + ' ' + (fin.lote || '')).toUpperCase();
+    const k = /CABEZA|GRANDE/.test(t) ? 'cabeza' : /COLA|CHICA/.test(t) ? 'cola' : 'cuerpo';
+    cuenta[k]++; con++;
+  });
+  const c = S.campos.find(x => x.id === id);
+  /* Manda el cierre de campana: cubre las preñadas del campo entero. Los
+     vientres cargados son una parte, y su reparto no se puede estirar al
+     total sin contradecir al propio informe. Se calcula de los eventos solo
+     cuando el campo todavia no tiene cierre. */
+  if (c.dist) return Object.assign({ base: c.resumen.prenadas, fuente: 'el informe de cierre' }, c.dist);
+  if (con >= 20) {
+    return {
+      cabeza: Math.round(100 * cuenta.cabeza / con),
+      cuerpo: Math.round(100 * cuenta.cuerpo / con),
+      cola: Math.round(100 * cuenta.cola / con),
+      base: con, fuente: 'los ' + con + ' vientres cargados'
+    };
+  }
+  return { cabeza: 0, cuerpo: 0, cola: 0, base: 0, fuente: 'sin cierre todavía' };
+}
+
+/* Cuanto ternero separa a la cola de la cabeza. No es plata perdida:
+   es lo que hay arriba de la mesa si la cola se corre para adelante. */
+function enJuego(c) {
+  const t = tercios(c.id);
+  const vacasCola = Math.round(c.resumen.prenadas * t.cola / 100);
+  const kg = vacasCola * kgPorTercio();
+  return { vacasCola: vacasCola, kg: kg, usd: kg * SUPUESTOS.precioKg };
+}
+
+/* Variacion contra la campana anterior, que es la unica comparacion
+   que significa algo: mismo campo, misma gente, mismo pasto. */
+function delta(hoy, antes, mejorArriba) {
+  const d = hoy - antes;
+  if (!d) return '<span class="dl dl--mute">igual que ' + esc('2024-25') + '</span>';
+  const bien = mejorArriba ? d > 0 : d < 0;
+  return '<span class="dl dl--' + (bien ? 'ok' : 'bad') + '">' +
+    ic(d > 0 ? 'subir' : 'bajar') + (d > 0 ? '+' : '') + nf1.format(d).replace(',0', '') +
+    ' vs ' + esc('2024-25') + '</span>';
+}
+
+/* La barra de los tres tercios, que es el titular de todo el sistema. */
+function barraTercios(t, alto) {
+  return '<div class="dist' + (alto ? ' dist--big' : '') + '">' +
+    ['cabeza', 'cuerpo', 'cola'].map(k =>
+      '<div class="dist__s dist__s--' + k + '" style="width:' + t[k] + '%" title="' + k + ' ' + t[k] + '%">' +
+        (t[k] >= 9 ? '<b>' + t[k] + '%</b><span>' + k + '</span>' : '') +
+      '</div>').join('') + '</div>';
+}
+
+RENDER.resumen = () => {
+  const c = campoActual();
+  const t = tercios(c.id);
+  const p = c.previa;
+  const j = enJuego(c);
+  const infs = S.informes.filter(i => i.campo === c.id);
+  const trabs = S.trabajos.filter(x => x.campo === c.id);
+  const inf = infs.find(i => i.dist) || infs[0];
+
+  const html =
+    '<div class="grid g4 mb">' +
+      kpi('Preñez final', c.resumen.pct + '%',
+          delta(c.resumen.pct, p.pct, true), c.resumen.pct >= 85 ? 'ok' : c.resumen.pct >= 75 ? '' : 'warn', 'eco') +
+      kpi('Paren en la cabeza', t.cabeza + '%',
+          delta(t.cabeza, p.cabeza, true), t.cabeza >= 55 ? 'ok' : t.cabeza >= 40 ? '' : 'warn', 'subir') +
+      kpi('Se van a la cola', t.cola + '%',
+          delta(t.cola, p.cola, false), t.cola <= 15 ? 'ok' : t.cola <= 25 ? '' : 'bad', 'bajar') +
+      kpi('Ternero en juego', nf0.format(j.kg) + ' kg',
+          usd(j.usd) + ' si la cola pariera como la cabeza', 'gold', 'plata') +
+    '</div>' +
+
+    tarjeta('Distribución de parición · campaña ' + esc(S.camp),
+      'Sobre ' + nf0.format(c.resumen.prenadas) + ' preñadas, según ' + t.fuente,
+      barraTercios(t, true) +
+      '<div class="dist__leg">' +
+        '<span><i class="sw sw--cabeza"></i>Cabeza · 1er mes · ' + nf0.format(Math.round(c.resumen.prenadas * t.cabeza / 100)) + ' vacas</span>' +
+        '<span><i class="sw sw--cuerpo"></i>Cuerpo · 2do mes · ' + nf0.format(Math.round(c.resumen.prenadas * t.cuerpo / 100)) + ' vacas</span>' +
+        '<span><i class="sw sw--cola"></i>Cola · 3er mes · ' + nf0.format(Math.round(c.resumen.prenadas * t.cola / 100)) + ' vacas</span>' +
+      '</div>' +
+      '<div class="sep"></div>' +
+      '<div class="cmp"><span class="cmp__t">Campaña anterior ' + esc(p.camp) + ' · ' + p.pct + '% de preñez</span>' +
+        barraTercios({ cabeza: p.cabeza, cuerpo: p.cuerpo, cola: p.cola }) + '</div>' +
+      '<div class="note ' + (t.cabeza >= p.cabeza ? 'note--ok' : 'note--bad') + '">' + ic(t.cabeza >= p.cabeza ? 'subir' : 'alerta') +
+        '<div>' + (t.cabeza >= p.cabeza
+          ? '<b>La cabeza creció ' + (t.cabeza - p.cabeza) + ' puntos.</b> Son ' +
+            nf0.format(Math.round(c.resumen.prenadas * (t.cabeza - p.cabeza) / 100)) + ' vacas más pariendo en el primer mes que la campaña pasada.'
+          : '<b>La cabeza cayó ' + (p.cabeza - t.cabeza) + ' puntos.</b> Hay ' +
+            nf0.format(Math.round(c.resumen.prenadas * (p.cabeza - t.cabeza) / 100)) + ' vacas que antes parían temprano y ahora se corrieron.') +
+        '</div></div>',
+      '<button class="btn btn--sm" data-accion="verInforme" data-id="' + (inf ? inf.id : '') + '">' + ic('inf') + '<span>Ver informe</span></button>') +
+
+    '<div class="grid g-23 mb" style="margin-top:14px">' +
+      tarjeta('Resultados por lote', inf ? esc(inf.t) : 'Sin informe de cierre todavía',
+        (inf && inf.lotes
+          ? '<div class="tw"><table><thead><tr><th>Lote</th><th>Técnica</th><th class="num">Evaluadas</th><th class="num">Preñadas</th><th class="num">%</th></tr></thead><tbody>' +
+            inf.lotes.map(l =>
+              '<tr><td><b>' + esc(l.n) + '</b></td><td>' + tag(l.tec === 'IATF' ? 'info' : 'mute', l.tec) + '</td>' +
+              '<td class="num">' + nf0.format(l.ev) + '</td><td class="num">' + nf0.format(l.pr) + '</td>' +
+              '<td class="num"><b>' + l.pct + '%</b>' + barra(l.pct, l.pct >= 85 ? 'ok' : l.pct >= 70 ? '' : 'bad') + '</td></tr>').join('') +
+            '</tbody></table></div>'
+          : vacio('Todavía no hay cierre', 'Cuando se cargue la ecografía final, el desglose por lote aparece acá')) ) +
+
+      tarjeta('El campo', esc(c.productor),
+        '<div class="kv"><span>Productor</span><b>' + esc(c.productor) + '</b></div>' +
+        '<div class="kv"><span>Localidad</span><b>' + esc(c.loc) + '</b></div>' +
+        '<div class="kv"><span>Lotes de trabajo</span><b>' + c.lotes + '</b></div>' +
+        '<div class="kv"><span>Vientres</span><b>' + nf0.format(c.vacas) + '</b></div>' +
+        '<div class="sep"></div>' +
+        '<div class="kv"><span>Entoradas</span><b>' + nf0.format(c.resumen.entoradas) + '</b></div>' +
+        '<div class="kv"><span>Evaluadas</span><b>' + nf0.format(c.resumen.evaluadas) + '</b></div>' +
+        '<div class="kv"><span>Preñadas</span><b>' + nf0.format(c.resumen.prenadas) + '</b></div>' +
+        '<div class="kv"><span>Vacías</span><b>' + nf0.format(c.resumen.vacias) + '</b></div>' +
+        '<div class="sep"></div>' +
+        '<div class="kv"><span>Trabajos de manga</span><b>' + trabs.length + '</b></div>' +
+        '<div class="kv"><span>Informes</span><b>' + infs.length + '</b></div>') +
+    '</div>';
+
+  return { titulo: c.n, sub: esc(c.productor) + ' · ' + esc(c.loc) + ' · campaña ' + esc(S.camp), html: html };
+};
+
+RENDER.iatf = () => {
+  const c = campoActual();
+  const inf = S.informes.filter(i => i.campo === c.id).find(i => i.lotes);
+  const lotesIatf = inf && inf.lotes ? inf.lotes.filter(l => l.tec === 'IATF') : [];
+  const ev = Math.round(lotesIatf.reduce((a, l) => a + l.ev, 0));
+  const pr = Math.round(lotesIatf.reduce((a, l) => a + l.pr, 0));
+  const pctIatf = ev ? Math.round(100 * pr / ev) : 0;
+
+  /* Las jornadas del protocolo en este campo: dia 0, dia 5, dia 7/8 e IATF. */
+  const clave = c.n.toUpperCase().split(' ').filter(w => w.length > 3)[0] || c.n.toUpperCase();
+  const js = S.jornadas.filter(j => j.act.toUpperCase().includes(clave));
+
+  const html =
+    '<div class="grid g4 mb">' +
+      kpi('Preñez a la IATF', pctIatf + '%', nf0.format(pr) + ' de ' + nf0.format(ev) + ' inseminadas',
+          pctIatf >= 60 ? 'ok' : pctIatf >= 50 ? '' : 'warn', 'jeringa') +
+      kpi('Lotes inseminados', String(lotesIatf.length), 'De ' + (inf && inf.lotes ? inf.lotes.length : 0) + ' lotes de la campaña', '', 'manga') +
+      kpi('Jornadas en el campo', String(js.length), 'Día 0, día 5, día 7 e IATF', '', 'cal') +
+      kpi('Aporte a la cabeza', tercios(c.id).cabeza + '%', 'Lo que la IATF mete en el primer mes', 'gold', 'subir') +
+    '</div>' +
+
+    '<div class="grid g-23">' +
+      tarjeta('Resultado por lote inseminado', 'Sólo los lotes con IATF',
+        lotesIatf.length
+          ? '<div class="tw"><table><thead><tr><th>Lote</th><th>Fecha</th><th class="num">Inseminadas</th><th class="num">Preñadas</th><th class="num">%</th></tr></thead><tbody>' +
+            lotesIatf.map(l =>
+              '<tr><td><b>' + esc(l.n) + '</b></td><td>' + esc(l.fecha || '—') + '</td>' +
+              '<td class="num">' + nf0.format(l.ev) + '</td><td class="num">' + nf0.format(l.pr) + '</td>' +
+              '<td class="num"><b>' + l.pct + '%</b>' + barra(l.pct, l.pct >= 85 ? 'ok' : l.pct >= 70 ? '' : 'bad') + '</td></tr>').join('') +
+            '</tbody></table></div>'
+          : vacio('Sin lotes de IATF cargados', 'Este campo todavía no tiene el cierre de la inseminación')) +
+
+      tarjeta('Protocolo en el campo', 'Las jornadas tal como quedaron en el calendario',
+        js.length
+          ? '<div class="tl">' + js.slice(0, 14).map(j =>
+              '<div class="tl__i"><div class="tl__d"></div>' +
+              '<div class="tl__f">' + fecha(j.f) + '</div>' +
+              '<div class="tl__t">' + esc(j.act) + '</div>' +
+              '<div class="tl__m">' + esc(j.resp) + '</div></div>').join('') + '</div>'
+          : vacio('Sin jornadas registradas', 'No hay días de trabajo cargados para este campo')) +
+    '</div>';
+
+  return { titulo: 'IATF · ' + c.n, sub: 'Inseminación a tiempo fijo · campaña ' + esc(S.camp), html: html };
+};
+
+RENDER.repaso = () => {
+  const c = campoActual();
+  const t = tercios(c.id);
+  const j = enJuego(c);
+  const vacas = k => Math.round(c.resumen.prenadas * t[k] / 100);
+
+  const filas = [
+    { k: 'cabeza', n: 'Cabeza', mes: '1er mes', d: 'Se preñaron en el primer servicio. Paren temprano y destetan el ternero más pesado.' },
+    { k: 'cuerpo', n: 'Cuerpo', mes: '2do mes', d: 'Quedaron en el repaso temprano o en la segunda IATF.' },
+    { k: 'cola',   n: 'Cola',   mes: '3er mes', d: 'Entraron tarde. Ternero más liviano al destete y menos tiempo para volver a preñarse.' }
+  ];
+
+  const html =
+    '<div class="grid g4 mb">' +
+      kpi('Preñadas en total', nf0.format(c.resumen.prenadas), c.resumen.pct + '% de ' + nf0.format(c.resumen.evaluadas) + ' evaluadas', '', 'eco') +
+      kpi('Cabeza · 1er mes', nf0.format(vacas('cabeza')), t.cabeza + '% de las preñadas', t.cabeza >= 55 ? 'ok' : '', 'subir') +
+      kpi('Cuerpo · 2do mes', nf0.format(vacas('cuerpo')), t.cuerpo + '% de las preñadas', '', 'swap') +
+      kpi('Cola · 3er mes', nf0.format(vacas('cola')), t.cola + '% de las preñadas', t.cola <= 15 ? 'ok' : t.cola <= 25 ? 'warn' : 'bad', 'bajar') +
+    '</div>' +
+
+    tarjeta('El repaso, abierto en tres', 'Cada tercio es un mes de parición · según ' + t.fuente,
+      barraTercios(t, true) +
+      '<div class="tw" style="margin-top:14px"><table><thead><tr><th>Tercio</th><th>Parición</th><th class="num">Vacas</th><th class="num">%</th><th>Qué significa</th></tr></thead><tbody>' +
+      filas.map(f =>
+        '<tr><td><b>' + f.n + '</b></td><td>' + tag(f.k === 'cabeza' ? 'ok' : f.k === 'cola' ? 'bad' : 'info', f.mes) + '</td>' +
+        '<td class="num"><b>' + nf0.format(vacas(f.k)) + '</b></td>' +
+        '<td class="num">' + t[f.k] + '%' + barra(t[f.k], f.k === 'cabeza' ? 'ok' : f.k === 'cola' ? 'bad' : '') + '</td>' +
+        '<td style="max-width:320px;color:var(--ink-2);font-weight:600">' + esc(f.d) + '</td></tr>').join('') +
+      '</tbody></table></div>') +
+
+    '<div style="margin-top:14px">' +
+      tarjeta('Lo que está en juego', 'Diferencia de ternero entre parir en la cabeza y parir en la cola',
+        '<div class="kv"><span>Vacas en la cola</span><b>' + nf0.format(j.vacasCola) + '</b></div>' +
+        '<div class="kv"><span>Días de diferencia al destete</span><b>' + SUPUESTOS.dias + ' días</b></div>' +
+        '<div class="kv"><span>Ganancia diaria</span><b>' + SUPUESTOS.ganancia.toLocaleString('es-UY', { minimumFractionDigits: 2 }) + ' kg/día</b></div>' +
+        '<div class="kv"><span>Kilos por ternero</span><b>' + kgPorTercio() + ' kg</b></div>' +
+        '<div class="sep"></div>' +
+        '<div class="kv"><span class="big">Ternero en juego</span><b class="big">' + nf0.format(j.kg) + ' kg</b></div>' +
+        '<div class="kv"><span>A ' + usd(SUPUESTOS.precioKg) + '/kg</span><b>' + usd(j.usd) + '</b></div>' +
+        '<div class="note note--info">' + ic('graf') + '<div>No es plata perdida: es lo que hay arriba de la mesa si la cola se corre para adelante. Los supuestos se cambian en Configuración.</div></div>') +
+    '</div>';
+
+  return { titulo: 'Repaso · ' + c.n, sub: 'Cabeza, cuerpo y cola · campaña ' + esc(S.camp), html: html };
+};
 
 /* ---------------- HOY ---------------- */
 RENDER.hoy = () => {
@@ -1307,8 +1668,7 @@ function filaVientre(v) {
 RENDER.vientres = () => {
   if (S.ficha !== null) return vistaFicha(S.vientres[S.ficha]);
   const f = S.filtros;
-  let vs = S.vientres.slice();
-  if (f.campo !== 'todos') vs = vs.filter(v => v.est === f.campo);
+  let vs = enCampo();
   if (f.estado !== 'todos') vs = vs.filter(v => {
     if (f.estado === 'perdida') return perdioPreñez(v);
     if (f.estado === 'baja') return /Baja/.test(v.estado);
@@ -1317,9 +1677,10 @@ RENDER.vientres = () => {
   });
   if (f.q) { const q = f.q.toLowerCase(); vs = vs.filter(v => v.car.toLowerCase().includes(q) || (v.cat || '').toLowerCase().includes(q)); }
 
-  const conHistorial = S.vientres.filter(v => v.anios === '2').length;
-  const perdidas = S.vientres.filter(perdioPreñez).length;
-  const bajas = S.vientres.filter(v => /Baja/.test(v.estado));
+  const base = enCampo();
+  const conHistorial = base.filter(v => v.anios === '2').length;
+  const perdidas = base.filter(perdioPreñez).length;
+  const bajas = base.filter(v => /Baja/.test(v.estado));
   const bajasPreñadas = bajas.filter(v => {
     const ult = v.ev.filter(e => e.camp === '2024');
     return ult.length && estadoPreñez(ult[ult.length - 1].res) === 'prenada';
@@ -1327,7 +1688,7 @@ RENDER.vientres = () => {
 
   const html =
     '<div class="grid g4 mb">' +
-      kpi('Fichas en la base', nf0.format(S.vientres.length), 'Con historial acumulado por caravana', '', 'vaca') +
+      kpi('Fichas del campo', nf0.format(base.length), 'Con historial acumulado por caravana', '', 'vaca') +
       kpi('Con dos campañas', String(conHistorial), 'Historial que ninguna planilla por campaña conserva', 'ok', 'hist') +
       kpi('Preñeces perdidas', String(perdidas), 'Preñadas al eco 30, vacías después', 'bad', 'eco') +
       kpi('Bajas sin motivo', String(bajas.length), bajasPreñadas + ' de ellas salieron preñadas', 'warn', 'alerta') +
@@ -1337,9 +1698,6 @@ RENDER.vientres = () => {
       '<div class="row" style="align-items:flex-end">' +
         '<div class="field" style="flex:2"><label class="fl" for="fv-q">Buscar por caravana</label>' +
         '<input class="inp" id="fv-q" placeholder="858000031149537" value="' + esc(f.q) + '"></div>' +
-        '<div class="field"><label class="fl" for="fv-campo">Establecimiento</label><select class="inp" id="fv-campo">' +
-        '<option value="todos">Todos</option>' + S.campos.map(c => '<option value="' + c.id + '"' + (f.campo === c.id ? ' selected' : '') + '>' + esc(c.n) + '</option>').join('') +
-        '</select></div>' +
         '<div class="field"><label class="fl" for="fv-estado">Estado</label><select class="inp" id="fv-estado">' +
         ['todos|Todos', 'prenada|Preñadas', 'vacia|Vacías', 'perdida|Con pérdida embrionaria', 'historial|Con dos campañas', 'baja|Bajas del programa']
           .map(o => { const [v, n] = o.split('|'); return '<option value="' + v + '"' + (f.estado === v ? ' selected' : '') + '>' + n + '</option>'; }).join('') +
@@ -1367,15 +1725,15 @@ RENDER.vientres = () => {
         : vacio('Ninguna caravana coincide', 'Probá con otro filtro o buscá la caravana completa.',
             '<button class="btn btn--sm" data-accion="limpiarFiltros">Limpiar filtros</button>'), null, true);
 
-  return { titulo: 'Vientres', sub: nf0.format(S.vientres.length) + ' fichas · historial por caravana',
+  return { titulo: 'Vientres · ' + campoActual().n, sub: nf0.format(enCampo().length) + ' fichas · historial por caravana',
     acciones:
+      '<button class="btn btn--sm btn--p" data-accion="porLista">' + ic('subir') + '<span>Actualizar por lista</span></button>' +
       '<button class="btn btn--sm" data-accion="altaVientre">' + ic('mas') + '<span>Alta</span></button>' +
       '<button class="btn btn--sm" data-accion="cambioCaravana">' + ic('swap') + '<span>Cambio de caravana</span></button>' +
       '<button class="btn btn--sm" data-accion="csvVientres">' + ic('bajar') + '<span>Exportar</span></button>',
     html, luego: () => {
       const q = $('#fv-q');
       if (q) { q.oninput = () => { S.filtros.q = q.value; render(); setTimeout(() => { const n = $('#fv-q'); if (n) { n.focus(); n.setSelectionRange(n.value.length, n.value.length); } }, 0); }; }
-      const fc = $('#fv-campo'); if (fc) fc.onchange = () => { S.filtros.campo = fc.value; render(); };
       const fe = $('#fv-estado'); if (fe) fe.onchange = () => { S.filtros.estado = fe.value; render(); };
     } };
 };
@@ -1450,7 +1808,7 @@ function vistaFicha(v) {
 
 /* ---------------- TOROS ---------------- */
 RENDER.toros = () => {
-  const ts = S.toros;
+  const ts = torosDelCampo();
   const pos = ts.filter(t => /POSITIV/i.test(t.raspaje));
   const sinRas = ts.filter(t => /no muestreado/i.test(t.raspaje));
   const refugo = ts.filter(t => /REFUGO/i.test(t.obs || ''));
@@ -1524,7 +1882,7 @@ RENDER.toros = () => {
           '<td>' + (t.asignado ? tag('gold', CAMPO(t.asignado) ? CAMPO(t.asignado).n : t.asignado) : '<button class="btn btn--sm" data-accion="asignarToro" data-ide="' + esc(t.ide) + '">Asignar</button>') + '</td></tr>';
       }).join('') + '</tbody></table></div>', null, true);
 
-  return { titulo: 'Toros', sub: ts.length + ' evaluados · ' + aptos.length + ' aptos sin observaciones',
+  return { titulo: 'Toros · ' + campoActual().n, sub: ts.length + ' evaluados · ' + aptos.length + ' aptos sin observaciones',
     acciones: '<button class="btn btn--sm" data-accion="csvToros">' + ic('bajar') + '<span>Exportar</span></button>', html };
 };
 
@@ -1536,23 +1894,23 @@ RENDER.toros = () => {
 /* ---------------- INFORMES ---------------- */
 RENDER.informes = () => {
   if (S.informe) return vistaInforme(S.informes.find(i => i.id === S.informe));
+  const DEL = S.informes.filter(i => i.campo === S.est);
   const html =
     '<div class="grid g4 mb">' +
-      kpi('Informes de la campaña', String(S.informes.length), 'Evaluaciones, IATF, DAO y entore', '', 'inf') +
-      kpi('Enviados al productor', String(S.informes.filter(i => i.estado === 'Enviado').length), 'Con acuse del cliente', 'ok', 'check') +
-      kpi('En borrador', String(S.informes.filter(i => i.estado !== 'Enviado').length), 'Listos para revisar y enviar', 'warn', 'lupa-doc') +
-      kpi('Páginas generadas', String(S.informes.reduce((s, i) => s + i.paginas, 0)), 'Antes se armaban a mano una por una', 'gold', 'libro') +
+      kpi('Informes del campo', String(DEL.length), 'Evaluaciones, IATF, DAO y entore', '', 'inf') +
+      kpi('Enviados al productor', String(DEL.filter(i => i.estado === 'Enviado').length), 'Con acuse del cliente', 'ok', 'check') +
+      kpi('En borrador', String(DEL.filter(i => i.estado !== 'Enviado').length), 'Listos para revisar y enviar', 'warn', 'lupa-doc') +
+      kpi('Páginas generadas', String(DEL.reduce((a, i) => a + i.paginas, 0)), 'Antes se armaban a mano una por una', 'gold', 'libro') +
     '</div>' +
     '<div class="note note--info mb">' + ic('inf') +
       '<div><b>El informe sale de los datos que ya están cargados.</b> Totales por lote, evaluación por tecnología aplicada, ciclicidad ovárica y consideraciones finales: lo mismo que hoy se arma a mano desde el Excel Madre, generado al cerrar el trabajo.</div></div>' +
     tarjeta('Informes emitidos', 'Ordenados por fecha',
-      '<div class="tw"><table><thead><tr><th>Informe</th><th>Establecimiento</th><th>Técnica</th>' +
+      !DEL.length ? vacio('Sin informes todavía', 'Cuando se cierre un trabajo de manga, el informe aparece acá') :
+      '<div class="tw"><table><thead><tr><th>Informe</th><th>Técnica</th>' +
       '<th>Fecha</th><th class="num">Vientres</th><th class="num">Preñez</th><th>Estado</th><th></th></tr></thead><tbody>' +
-      S.informes.slice().sort((a, b) => a.f < b.f ? 1 : -1).map(i => {
-        const c = CAMPO(i.campo);
+      DEL.slice().sort((a, b) => a.f < b.f ? 1 : -1).map(i => {
         return '<tr class="clickable" data-accion="verInforme" data-id="' + i.id + '">' +
           '<td><b>' + esc(i.t) + '</b><div class="t-sub">' + i.paginas + ' páginas</div></td>' +
-          '<td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:' + c.color + ';margin-right:6px"></span>' + esc(c.n) + '</td>' +
           '<td class="t-sub">' + esc(i.tec) + '</td><td class="t-sub">' + fecha(i.f) + '</td>' +
           '<td class="num">' + nf0.format(i.tot.entoradas) + '</td>' +
           '<td class="num">' + (i.tot.pct ? '<b>' + nf1.format(i.tot.pct).replace(',0', '') + '%</b>' : '—') + '</td>' +
@@ -1560,7 +1918,7 @@ RENDER.informes = () => {
           '<td style="width:34px">' + ic('flecha') + '</td></tr>';
       }).join('') + '</tbody></table></div>', null, true);
 
-  return { titulo: 'Informes', sub: S.informes.length + ' documentos de la campaña',
+  return { titulo: 'Informes · ' + campoActual().n, sub: DEL.length + ' documentos de la campaña ' + S.camp + ',',
     acciones: '<button class="btn btn--sm btn--g" data-accion="generarInforme">' + ic('mas') + '<span>Generar informe</span></button>', html };
 };
 
@@ -1650,13 +2008,13 @@ function vistaInforme(i) {
 /* ---------------- ANALÍTICA ---------------- */
 RENDER.analitica = () => {
   const porToro = preñezPorToro(), porDAO = preñezPorDAO();
-  const perdidas = S.vientres.filter(perdioPreñez);
-  const bajas = S.vientres.filter(v => /Baja/.test(v.estado));
+  const perdidas = enCampo().filter(perdioPreñez);
+  const bajas = enCampo().filter(v => /Baja/.test(v.estado));
   const bajasPreñadas = bajas.filter(v => {
     const e24 = v.ev.filter(e => e.camp === '2024');
     return e24.length && estadoPreñez(e24[e24.length - 1].res) === 'prenada';
   });
-  const conDos = S.vientres.filter(v => v.anios === '2');
+  const conDos = enCampo().filter(v => v.anios === '2');
   const repetidoras = conDos.filter(v => {
     const r = v.ev.map(e => estadoPreñez(e.res));
     return r.filter(x => x === 'prenada').length >= 2;
@@ -1758,7 +2116,7 @@ RENDER.analitica = () => {
         '<div>En la planilla de El Castillo, <b>1ERA ITAF</b> (288 animales) y <b>1ERA IATF</b> (282) son lo mismo mal tipeado: una cohorte de 570 partida al medio. Cualquier informe armado sobre eso miente.</div></div>') +
     '</div>';
 
-  return { titulo: 'Analítica', sub: 'Campaña 2025-26 · ' + nf0.format(S.vientres.length) + ' fichas analizadas',
+  return { titulo: 'Analítica · ' + campoActual().n, sub: 'Campaña 2025-26 · ' + nf0.format(S.vientres.length) + ' fichas analizadas',
     acciones: '<button class="btn btn--sm" data-accion="csvAnalitica">' + ic('bajar') + '<span>Exportar</span></button>', html };
 };
 
@@ -2023,6 +2381,65 @@ Object.assign(ACCIONES, {
   },
 
   cambioCaravana: () => ACCIONES.cambioCaravanaDe({ i: 0 }),
+  /* Actualizacion por lista: se pega la columna de caravanas de la manga y
+     cada una se cruza contra la base del campo. Las que no estan se dan de
+     alta, asi la lista del dia entra completa de una sola vez. */
+  porLista: () => {
+    const c = campoActual();
+    modal({
+      titulo: 'Actualizar por lista de caravanas', sub: c.n + ' · campaña ' + S.camp, ancho: true,
+      cuerpo:
+        '<div class="note note--info">' + ic('subir') +
+        '<div>Pegá la columna de caravanas tal como sale de la manga, una por línea. Se cruzan contra las ' +
+        nf0.format(enCampo().length) + ' fichas del campo y se les anexa el evento.</div></div>' +
+        '<div class="grid g2" style="margin-top:13px">' +
+          '<div class="field"><label class="fl" for="pl-tipo">Evento</label><select class="inp" id="pl-tipo">' +
+          ['Eco 30 días', 'Eco 90 días', 'Eco final', 'DAO', 'IATF'].map(x => '<option>' + x + '</option>').join('') +
+          '</select></div>' +
+          '<div class="field"><label class="fl" for="pl-res">Resultado</label><select class="inp" id="pl-res">' +
+          ['Cabeza', 'Cuerpo', 'Cola', 'Vacía', 'Ciclando'].map(x => '<option>' + x + '</option>').join('') +
+          '</select></div>' +
+        '</div>' +
+        '<div class="field"><label class="fl" for="pl-car">Caravanas</label>' +
+        '<textarea class="inp mono" id="pl-car" rows="7" placeholder="858000049807986&#10;858000049808012&#10;858000049808144"></textarea></div>',
+      acciones: [{ txt: 'Cancelar' }, { txt: 'Cruzar y actualizar', tipo: 'p', icono: 'check', fn: () => {
+        const crudo = (($('#pl-car') || {}).value || '').split(/[\s,;]+/).map(x => x.trim()).filter(Boolean);
+        if (!crudo.length) { aviso('No pegaste ninguna caravana', 'bad'); return; }
+        const tipo = ($('#pl-tipo') || {}).value || 'Eco final';
+        const res = ($('#pl-res') || {}).value || 'Cabeza';
+        const base = enCampo();
+        let tocadas = 0, altas = 0, repes = 0;
+        const vistas = {};
+        crudo.forEach(car => {
+          if (vistas[car]) { repes++; return; }
+          vistas[car] = 1;
+          /* La caravana anterior tambien encuentra: por eso el cambio no pierde datos. */
+          const v = base.find(x => x.car === car || x.carAnterior === car);
+          const ev = { f: hoyISO(HOY), tipo: tipo, camp: S.camp, lote: '', toro: '', eco30: '', res: res };
+          if (v) { v.ev.push(ev); tocadas++; }
+          else {
+            S.vientres.push({ _i: S.vientres.length, car: car, est: S.est, cat: 'Sin lote',
+              estado: 'Activa (' + S.camp + ') - ingresó este año', anios: '1', p: '2026', u: '2026', ev: [ev] });
+            altas++;
+          }
+        });
+        aviso(tocadas + ' fichas actualizadas' + (altas ? ' · ' + altas + ' altas' : ''), 'ok');
+        setTimeout(() => modal({
+          titulo: 'Lista cruzada', sub: c.n + ' · ' + tipo + ' · ' + res,
+          cuerpo:
+            '<div class="kv"><span>Caravanas en la lista</span><b>' + crudo.length + '</b></div>' +
+            '<div class="kv"><span>Fichas actualizadas</span><b>' + tocadas + '</b></div>' +
+            '<div class="kv"><span>Altas nuevas</span><b>' + altas + '</b></div>' +
+            '<div class="kv"><span>Repetidas en la lista</span><b>' + repes + '</b></div>' +
+            (altas ? '<div class="note">' + ic('alerta') + '<div>' +
+              (altas === 1 ? 'La que no estaba quedó dada de alta' : 'Las ' + altas + ' que no estaban quedaron dadas de alta') +
+              ' en ' + esc(c.n) + ', para revisarles el lote después.</div></div>' : '')
+        }), 80);
+        S.ficha = null; render();
+      } }]
+    });
+  },
+
   cambioCaravanaDe: d => {
     const v = S.vientres[+d.i];
     modal({
@@ -2441,6 +2858,7 @@ $('#modal-x').onclick = cerrarModal;
 
 recalcularAvisos();
 pintarNav();
+pintarCtx();
 render();
 arrancarEventos();
 setTimeout(() => {
