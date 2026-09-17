@@ -33,7 +33,7 @@ echo "1/5  Servicio en Railway"
 #   RAILWAY_API_TOKEN  es de cuenta: hay que elegirle el proyecto con 'railway link'.
 # Ojo con el 'set -o pipefail' de arriba: filtrar con una tuberia devuelve el
 # codigo de railway y no el del grep, asi que la salida se guarda antes.
-PRUEBA=$(railway status 2>&1 || true)
+PRUEBA=$(railway status < /dev/null 2>&1 || true)
 if [ -n "${RAILWAY_TOKEN:-}" ] && printf '%s' "$PRUEBA" | grep -qi 'invalid railway_token'; then
   if [ -n "${RAILWAY_API_TOKEN:-}" ]; then
     echo "     RAILWAY_TOKEN no sirve; sigo con RAILWAY_API_TOKEN (token de cuenta)"
@@ -47,7 +47,7 @@ fi
 # Con token de cuenta hay que elegir el proyecto ANTES de preguntar nada: que
 # diga "no linked project" sin haber linkeado todavia es lo esperado, no un error.
 if [ -z "${RAILWAY_TOKEN:-}" ]; then
-  SALIDA_LINK=$(railway link --project "$PROYECTO" --environment production 2>&1 || true)
+  SALIDA_LINK=$(railway link --project "$PROYECTO" --environment production < /dev/null 2>&1 || true)
   if printf '%s' "$SALIDA_LINK" | grep -qiE 'unauthoriz|invalid|not found|no projects'; then
     echo "     No pude entrar al proyecto '$PROYECTO'. Railway dijo:"
     printf '%s\n' "$SALIDA_LINK" | sed 's/^/       /' | head -10
@@ -59,7 +59,7 @@ if [ -z "${RAILWAY_TOKEN:-}" ]; then
 fi
 
 # Recien ahora tiene sentido preguntar el estado.
-ESTADO=$(railway status 2>&1 || true)
+ESTADO=$(railway status < /dev/null 2>&1 || true)
 if printf '%s' "$ESTADO" | grep -qiE 'unauthoriz|not logged|invalid token|invalid railway'; then
   echo "     Railway no acepta el token:"
   printf '%s\n' "$ESTADO" | sed 's/^/       /' | head -8
@@ -75,7 +75,7 @@ printf '%s\n' "$ESTADO" | head -4 | sed 's/^/       /'
 if printf '%s' "$ESTADO" | grep -q "$SLUG"; then
   echo "     el servicio ya existe"
 else
-  SALIDA_ADD=$(railway add --service "$SLUG" 2>&1 || true)
+  SALIDA_ADD=$(railway add --service "$SLUG" < /dev/null 2>&1 || true)
   if printf '%s' "$SALIDA_ADD" | grep -qiE 'unauthoriz|invalid|forbidden'; then
     echo "     No pude crear el servicio. Railway dijo:"
     printf '%s\n' "$SALIDA_ADD" | sed 's/^/       /' | head -12
@@ -86,14 +86,14 @@ fi
 
 # Con token de cuenta, apuntar tambien al servicio antes de subir.
 if [ -z "${RAILWAY_TOKEN:-}" ]; then
-  railway link --project "$PROYECTO" --environment production --service "$SLUG" >/dev/null 2>&1 || true
+  railway link --project "$PROYECTO" --environment production --service "$SLUG" >/dev/null < /dev/null 2>&1 || true
 fi
 
 echo
 echo "2/5  Subiendo (tarda 1-2 minutos)"
 # La salida se guarda entera: cuando esto falla, lo unico que sirve es lo que
 # dijo Railway, y antes se perdia en el pipe.
-SALIDA_UP=$(railway up --service "$SLUG" --ci 2>&1)
+SALIDA_UP=$(railway up --service "$SLUG" --ci < /dev/null 2>&1)
 if echo "$SALIDA_UP" | grep -q "Deploy complete"; then
   echo "     desplegado"
 else
@@ -106,14 +106,14 @@ fi
 
 echo
 echo "3/5  Dominio propio en Railway"
-SALIDA=$(railway domain "$HOST" --service "$SLUG" 2>&1)
+SALIDA=$(railway domain "$HOST" --service "$SLUG" < /dev/null 2>&1)
 CNAME_TARGET=$(echo "$SALIDA" | grep -o '[a-z0-9]\{8\}\.up\.railway\.app' | head -1)
 VERIFY_TXT=$(echo "$SALIDA"  | grep -o 'railway-verify=[a-f0-9]\{64\}' | head -1)
 
 if [ -z "$CNAME_TARGET" ]; then
   # El dominio ya estaba dado de alta: pedimos su estado para sacar los datos.
-  ID=$(railway domain list --service "$SLUG" 2>/dev/null | grep "$HOST" | awk '{print $3}')
-  SALIDA=$(railway domain status "$ID" 2>&1)
+  ID=$(railway domain list --service "$SLUG" < /dev/null 2>/dev/null | grep "$HOST" | awk '{print $3}')
+  SALIDA=$(railway domain status "$ID" < /dev/null 2>&1)
   CNAME_TARGET=$(echo "$SALIDA" | grep -o '[a-z0-9]\{8\}\.up\.railway\.app' | head -1)
   VERIFY_TXT=$(echo "$SALIDA"  | grep -o 'railway-verify=[a-f0-9]\{64\}' | head -1)
 fi
