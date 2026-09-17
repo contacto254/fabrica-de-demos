@@ -19,6 +19,7 @@
   --warn:#D9971A; --warn-soft:#FCF2DC;
   --bad:#C4544A; --bad-soft:#FAE7E4;
   --info:#37719E; --info-soft:#E6EFF6;
+  --pos:#2C7A4B; --neg:#B23A2F; --eje:#C9D6C9;
   --r:10px; --r-lg:16px;
   --sh:0 1px 2px rgba(20,40,28,.05);
   --sh-pop:0 14px 40px rgba(20,40,28,.18);
@@ -145,7 +146,7 @@ td{padding:9px 11px;border-bottom:1px solid var(--line-2);vertical-align:middle}
 tbody tr:last-child td{border-bottom:0}
 tbody tr.tap{cursor:pointer}
 tbody tr.tap:hover{background:var(--brand-soft)}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 td.str{font-weight:700}
 .tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.8px;font-weight:700;white-space:nowrap}
 .t-ok{background:var(--brand-soft);color:var(--brand-deep)}
@@ -265,6 +266,21 @@ td.str{font-weight:700}
 .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
 .sep{height:1px;background:var(--line-2);margin:13px 0}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:0 13px}
+.chart{position:relative}
+.chart .hit{cursor:crosshair}
+.chart .hit:hover{fill:rgba(27,85,51,.05)}
+.chart .tip{position:absolute;top:6px;width:192px;background:var(--panel);border:1px solid var(--line);
+  border-radius:11px;box-shadow:var(--sh-pop);padding:9px 11px;font-size:12.2px;font-weight:600;pointer-events:none;z-index:5}
+.chart .tip b{display:block;font-size:12.8px;margin-bottom:4px}
+.chart .tip span{display:flex;align-items:center;gap:6px;padding:1px 0;font-variant-numeric:tabular-nums}
+.chart .tip i{width:9px;height:9px;border-radius:3px;flex:none}
+.leyenda{display:flex;gap:14px;flex-wrap:wrap;font-size:12.2px;font-weight:700;color:var(--ink-2);padding:2px 0 8px}
+.leyenda span{display:flex;align-items:center;gap:6px}
+.leyenda i{width:12px;height:12px;border-radius:3px;display:block}
+.leyenda i.raya{height:3px;border-radius:2px}
+.fuente{font-size:10.4px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:1px 6px;border-radius:5px}
+.fuente.planilla{background:var(--brand-soft);color:var(--brand-deep)}
+.fuente.supuesto{background:var(--warn-soft);color:#8A5E07}
 .corral{border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:var(--panel);cursor:pointer;transition:border-color .14s,transform .1s}
 .corral:hover{border-color:var(--brand-2);transform:translateY(-1px)}
 .corral .t{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px}
@@ -605,43 +621,54 @@ const persona = (id) => EQUIPO.find((p) => p.id === id) || EQUIPO[2];
 
 /* ---------------------------------- hacienda ---------------------------- */
 const CAMPOS_GAN = [
-  { id:'g1', nombre:'El Cardal', paraje:'Sarandí del Yí, Durazno', ha:1240, uso:'Cría' },
-  { id:'g2', nombre:'Corral de Piedra', paraje:'Fray Marcos, Florida', ha:1238, uso:'Cría' },
-  { id:'g3', nombre:'Paso de las Piedras', paraje:'Blanquillo, Durazno', ha:980, uso:'Cría' },
-  { id:'g4', nombre:'La Querencia', paraje:'Cerro Chato, Durazno', ha:860, uso:'Recría' },
-  { id:'g5', nombre:'Santa Clotilde campo natural', paraje:'Caraguatá, Tacuarembó', ha:640, uso:'Recría' },
-  { id:'g6', nombre:'La Pituca', paraje:'Caraguatá, Tacuarembó', ha:520, uso:'Recría' },
-  { id:'g7', nombre:'El Ombú', paraje:'La Paloma, Durazno', ha:470, uso:'Vaquillonas' },
-  { id:'g8', nombre:'Feedlot Santa Clara', paraje:'Rincón de los Tapes, Durazno', ha:62, uso:'Engorde' },
+  { id:'g1', nombre:'El Cardal', paraje:'Sarandí del Yí, Durazno', ha:3180, uso:'Cría' },
+  { id:'g2', nombre:'Corral de Piedra', paraje:'Fray Marcos, Florida', ha:2940, uso:'Cría' },
+  { id:'g3', nombre:'Paso de las Piedras', paraje:'Blanquillo, Durazno', ha:2460, uso:'Cría' },
+  { id:'g4', nombre:'Santa Clotilde campo natural', paraje:'Caraguatá, Tacuarembó', ha:2180, uso:'Recría' },
+  { id:'g5', nombre:'La Querencia', paraje:'Cerro Chato, Durazno', ha:1940, uso:'Recría' },
+  { id:'g6', nombre:'Cuchilla del Ombú', paraje:'Cuchilla del Ombú, Tacuarembó', ha:1760, uso:'Recría' },
+  { id:'g7', nombre:'Paso Ataques', paraje:'Vichadero, Rivera', ha:1640, uso:'Cría' },
+  { id:'g8', nombre:'La Pituca', paraje:'Caraguatá, Tacuarembó', ha:1420, uso:'Recría' },
+  { id:'g9', nombre:'El Ombú', paraje:'La Paloma, Durazno', ha:1180, uso:'Vaquillonas' },
+  { id:'g10', nombre:'Las Cañas', paraje:'Sarandí del Yí, Durazno', ha:1088, uso:'Cría' },
+  { id:'g11', nombre:'Feedlot Santa Clara', paraje:'Rincón de los Tapes, Durazno', ha:62, uso:'Engorde' },
 ];
 const campoGan = (id) => CAMPOS_GAN.find((c) => c.id === id);
 const HA_GANADERIA = suma(CAMPOS_GAN, (c) => c.ha);
 
+// Unidad ganadera por categoría, como se calcula la carga en Uruguay.
+const UG = {
+  'Vacas de cría':1, 'Vacas de invernada':1, 'Vaquillonas 2 años':0.9, 'Vaquillonas 1-2':0.7,
+  'Terneros':0.45, 'Terneras':0.45, 'Novillos 1-2':0.8, 'Novillos 2-3':1, 'Toros':1.2,
+};
 const RODEOS = [
-  { id:'r1', nombre:'Rodeo general de cría', campo:'g1', cat:'Vacas de cría', cab:842, preniadas:731, pesoProm:412, dicose:'D-0214' },
-  { id:'r2', nombre:'Vacas primerizas', campo:'g1', cat:'Vaquillonas 2 años', cab:196, preniadas:171, pesoProm:348, dicose:'D-0214' },
-  { id:'r3', nombre:'Rodeo Corral de Piedra', campo:'g2', cat:'Vacas de cría', cab:768, preniadas:659, pesoProm:404, dicose:'F-1177' },
-  { id:'r4', nombre:'Vientres Paso de las Piedras', campo:'g3', cat:'Vacas de cría', cab:604, preniadas:511, pesoProm:398, dicose:'D-0341' },
-  { id:'r5', nombre:'Toros', campo:'g3', cat:'Toros', cab:96, preniadas:0, pesoProm:712, dicose:'D-0341' },
-  { id:'r6', nombre:'Terneros destete 26', campo:'g4', cat:'Terneros', cab:704, preniadas:0, pesoProm:178, dicose:'D-0402' },
-  { id:'r7', nombre:'Terneras destete 26', campo:'g7', cat:'Terneras', cab:668, preniadas:0, pesoProm:171, dicose:'D-0417' },
-  { id:'r8', nombre:'Novillos 1-2 recría', campo:'g5', cat:'Novillos 1-2', cab:512, preniadas:0, pesoProm:288, dicose:'T-0876' },
-  { id:'r9', nombre:'Novillos 2-3 Pituca', campo:'g6', cat:'Novillos 2-3', cab:386, preniadas:0, pesoProm:372, dicose:'T-0881' },
-  { id:'r10', nombre:'Vaquillonas de reposición', campo:'g7', cat:'Vaquillonas 1-2', cab:428, preniadas:0, pesoProm:256, dicose:'D-0417' },
-  { id:'r11', nombre:'Vacas de invernada', campo:'g4', cat:'Vacas de invernada', cab:214, preniadas:0, pesoProm:436, dicose:'D-0402' },
+  { id:'r1', nombre:'Rodeo general de cría', campo:'g1', cat:'Vacas de cría', cab:2140, preniadas:1857, pesoProm:412, dicose:'D-0214' },
+  { id:'r2', nombre:'Vacas primerizas', campo:'g1', cat:'Vaquillonas 2 años', cab:486, preniadas:424, pesoProm:348, dicose:'D-0214' },
+  { id:'r3', nombre:'Rodeo Corral de Piedra', campo:'g2', cat:'Vacas de cría', cab:1928, preniadas:1656, pesoProm:404, dicose:'F-1177' },
+  { id:'r4', nombre:'Vientres Paso de las Piedras', campo:'g3', cat:'Vacas de cría', cab:1612, preniadas:1363, pesoProm:398, dicose:'D-0341' },
+  { id:'r5', nombre:'Vientres Paso Ataques', campo:'g7', cat:'Vacas de cría', cab:1074, preniadas:918, pesoProm:396, dicose:'R-0588' },
+  { id:'r6', nombre:'Toros', campo:'g3', cat:'Toros', cab:268, preniadas:0, pesoProm:712, dicose:'D-0341' },
+  { id:'r7', nombre:'Terneros destete 26', campo:'g5', cat:'Terneros', cab:2960, preniadas:0, pesoProm:178, dicose:'D-0402' },
+  { id:'r8', nombre:'Terneras destete 26', campo:'g9', cat:'Terneras', cab:2890, preniadas:0, pesoProm:171, dicose:'D-0417' },
+  { id:'r9', nombre:'Novillos 1-2 recría', campo:'g4', cat:'Novillos 1-2', cab:1286, preniadas:0, pesoProm:288, dicose:'T-0876' },
+  { id:'r10', nombre:'Novillos 2-3 Pituca', campo:'g8', cat:'Novillos 2-3', cab:968, preniadas:0, pesoProm:372, dicose:'T-0881' },
+  { id:'r11', nombre:'Vaquillonas de reposición', campo:'g9', cat:'Vaquillonas 1-2', cab:1100, preniadas:0, pesoProm:256, dicose:'D-0417' },
+  { id:'r12', nombre:'Vacas de invernada', campo:'g6', cat:'Vacas de invernada', cab:536, preniadas:0, pesoProm:436, dicose:'T-0903' },
 ];
 const rodeo = (id) => RODEOS.find((r) => r.id === id);
 
+const FEEDLOT_CAPACIDAD = 3200;
+const FEEDLOT_TANDAS = 2.4; // encierres por año
 const CORRALES = [
-  { id:'c1', nombre:'Corral 1', cat:'Terneros', cab:184, entrada:-118, pesoEntrada:186, pesoHoy:318, dieta:'Recría 14% PB', consumo:7.4, adpv:1.12 },
-  { id:'c2', nombre:'Corral 2', cat:'Terneros', cab:176, entrada:-112, pesoEntrada:181, pesoHoy:307, dieta:'Recría 14% PB', consumo:7.2, adpv:1.13 },
-  { id:'c3', nombre:'Corral 3', cat:'Terneros', cab:192, entrada:-96, pesoEntrada:192, pesoHoy:298, dieta:'Recría 14% PB', consumo:7.1, adpv:1.10 },
-  { id:'c4', nombre:'Corral 4', cat:'Novillos 1-2', cab:168, entrada:-142, pesoEntrada:252, pesoHoy:436, dieta:'Terminación 13% PB', consumo:9.8, adpv:1.30 },
-  { id:'c5', nombre:'Corral 5', cat:'Novillos 1-2', cab:162, entrada:-136, pesoEntrada:248, pesoHoy:424, dieta:'Terminación 13% PB', consumo:9.6, adpv:1.29 },
-  { id:'c6', nombre:'Corral 6', cat:'Novillos 2-3', cab:154, entrada:-158, pesoEntrada:318, pesoHoy:518, dieta:'Terminación 13% PB', consumo:10.6, adpv:1.27 },
-  { id:'c7', nombre:'Corral 7', cat:'Novillos 2-3', cab:148, entrada:-164, pesoEntrada:322, pesoHoy:528, dieta:'Terminación 13% PB', consumo:10.8, adpv:1.26 },
-  { id:'c8', nombre:'Corral 8', cat:'Vaquillonas', cab:136, entrada:-104, pesoEntrada:238, pesoHoy:352, dieta:'Terminación 13% PB', consumo:8.4, adpv:1.10 },
-  { id:'c9', nombre:'Corral 9', cat:'Vacas de invernada', cab:118, entrada:-72, pesoEntrada:398, pesoHoy:468, dieta:'Terminación 13% PB', consumo:11.2, adpv:0.97 },
+  { id:'c1', nombre:'Corral 1', cat:'Terneros', cab:368, entrada:-118, pesoEntrada:186, pesoHoy:318, dieta:'Recría 14% PB', consumo:7.4, adpv:1.12 },
+  { id:'c2', nombre:'Corral 2', cat:'Terneros', cab:352, entrada:-112, pesoEntrada:181, pesoHoy:307, dieta:'Recría 14% PB', consumo:7.2, adpv:1.13 },
+  { id:'c3', nombre:'Corral 3', cat:'Terneros', cab:384, entrada:-96, pesoEntrada:192, pesoHoy:298, dieta:'Recría 14% PB', consumo:7.1, adpv:1.10 },
+  { id:'c4', nombre:'Corral 4', cat:'Novillos 1-2', cab:336, entrada:-142, pesoEntrada:252, pesoHoy:436, dieta:'Terminación 13% PB', consumo:9.8, adpv:1.30 },
+  { id:'c5', nombre:'Corral 5', cat:'Novillos 1-2', cab:324, entrada:-136, pesoEntrada:248, pesoHoy:424, dieta:'Terminación 13% PB', consumo:9.6, adpv:1.29 },
+  { id:'c6', nombre:'Corral 6', cat:'Novillos 2-3', cab:308, entrada:-158, pesoEntrada:318, pesoHoy:518, dieta:'Terminación 13% PB', consumo:10.6, adpv:1.27 },
+  { id:'c7', nombre:'Corral 7', cat:'Novillos 2-3', cab:296, entrada:-164, pesoEntrada:322, pesoHoy:528, dieta:'Terminación 13% PB', consumo:10.8, adpv:1.26 },
+  { id:'c8', nombre:'Corral 8', cat:'Vaquillonas', cab:272, entrada:-104, pesoEntrada:238, pesoHoy:352, dieta:'Terminación 13% PB', consumo:8.4, adpv:1.10 },
+  { id:'c9', nombre:'Corral 9', cat:'Vacas de invernada', cab:236, entrada:-72, pesoEntrada:398, pesoHoy:468, dieta:'Terminación 13% PB', consumo:11.2, adpv:0.97 },
   { id:'c10', nombre:'Corral 10', cat:'Terneros', cab:0, entrada:0, pesoEntrada:0, pesoHoy:0, dieta:'Vacío', consumo:0, adpv:0 },
 ];
 const DIETAS = [
@@ -798,12 +825,18 @@ const CUENTAS = [
   { id:'b4', nombre:'Caja chica Durazno', moneda:'UYU', saldo:284000, banco:'Caja' },
 ];
 const LINEAS = [
-  { id:'f1', banco:'BROU', tipo:'Crédito de zafra agrícola', limite:2400000, usado:1860000, tasa:6.4, venc:212, garantia:'Prenda de cosecha soja 26/27' },
-  { id:'f2', banco:'Santander', tipo:'Capital de trabajo', limite:900000, usado:640000, tasa:7.2, venc:118, garantia:'Fianza solidaria' },
-  { id:'f3', banco:'República Microfinanzas', tipo:'Ganadero · retención de vientres', limite:600000, usado:432000, tasa:5.9, venc:298, garantia:'Prenda de ganado DICOSE D-0214' },
-  { id:'f4', banco:'Cargill', tipo:'Canje de insumos', limite:800000, usado:521000, tasa:0, venc:186, garantia:'Entrega de soja 26/27' },
-  { id:'f5', banco:'Barraca Erro', tipo:'Cuenta corriente de insumos', limite:700000, usado:578400, tasa:8.1, venc:31, garantia:'Sin garantía real' },
+  { id:'f1', banco:'BROU', tipo:'Crédito de zafra agrícola', limite:9000000, usado:6840000, tasa:6.4, venc:212, garantia:'Prenda de cosecha soja 26/27' },
+  { id:'f2', banco:'Cargill', tipo:'Canje de insumos por grano', limite:4500000, usado:3290000, tasa:0, venc:186, garantia:'Entrega de soja 26/27', implicita:4.5 },
+  { id:'f3', banco:'Santander', tipo:'Capital de trabajo', limite:3200000, usado:2410000, tasa:7.2, venc:118, garantia:'Fianza solidaria' },
+  { id:'f4', banco:'Barraca Erro', tipo:'Cuenta corriente de insumos', limite:2800000, usado:2164000, tasa:8.1, venc:31, garantia:'Sin garantía real' },
+  { id:'f5', banco:'BROU', tipo:'Ganadero · retención de vientres', limite:2400000, usado:1836000, tasa:5.9, venc:298, garantia:'Prenda de ganado DICOSE D-0214' },
+  { id:'f6', banco:'Scotiabank', tipo:'Leasing de maquinaria', limite:1600000, usado:1240000, tasa:6.8, venc:522, garantia:'La propia maquinaria' },
 ];
+// Lo que cuesta la plata en el año: interés explícito, más el implícito del canje
+// (el grano se entrega por debajo de la pizarra, y eso también es tasa).
+const interesLinea = (l) => l.usado * (l.tasa / 100);
+const interesImplicito = (l) => l.usado * ((l.implicita || 0) / 100);
+const costoFinanciero = () => suma(LINEAS, (l) => interesLinea(l) + interesImplicito(l));
 const MOVIMIENTOS = [
   { id:'mv1', fecha:-1, concepto:'Gasoil grado A · 95.000 l', tipo:'Egreso', cat:'Combustible', moneda:'USD', monto:106400, ref:'p5', estado:'Pendiente', venc:9 },
   { id:'mv2', fecha:-2, concepto:'Jornales de chacra · setiembre', tipo:'Egreso', cat:'Personal', moneda:'UYU', monto:2840000, ref:null, estado:'Pagado', venc:-2 },
@@ -855,14 +888,17 @@ const ARRIENDOS = [
   { id:'a19', campo:'El Caburé', propietario:'Souza y Núñez', ha:420, rentaKg:230, zona:'Rivera', inicio:'01/06/2025', fin:'31/05/2028', ajuste:'Soja Cámara Mercantil', cuotas:'Junio y diciembre' },
   { id:'a20', campo:'Caraguatá', propietario:'La Carolina SG', ha:543, rentaKg:228, zona:'Caraguatá', inicio:'01/06/2025', fin:'31/05/2029', ajuste:'Soja Cámara Mercantil', cuotas:'Junio y diciembre' },
   { id:'a21', campo:'Washington', propietario:'Suc. Bentancor', ha:180, rentaKg:265, zona:'Sarandí', inicio:'01/05/2026', fin:'30/04/2029', ajuste:'Soja Cámara Mercantil', cuotas:'Mayo y noviembre' },
-  { id:'a22', campo:'El Cardal', propietario:'Suc. Píriz Duarte', ha:1240, rentaKg:22, zona:'Sarandí del Yí', inicio:'01/07/2022', fin:'30/06/2027', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
-  { id:'a23', campo:'Corral de Piedra', propietario:'Grupo Ruiz Díaz', ha:1238, rentaKg:21, zona:'Fray Marcos, Florida', inicio:'01/09/2023', fin:'31/08/2028', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
-  { id:'a24', campo:'Paso de las Piedras', propietario:'Estancia El Blanquillo', ha:980, rentaKg:20, zona:'Blanquillo', inicio:'01/07/2024', fin:'30/06/2029', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
-  { id:'a25', campo:'La Querencia', propietario:'Cerro Chato Agro SG', ha:860, rentaKg:19, zona:'Cerro Chato', inicio:'01/07/2023', fin:'30/06/2028', ajuste:'Novillo gordo INAC', cuotas:'Semestral' },
-  { id:'a26', campo:'Santa Clotilde campo natural', propietario:'Agropecuaria del Norte SA', ha:640, rentaKg:17, zona:'Caraguatá', inicio:'01/07/2023', fin:'30/06/2028', ajuste:'Novillo gordo INAC', cuotas:'Semestral' },
-  { id:'a27', campo:'La Pituca', propietario:'Cabrera Hnos.', ha:520, rentaKg:19, zona:'Caraguatá', inicio:'01/07/2024', fin:'30/06/2027', ajuste:'Novillo gordo INAC', cuotas:'Semestral' },
-  { id:'a28', campo:'El Ombú', propietario:'La Paloma Ganadera SG', ha:470, rentaKg:20, zona:'La Paloma', inicio:'01/07/2025', fin:'30/06/2030', ajuste:'Novillo gordo INAC', cuotas:'Semestral' },
-  { id:'a29', campo:'Feedlot Santa Clara', propietario:'Fernández Hnos.', ha:62, rentaKg:64, zona:'Rincón de los Tapes', inicio:'01/06/2022', fin:'31/05/2029', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
+  { id:'a22', campo:'El Cardal', propietario:'Suc. Píriz Duarte', ha:3180, rentaKg:22, zona:'Sarandí del Yí', inicio:'01/07/2022', fin:'30/06/2027', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
+  { id:'a23', campo:'Corral de Piedra', propietario:'Grupo Ruiz Díaz', ha:2940, rentaKg:21, zona:'Fray Marcos, Florida', inicio:'01/09/2023', fin:'31/08/2028', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
+  { id:'a24', campo:'Paso de las Piedras', propietario:'Estancia El Blanquillo', ha:2460, rentaKg:20, zona:'Blanquillo', inicio:'01/07/2024', fin:'30/06/2029', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
+  { id:'a25', campo:'Santa Clotilde campo natural', propietario:'Agropecuaria del Norte SA', ha:2180, rentaKg:17, zona:'Caraguatá', inicio:'01/07/2023', fin:'30/06/2028', ajuste:'Novillo gordo INAC', cuotas:'Semestral' },
+  { id:'a26', campo:'La Querencia', propietario:'Cerro Chato Agro SG', ha:1940, rentaKg:19, zona:'Cerro Chato', inicio:'01/07/2023', fin:'30/06/2028', ajuste:'Novillo gordo INAC', cuotas:'Semestral' },
+  { id:'a27', campo:'Cuchilla del Ombú', propietario:'Forestal Cuchilla SA', ha:1760, rentaKg:16, zona:'Cuchilla del Ombú', inicio:'01/06/2026', fin:'31/05/2031', ajuste:'Novillo gordo INAC', cuotas:'Semestral' },
+  { id:'a28', campo:'Paso Ataques', propietario:'Souza y Núñez', ha:1640, rentaKg:18, zona:'Vichadero', inicio:'01/06/2025', fin:'31/05/2030', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
+  { id:'a29', campo:'La Pituca', propietario:'Cabrera Hnos.', ha:1420, rentaKg:19, zona:'Caraguatá', inicio:'01/07/2024', fin:'30/06/2027', ajuste:'Novillo gordo INAC', cuotas:'Semestral' },
+  { id:'a30', campo:'El Ombú', propietario:'La Paloma Ganadera SG', ha:1180, rentaKg:20, zona:'La Paloma', inicio:'01/07/2025', fin:'30/06/2030', ajuste:'Novillo gordo INAC', cuotas:'Semestral' },
+  { id:'a31', campo:'Las Cañas', propietario:'Suc. Bentancor', ha:1088, rentaKg:18, zona:'Sarandí del Yí', inicio:'01/07/2024', fin:'30/06/2028', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
+  { id:'a32', campo:'Feedlot Santa Clara', propietario:'Fernández Hnos.', ha:62, rentaKg:64, zona:'Rincón de los Tapes', inicio:'01/06/2022', fin:'31/05/2029', ajuste:'Novillo gordo INAC', cuotas:'Trimestral' },
 ];
 
 /* ------------------------- planilla de costos por hectárea -------------- */
@@ -907,6 +943,230 @@ function margen(cultivo, rinde, precio) {
   };
 }
 
+/* ==========================================================================
+   El modelo económico de la empresa
+   --------------------------------------------------------------------------
+   Cada número lleva de dónde sale: 'planilla' es de la planilla de costos de
+   Austrey; 'supuesto' lo puso customERP y hay que sentarse a validarlo. Eso se
+   muestra en pantalla, para que nadie confunda una cosa con la otra.
+   ========================================================================== */
+
+// Cultivos de invierno: la planilla que nos pasaron es sólo de verano.
+const COSTOS_INVIERNO = {
+  Trigo:    { directo:430, rinde:4.2, precio:215 },
+  Cebada:   { directo:415, rinde:4.0, precio:205 },
+  Colza:    { directo:395, rinde:1.9, precio:470 },
+  Carinata: { directo:365, rinde:1.7, precio:430 },
+  Arveja:   { directo:330, rinde:2.1, precio:340 },
+};
+const COSTO_AUSTREY_INVIERNO = 185; // labores, maquinaria y estructura de campo
+
+// El novillo gordo se cotiza por kilo de carcasa; el ternero y el kilo que se
+// gana en el campo se venden en pie. Sin este pasaje los kilos del feedlot
+// valen el doble de lo que valen, y el negocio parece lo que no es.
+const RENDIMIENTO_CARCASA = 0.55;
+const PRECIO_KG_VIVO = () => PRECIO_NOVILLO * RENDIMIENTO_CARCASA;
+const GAN = {
+  destete:0.82,            // terneros logrados sobre vientres entorados
+  pesoDestete:168,         // kilos al destete
+  precioTernero:2.95,      // dólares por kilo vivo
+  precioVaca:2.10,
+  kgRecria:105,            // kilos que gana un animal en la recría, en el año
+  costoCria:132,           // dólares por cabeza y por año: sanidad, personal, suplemento, toros
+  costoRecria:64,
+  otrosFeedlotPorKg:0.22,  // sanidad, personal y mortandad del feedlot
+};
+
+const ESTRUCTURA = [
+  ['Dirección y administración', 620000],
+  ['Seguros y contribución inmobiliaria', 214000],
+  ['Oficina, vehículos y comunicaciones', 148000],
+  ['Honorarios contables, legales y agronómicos', 96000],
+  ['Sistemas y tecnología', 42000],
+];
+const estructuraTotal = () => suma(ESTRUCTURA, (x) => x[1]);
+
+const haPorCultivoVerano = (pre) => suma(CHACRAS.filter((c) => c.verano.startsWith(pre)), (c) => c.ha);
+const haPorCultivoInvierno = (n) => suma(CHACRAS.filter((c) => c.invierno === n), (c) => c.ha);
+const cabsGanaderas = () => suma(RODEOS, (r) => r.cab);
+const unidadesGanaderas = () => suma(RODEOS, (r) => r.cab * (UG[r.cat] || 1));
+const haPastoreo = () => suma(CAMPOS_GAN.filter((g) => g.uso !== 'Engorde'), (g) => g.ha);
+const vientres = () => suma(RODEOS.filter((r) => r.cat === 'Vacas de cría' || r.cat === 'Vaquillonas 2 años'), (r) => r.cab);
+const cabsRecria = () => suma(RODEOS.filter((r) => ['Terneros','Terneras','Novillos 1-2','Vaquillonas 1-2'].includes(r.cat)), (r) => r.cab);
+const kgFeedlotDia = () => suma(CORRALES, (c) => c.cab * c.adpv);
+const racionFeedlotDia = () => suma(CORRALES, (c) => {
+  const dt = DIETAS.find((x) => x.nombre === c.dieta);
+  return c.cab * c.consumo * (dt ? dt.costoKgMS : 0);
+});
+
+// La renta sale de los contratos de arrendamiento de verdad, no del 132 por
+// hectárea de la planilla: ese se cobra una vez por hectárea y por año, y en una
+// chacra con doble cultivo la planilla lo carga dos veces.
+const rentaAgricola = () => suma(ARRIENDOS.filter((a) => a.ajuste.includes('Soja')), rentaAnual);
+const rentaGanadera = () => suma(ARRIENDOS.filter((a) => !a.ajuste.includes('Soja') && a.campo !== 'Feedlot Santa Clara'), rentaAnual);
+const rentaFeedlot = () => suma(ARRIENDOS.filter((a) => a.campo === 'Feedlot Santa Clara'), rentaAnual);
+
+function negocios() {
+  const haSoja = haPorCultivoVerano('Soja');
+  const haMaiz = haPorCultivoVerano('Maiz');
+  const invernales = Object.keys(COSTOS_INVIERNO);
+  const haInv = suma(invernales, haPorCultivoInvierno);
+  const haAgri = haSoja + haMaiz + haInv;
+  const rAgri = rentaAgricola();
+
+  const soja = {
+    id:'soja', nombre:'Agrícola · Soja', tipo:'Agricultura', fuente:'planilla', ha:haSoja,
+    detalle:`${nf(S.margenSoja.rinde, 1)} t/ha a ${usd(S.margenSoja.precio)} la tonelada`,
+    ingresos: haSoja * S.margenSoja.rinde * S.margenSoja.precio,
+    directo: haSoja * costoInsumos('Soja'),
+    austrey: haSoja * COSTOS.Soja.estructura,
+    renta: rAgri * (haSoja / haAgri),
+  };
+  const maiz = {
+    id:'maiz', nombre:'Agrícola · Maíz', tipo:'Agricultura', fuente:'planilla', ha:haMaiz,
+    detalle:`${nf(S.margenMaiz.rinde, 1)} t/ha a ${usd(S.margenMaiz.precio)} la tonelada`,
+    ingresos: haMaiz * S.margenMaiz.rinde * S.margenMaiz.precio,
+    directo: haMaiz * costoInsumos('Maiz'),
+    austrey: haMaiz * COSTOS.Maiz.estructura,
+    renta: rAgri * (haMaiz / haAgri),
+  };
+  const invierno = {
+    id:'invierno', nombre:'Agrícola · Invierno', tipo:'Agricultura', fuente:'supuesto', ha:haInv,
+    detalle:'trigo, cebada, colza, carinata y arveja',
+    ingresos: suma(invernales, (n) => haPorCultivoInvierno(n) * COSTOS_INVIERNO[n].rinde * COSTOS_INVIERNO[n].precio),
+    directo: suma(invernales, (n) => haPorCultivoInvierno(n) * COSTOS_INVIERNO[n].directo),
+    austrey: haInv * COSTO_AUSTREY_INVIERNO,
+    renta: rAgri * (haInv / haAgri),
+  };
+
+  const haCria = suma(CAMPOS_GAN.filter((g) => g.uso === 'Cría'), (g) => g.ha);
+  const haRecria = suma(CAMPOS_GAN.filter((g) => g.uso === 'Recría' || g.uso === 'Vaquillonas'), (g) => g.ha);
+  const rGan = rentaGanadera();
+  const terneros = vientres() * GAN.destete;
+  const refugo = suma(RODEOS.filter((r) => r.cat === 'Vacas de invernada'), (r) => r.cab);
+
+  const cria = {
+    id:'cria', nombre:'Ganadería · Cría', tipo:'Ganadería', fuente:'supuesto', ha:haCria,
+    detalle:`${nf(vientres())} vientres, ${nf(GAN.destete * 100)}% de destete`,
+    ingresos: terneros * GAN.pesoDestete * GAN.precioTernero
+      + refugo * 436 * GAN.precioVaca,
+    directo: (vientres() + suma(RODEOS.filter((r) => r.cat === 'Toros'), (r) => r.cab)) * GAN.costoCria,
+    austrey: 0,
+    renta: rGan * (haCria / (haCria + haRecria)),
+  };
+  const recria = {
+    id:'recria', nombre:'Ganadería · Recría', tipo:'Ganadería', fuente:'supuesto', ha:haRecria,
+    detalle:`${nf(cabsRecria())} animales, ${nf(GAN.kgRecria)} kg ganados cada uno en el año`,
+    ingresos: cabsRecria() * GAN.kgRecria * PRECIO_KG_VIVO(),
+    directo: cabsRecria() * GAN.costoRecria,
+    austrey: 0,
+    renta: rGan * (haRecria / (haCria + haRecria)),
+  };
+  const kgAnio = kgFeedlotDia() * 365;
+  const feedlot = {
+    id:'feedlot', nombre:'Ganadería · Feedlot', tipo:'Ganadería', fuente:'supuesto',
+    ha: suma(CAMPOS_GAN.filter((g) => g.uso === 'Engorde'), (g) => g.ha),
+    detalle:`${nf(kgAnio / 1000)} t de carne por año`,
+    ingresos: kgAnio * PRECIO_KG_VIVO(),
+    directo: racionFeedlotDia() * 365 + kgAnio * GAN.otrosFeedlotPorKg,
+    austrey: 0,
+    renta: rentaFeedlot(),
+  };
+
+  return [soja, maiz, invierno, cria, recria, feedlot].map((n) => {
+    n.contribucion = n.ingresos - n.directo - n.austrey - n.renta;
+    return n;
+  });
+}
+
+const CRITERIOS = {
+  ha:      { t:'Por hectárea', ayuda:'Reparte la estructura según la superficie de cada negocio. Es lo más simple y lo que más castiga a la ganadería extensiva.', base:(n) => n.ha },
+  ingreso: { t:'Por facturación', ayuda:'Reparte según lo que factura cada negocio. Es lo que se usa cuando la estructura acompaña al volumen del negocio.', base:(n) => n.ingresos },
+  directo: { t:'Por costo directo', ayuda:'Reparte según la plata que cada negocio consume. Es lo que mejor refleja el trabajo de administrar cada uno.', base:(n) => n.directo + n.austrey },
+};
+
+function resultado() {
+  const ns = negocios();
+  const crit = CRITERIOS[S.asignacion] || CRITERIOS.ha;
+  const totalBase = suma(ns, crit.base) || 1;
+  const est = estructuraTotal();
+  const fin = costoFinanciero();
+  ns.forEach((n) => {
+    const parte = crit.base(n) / totalBase;
+    n.estructura = est * parte;
+    n.financiero = fin * parte;
+    n.resultado = n.contribucion - n.estructura - n.financiero;
+    n.porHa = n.ha >= 200 ? n.resultado / n.ha : null;
+  });
+  const t = (f) => suma(ns, f);
+  return {
+    negocios: ns,
+    total: {
+      ha: t((n) => n.ha), ingresos: t((n) => n.ingresos), directo: t((n) => n.directo),
+      austrey: t((n) => n.austrey), renta: t((n) => n.renta), contribucion: t((n) => n.contribucion),
+      estructura: est, financiero: fin, resultado: t((n) => n.resultado),
+    },
+  };
+}
+
+/* --------------------------- flujo de caja de la zafra ------------------- */
+// El ejercicio cierra el 30 de junio. Los doce meses van de julio a junio, y
+// cada renglón del resultado se reparte con el calendario real del campo.
+const MESES_ZAFRA = ['jul 26','ago','set','oct','nov','dic','ene 27','feb','mar','abr','may','jun'];
+const REPARTO = {
+  soja:     [0,0,0,0,0,0,0,0,0,.35,.55,.10],
+  maiz:     [0,0,0,0,0,0,0,0,.30,.45,0,.25],
+  invierno: [0,0,0,0,.30,.55,.15,0,0,0,0,0],
+  cria:     [0,0,0,0,0,0,0,0,.45,.40,.15,0],
+  recria:   [.08,.08,.08,.08,.08,.08,.09,.09,.09,.09,.08,.08],
+  feedlot:  [.083,.083,.083,.083,.083,.083,.084,.084,.084,.084,.083,.083],
+  insumosVerano:  [.10,.25,.30,.20,.15,0,0,0,0,0,0,0],
+  insumosDiferidos:[0,0,0,0,0,0,0,0,0,.30,.40,.30], // canje y cuenta corriente: se pagan con la cosecha
+  insumosInvierno:[0,0,0,0,0,0,0,0,0,.30,.40,.30],
+  ganaderiaDir:   [.083,.083,.083,.083,.083,.083,.084,.084,.084,.084,.083,.083],
+  creditoEntra:   [0,.15,.35,.30,.20,0,0,0,0,0,0,0],
+  creditoSale:    [0,0,0,0,0,0,0,0,0,0,.55,.45],
+  rentaCuotas:    [.20,0,0,0,.15,.20,.15,0,0,0,.15,.15],
+  estructuraMes:  [.083,.083,.083,.083,.083,.083,.084,.084,.084,.084,.083,.083],
+  intereses:      [0,0,.25,0,0,.25,0,0,.25,0,0,.25],
+};
+const repartir12 = (monto, v) => v.map((x) => monto * x);
+const sumaVectores = (vs) => vs.reduce((a, v) => a.map((x, i) => x + v[i]), new Array(12).fill(0));
+
+function flujoCaja() {
+  const r = resultado();
+  const n = (id) => r.negocios.find((x) => x.id === id);
+  const entradas = sumaVectores(['soja','maiz','invierno','cria','recria','feedlot']
+    .map((id) => repartir12(n(id).ingresos, REPARTO[id])));
+  const insumosAgri = n('soja').directo + n('maiz').directo + n('soja').austrey + n('maiz').austrey;
+  const insumosInv = n('invierno').directo + n('invierno').austrey;
+  const ganDir = n('cria').directo + n('recria').directo + n('feedlot').directo;
+  // Lo que se tomó en canje y en cuenta corriente de insumos no sale de la caja
+  // cuando se siembra: se paga con la cosecha. Es la mitad del truco financiero.
+  const diferido = Math.min(insumosAgri,
+    suma(LINEAS.filter((l) => l.implicita || l.tipo.includes('insumos')), (l) => l.usado));
+  const salidas = sumaVectores([
+    repartir12(insumosAgri - diferido, REPARTO.insumosVerano),
+    repartir12(diferido, REPARTO.insumosDiferidos),
+    repartir12(insumosInv, REPARTO.insumosInvierno),
+    repartir12(ganDir, REPARTO.ganaderiaDir),
+    repartir12(r.total.renta, REPARTO.rentaCuotas),
+    repartir12(r.total.estructura, REPARTO.estructuraMes),
+    repartir12(r.total.financiero, REPARTO.intereses),
+  ]);
+  const zafra = LINEAS.find((l) => l.tipo.includes('zafra')).usado;
+  const credito = repartir12(zafra, REPARTO.creditoEntra);
+  const devuelve = repartir12(zafra, REPARTO.creditoSale);
+  let acum = cajaUSD(), sinCredito = cajaUSD();
+  return MESES_ZAFRA.map((mes, i) => {
+    const neto = entradas[i] - salidas[i];
+    const financiero = credito[i] - devuelve[i];
+    acum += neto + financiero;
+    sinCredito += neto;
+    return { mes, entra: entradas[i], sale: salidas[i], neto, credito: financiero, acum, sinCredito };
+  });
+}
+
 /* ------------------------------- lluvias y clima ------------------------ */
 const LLUVIAS = [
   { mes:'Abr', dur:72, tac:88 }, { mes:'May', dur:96, tac:112 }, { mes:'Jun', dur:64, tac:78 },
@@ -936,7 +1196,7 @@ let ACTIVIDAD = [
    Estado y utilidades de interfaz
    ========================================================================== */
 const S = {
-  vista: 'panel',
+  vista: 'direccion',
   usuario: 'u3',
   mapaTemporada: 1,       // 0 = invierno 26, 1 = verano 26/27
   mapaRegion: 'todas',
@@ -947,6 +1207,8 @@ const S = {
   insumoDeposito: 'todos',
   granoZafra: '26/27',
   finMoneda: 'USD',
+  finTab: 'resultado',
+  asignacion: 'ha',
   margenSoja: { rinde: 2.4, precio: 420 },
   margenMaiz: { rinde: 7.5, precio: 210 },
   tour: 0,
@@ -1059,6 +1321,128 @@ function vacio(texto, botonTexto, alTocar) {
   const id = uid();
   setTimeout(() => { const b = document.getElementById(id); if (b) b.onclick = alTocar; }, 0);
   return `<div class="empty"><svg><use href="#i-vacio"/></svg><p>${texto}</p>${botonTexto ? `<button class="btn pri" id="${id}">${esc(botonTexto)}</button>` : ''}</div>`;
+}
+
+/* ==========================================================================
+   Gráficos, dibujados a mano en SVG
+   --------------------------------------------------------------------------
+   El signo nunca se confía sólo al color: va también por el lado del cero en el
+   que cae la barra, por la trama de las negativas y por el número escrito.
+   ========================================================================== */
+function barraRedondeada(x, y, w, h, arriba) {
+  const r = Math.min(4, w / 2, Math.abs(h));
+  if (h <= 0.4) return `M${x} ${y}h${w}`;
+  return arriba
+    ? `M${x} ${y + h}v${-(h - r)}a${r} ${r} 0 0 1 ${r} ${-r}h${w - r * 2}a${r} ${r} 0 0 1 ${r} ${r}v${h - r}z`
+    : `M${x} ${y}v${h - r}a${r} ${r} 0 0 0 ${r} ${r}h${w - r * 2}a${r} ${r} 0 0 0 ${r} ${-r}v${-(h - r)}z`;
+}
+
+const TRAMA_NEG = `<pattern id="tramaNeg" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="var(--neg)"/><line x1="0" y1="0" x2="0" y2="6" stroke="#FFF" stroke-width="1.6" opacity=".55"/></pattern>`;
+
+function graficoFlujo(datos, id) {
+  const W = 760, H = 268, ml = 62, mr = 14, mt = 16, mb = 42;
+  const iw = W - ml - mr, ih = H - mt - mb;
+  const vals = datos.flatMap((d) => [d.neto, d.acum, 0]);
+  const max = Math.max.apply(null, vals), min = Math.min.apply(null, vals);
+  const pad = (max - min) * 0.1 || 1;
+  const hi = max + pad, lo = min - pad;
+  const y = (v) => mt + ih - ((v - lo) / (hi - lo)) * ih;
+  const bw = Math.min(30, (iw / datos.length) - 8);
+  const cx = (i) => ml + (iw / datos.length) * (i + 0.5);
+  const y0 = y(0);
+
+  const ticks = [];
+  const paso = Math.pow(10, Math.floor(Math.log10(Math.max(Math.abs(hi), Math.abs(lo))))) / 2;
+  for (let v = Math.ceil(lo / paso) * paso; v <= hi; v += paso) ticks.push(v);
+
+  const barras = datos.map((dt, i) => {
+    const arriba = dt.neto >= 0;
+    const alto = Math.abs(y(dt.neto) - y0);
+    const yy = arriba ? y(dt.neto) : y0;
+    return `<path d="${barraRedondeada(cx(i) - bw / 2, yy, bw, alto, arriba)}" fill="${arriba ? 'var(--pos)' : 'url(#tramaNeg)'}"/>`;
+  }).join('');
+
+  const linea = datos.map((dt, i) => `${cx(i).toFixed(1)},${y(dt.acum).toFixed(1)}`).join(' ');
+  const puntos = datos.map((dt, i) => `<circle cx="${cx(i).toFixed(1)}" cy="${y(dt.acum).toFixed(1)}" r="4.2" fill="var(--panel)" stroke="var(--gold)" stroke-width="2.4"/>`).join('');
+
+  const peor = datos.reduce((a, b) => (b.acum < a.acum ? b : a));
+  const iPeor = datos.indexOf(peor);
+
+  const hits = datos.map((dt, i) => `<rect class="hit" x="${(ml + (iw / datos.length) * i).toFixed(1)}" y="${mt}" width="${(iw / datos.length).toFixed(1)}" height="${ih}" fill="transparent"
+     data-mes="${esc(dt.mes)}" data-entra="${Math.round(dt.entra)}" data-sale="${Math.round(dt.sale)}" data-neto="${Math.round(dt.neto)}" data-acum="${Math.round(dt.acum)}"></rect>`).join('');
+
+  return `<div class="chart" id="${id}">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Flujo de caja mes a mes de la zafra 26/27" style="width:100%;height:auto">
+      <defs>${TRAMA_NEG}</defs>
+      ${ticks.map((v) => `<line x1="${ml}" y1="${y(v).toFixed(1)}" x2="${W - mr}" y2="${y(v).toFixed(1)}" stroke="var(--eje)" stroke-width="1"/>
+        <text x="${ml - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end" font-size="10.5" fill="var(--ink-3)" font-weight="700">${v === 0 ? '0' : nf(v / 1000000, 1) + ' M'}</text>`).join('')}
+      <line x1="${ml}" y1="${y0.toFixed(1)}" x2="${W - mr}" y2="${y0.toFixed(1)}" stroke="var(--ink-3)" stroke-width="1.4"/>
+      <rect x="${(cx(iPeor) - bw / 2 - 5).toFixed(1)}" y="${mt}" width="${bw + 10}" height="${ih}" fill="var(--warn-soft)" opacity=".7"/>
+      ${barras}
+      <polyline points="${linea}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      ${puntos}
+      ${datos.map((dt, i) => `<text x="${cx(i).toFixed(1)}" y="${H - 24}" text-anchor="middle" font-size="10.5" fill="var(--ink-3)" font-weight="700">${esc(dt.mes)}</text>`).join('')}
+      <text x="${cx(iPeor).toFixed(1)}" y="${H - 9}" text-anchor="middle" font-size="10.5" fill="#8A5E07" font-weight="800">el piso</text>
+      ${hits}
+    </svg>
+    <div class="tip" hidden></div>
+  </div>`;
+}
+
+function graficoCascada(pasos, id) {
+  const W = 760, H = 250, ml = 12, mr = 12, mt = 26, mb = 54;
+  const iw = W - ml - mr, ih = H - mt - mb;
+  let acum = 0;
+  const trazos = pasos.map((p) => {
+    const desde = p.total ? 0 : acum;
+    const hasta = p.total ? p.v : acum + p.v;
+    if (!p.total) acum += p.v;
+    return { ...p, desde, hasta };
+  });
+  const todos = trazos.flatMap((t) => [t.desde, t.hasta, 0]);
+  const hi = Math.max.apply(null, todos) * 1.06, lo = Math.min.apply(null, todos, 0);
+  const y = (v) => mt + ih - ((v - lo) / (hi - lo)) * ih;
+  const bw = Math.min(64, (iw / trazos.length) - 12);
+  const cx = (i) => ml + (iw / trazos.length) * (i + 0.5);
+
+  return `<div class="chart" id="${id}">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="De la facturación al resultado de la zafra" style="width:100%;height:auto">
+      <defs>${TRAMA_NEG}</defs>
+      <line x1="${ml}" y1="${y(0).toFixed(1)}" x2="${W - mr}" y2="${y(0).toFixed(1)}" stroke="var(--ink-3)" stroke-width="1.4"/>
+      ${trazos.map((t, i) => {
+        const y1 = y(Math.max(t.desde, t.hasta)), y2 = y(Math.min(t.desde, t.hasta));
+        const alto = Math.max(2, y2 - y1);
+        const relleno = t.total ? (t.hasta >= 0 ? 'var(--pos)' : 'url(#tramaNeg)') : (t.v >= 0 ? 'var(--brand-2)' : 'url(#tramaNeg)');
+        return `<path d="${barraRedondeada(cx(i) - bw / 2, y1, bw, alto, true)}" fill="${relleno}"/>
+          ${i < trazos.length - 1 && !trazos[i + 1].total ? `<line x1="${(cx(i) + bw / 2).toFixed(1)}" y1="${y(t.hasta).toFixed(1)}" x2="${(cx(i + 1) - bw / 2).toFixed(1)}" y2="${y(t.hasta).toFixed(1)}" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="3 3"/>` : ''}
+          <text x="${cx(i).toFixed(1)}" y="${(y1 - 7).toFixed(1)}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)">${t.v >= 0 ? '' : 'menos '}${nf(Math.abs(t.v) / 1000000, 2)} M</text>
+          <text x="${cx(i).toFixed(1)}" y="${H - 32}" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-2)">${esc(t.n.split(' ')[0])}</text>
+          <text x="${cx(i).toFixed(1)}" y="${H - 20}" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-3)">${esc(t.n.split(' ').slice(1).join(' '))}</text>`;
+      }).join('')}
+    </svg>
+  </div>`;
+}
+
+function armarTips(raiz) {
+  $$('.chart', raiz || document).forEach((ch) => {
+    const tip = $('.tip', ch);
+    if (!tip) return;
+    $$('.hit', ch).forEach((h) => {
+      h.addEventListener('mouseenter', () => {
+        const dd = h.dataset;
+        tip.innerHTML = `<b>${esc(dd.mes)}</b>
+          <span><i style="background:var(--pos)"></i>Entra ${usd(+dd.entra)}</span>
+          <span><i style="background:var(--neg)"></i>Sale ${usd(+dd.sale)}</span>
+          <span><i style="background:var(--ink-3)"></i>Del mes ${+dd.neto < 0 ? 'menos ' : ''}${usd(Math.abs(+dd.neto))}</span>
+          <span><i style="background:var(--gold)"></i>Caja ${+dd.acum < 0 ? 'menos ' : ''}${usd(Math.abs(+dd.acum))}</span>`;
+        tip.hidden = false;
+        const r = h.getBoundingClientRect(), c = ch.getBoundingClientRect();
+        tip.style.left = Math.max(4, Math.min(c.width - 198, r.left - c.left + r.width / 2 - 96)) + 'px';
+      });
+      h.addEventListener('mouseleave', () => { tip.hidden = true; });
+    });
+  });
 }
 
 /* ==========================================================================
@@ -1249,6 +1633,148 @@ function alertas() {
    ========================================================================== */
 const VISTAS = {};
 
+function simular(cambiar) {
+  const snapS = Object.assign({}, S.margenSoja), snapM = Object.assign({}, S.margenMaiz);
+  const snapT = LINEAS.map((l) => l.tasa);
+  const snapE = ESTRUCTURA.map((e) => e[1]);
+  cambiar();
+  const r = resultado().total.resultado;
+  S.margenSoja = snapS; S.margenMaiz = snapM;
+  LINEAS.forEach((l, i) => { l.tasa = snapT[i]; });
+  ESTRUCTURA.forEach((e, i) => { e[1] = snapE[i]; });
+  return r;
+}
+
+function escenarios() {
+  const base = resultado().total.resultado;
+  const filas = [
+    ['La soja baja 10%', 'USD ' + nf(S.margenSoja.precio * 0.9) + ' la tonelada', () => { S.margenSoja = Object.assign({}, S.margenSoja, { precio: S.margenSoja.precio * 0.9 }); }],
+    ['El rinde de soja cae 15%', nf(S.margenSoja.rinde * 0.85, 2) + ' t/ha, una seca como la del 23', () => { S.margenSoja = Object.assign({}, S.margenSoja, { rinde: S.margenSoja.rinde * 0.85 }); }],
+    ['El maíz baja 10%', 'USD ' + nf(S.margenMaiz.precio * 0.9) + ' la tonelada', () => { S.margenMaiz = Object.assign({}, S.margenMaiz, { precio: S.margenMaiz.precio * 0.9 }); }],
+    ['La tasa sube 2 puntos', 'sobre ' + usd(deudaFin()) + ' de deuda', () => { LINEAS.forEach((l) => { if (l.tasa) l.tasa += 2; }); }],
+    ['La estructura baja 10%', usd(estructuraTotal() * 0.1) + ' menos por año', () => { ESTRUCTURA.forEach((e) => { e[1] *= 0.9; }); }],
+    ['La soja sube 10%', 'USD ' + nf(S.margenSoja.precio * 1.1) + ' la tonelada', () => { S.margenSoja = Object.assign({}, S.margenSoja, { precio: S.margenSoja.precio * 1.1 }); }],
+  ];
+  return filas.map(([t, sub, fn]) => { const r = simular(fn); return { t, sub, r, delta: r - base }; })
+    .sort((a, b) => a.delta - b.delta);
+}
+
+VISTAS.direccion = {
+  titulo: 'Dirección', sub: () => `Zafra 26/27 · ${nf(HA_TOTAL + HA_GANADERIA)} ha · cierre 30 de junio`,
+  acciones: () => [
+    { t: 'Bajar el resumen', ic: 'i-bajar', fn: () => {
+      const r = resultado();
+      bajarCSV('austrey-resultado-26-27.csv',
+        [['Negocio','Hectáreas','Ingresos','Costo directo','Costo Austrey','Renta','Margen de contribución','Estructura','Costo financiero','Resultado','USD por hectárea']]
+        .concat(r.negocios.map((n) => [n.nombre, Math.round(n.ha), Math.round(n.ingresos), Math.round(n.directo), Math.round(n.austrey), Math.round(n.renta), Math.round(n.contribucion), Math.round(n.estructura), Math.round(n.financiero), Math.round(n.resultado), Math.round(n.porHa)]))
+        .concat([['TOTAL', Math.round(r.total.ha), Math.round(r.total.ingresos), Math.round(r.total.directo), Math.round(r.total.austrey), Math.round(r.total.renta), Math.round(r.total.contribucion), Math.round(r.total.estructura), Math.round(r.total.financiero), Math.round(r.total.resultado), '']]));
+    } },
+  ],
+  html() {
+    const r = resultado();
+    const t = r.total;
+    const fc = flujoCaja();
+    const piso = fc.reduce((a, b) => (b.acum < a.acum ? b : a));
+    const esc2 = escenarios();
+    const equilibrioSoja = (() => {
+      const n = r.negocios.find((x) => x.id === 'soja');
+      const otros = t.resultado - n.resultado;
+      const costoSoja = n.directo + n.austrey + n.renta + n.estructura + n.financiero;
+      return (costoSoja - otros) / (n.ha * S.margenSoja.rinde);
+    })();
+    const pos = (v) => v >= 0 ? 'var(--pos)' : 'var(--neg)';
+    const dinero = (v) => (v < 0 ? 'menos ' : '') + usd(Math.abs(v));
+
+    return `
+    <div class="hint"><svg class="ic"><use href="#i-info"/></svg>
+      <span>Una sola pantalla con la zafra entera. Los números de agricultura salen de la planilla de costos de Austrey; los de ganadería, estructura y financiación son supuestos nuestros y están marcados como tales en cada tabla.</span></div>
+
+    <div class="grid kpis">
+      <div class="kpi tap" data-ir="finanzas"><div class="lbl"><svg class="ic"><use href="#i-margen"/></svg>Resultado de la zafra</div>
+        <div class="val" style="font-size:24px;color:${pos(t.resultado)}">${dinero(t.resultado)}</div>
+        <div class="foot">${usd(t.resultado / t.ha)} por hectárea</div></div>
+      <div class="kpi tap" data-ir="finanzas"><div class="lbl"><svg class="ic"><use href="#i-plata"/></svg>Facturación</div>
+        <div class="val" style="font-size:24px">${usd(t.ingresos)}</div>
+        <div class="foot">${nf((t.resultado / t.ingresos) * 100, 1)}% de margen sobre ventas</div></div>
+      <div class="kpi tap" data-ir="finanzas"><div class="lbl"><svg class="ic"><use href="#i-banco"/></svg>Deuda y lo que cuesta</div>
+        <div class="val" style="font-size:24px">${usd(deudaFin())}</div>
+        <div class="foot">${usd(costoFinanciero())} de intereses en el año</div></div>
+      <div class="kpi tap" data-ir="finanzas"><div class="lbl"><svg class="ic"><use href="#i-alerta"/></svg>El mes más ajustado</div>
+        <div class="val" style="font-size:24px;color:${pos(piso.acum)}">${esc(piso.mes)}</div>
+        <div class="foot">la caja toca ${dinero(piso.acum)}</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:15px">
+      <div class="card-h"><h3>De la facturación al resultado</h3><div class="sub">zafra 26/27, en dólares</div></div>
+      <div class="card-b">
+        <div class="leyenda"><span><i style="background:var(--brand-2)"></i>Entra</span>
+          <span><i style="background:var(--neg)"></i>Sale</span>
+          <span><i style="background:var(--pos)"></i>Resultado</span></div>
+        ${graficoCascada([
+          { n:'Facturación total', v: t.ingresos },
+          { n:'Insumos y ración', v: -t.directo },
+          { n:'Labores y maquinaria', v: -t.austrey },
+          { n:'Renta de los campos', v: -t.renta },
+          { n:'Estructura', v: -t.estructura },
+          { n:'Costo financiero', v: -t.financiero },
+          { n:'Resultado', v: t.resultado, total: true },
+        ], 'casc')}
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="card"><div class="card-h"><h3>Los seis negocios</h3>
+          <div class="sub">estructura repartida ${esc(CRITERIOS[S.asignacion].t.toLowerCase())}</div>
+          <div class="r"><button class="btn sm" data-ir="finanzas">Ver el detalle</button></div></div>
+        <div class="card-b pad"><div class="tw"><table>
+          <thead><tr><th>Negocio</th><th class="num">ha</th><th class="num">Facturación</th><th class="num">Resultado</th><th class="num">USD/ha</th><th></th></tr></thead>
+          <tbody>${r.negocios.map((n) => `<tr class="tap" data-neg="${n.id}">
+            <td class="str">${esc(n.nombre)}<div class="mini">${esc(n.detalle)} <span class="fuente ${n.fuente}">${n.fuente}</span></div></td>
+            <td class="num">${nf(n.ha)}</td>
+            <td class="num">${usd(n.ingresos)}</td>
+            <td class="num" style="color:${pos(n.resultado)};font-weight:700">${dinero(n.resultado)}</td>
+            <td class="num">${n.porHa != null ? usd(n.porHa) : '—'}</td>
+            <td style="width:74px"><span class="bar"><i class="${n.resultado >= 0 ? '' : 'b'}" style="width:${Math.min(100, Math.abs(n.resultado) / Math.max.apply(null, r.negocios.map((x) => Math.abs(x.resultado))) * 100)}%"></i></span></td>
+          </tr>`).join('')}</tbody>
+          <tfoot><tr><th>Total</th><th class="num">${nf(t.ha)}</th><th class="num">${usd(t.ingresos)}</th>
+            <th class="num" style="color:${pos(t.resultado)}">${dinero(t.resultado)}</th><th class="num">${usd(t.resultado / t.ha)}</th><th></th></tr></tfoot>
+        </table></div></div></div>
+
+      <div class="card"><div class="card-h"><h3>Lo que decide la zafra</h3><div class="sub">cuánto cambia el resultado</div></div>
+        <div class="card-b pad"><div class="tw"><table>
+          <thead><tr><th>Si pasa esto</th><th class="num">Resultado</th><th class="num">Diferencia</th></tr></thead>
+          <tbody>${esc2.map((e) => `<tr>
+            <td class="str">${esc(e.t)}<div class="mini">${esc(e.sub)}</div></td>
+            <td class="num" style="color:${pos(e.r)}">${dinero(e.r)}</td>
+            <td class="num" style="color:${pos(e.delta)};font-weight:700">${e.delta >= 0 ? '+' : ''}${dinero(e.delta).replace('menos ', 'menos ')}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>
+        <div class="hint" style="margin:13px 0 0"><svg class="ic"><use href="#i-balanza"/></svg>
+          <span>Con todo lo demás igual, la zafra empieza a dar pérdida con la soja por debajo de <b>${usd(equilibrioSoja)}</b> la tonelada.</span></div>
+        </div></div>
+    </div>
+
+    <div class="card" style="margin-top:15px">
+      <div class="card-h"><h3>Flujo de caja de la zafra</h3><div class="sub">julio 26 a junio 27 · pasá el mouse por cada mes</div>
+        <div class="r"><button class="btn sm" data-tab-fin="flujo">Abrir el detalle</button></div></div>
+      <div class="card-b">
+        <div class="leyenda"><span><i style="background:var(--pos)"></i>Mes con saldo a favor</span>
+          <span><i style="background:var(--neg)"></i>Mes con saldo en contra</span>
+          <span><i class="raya" style="background:var(--gold)"></i>Caja acumulada</span></div>
+        ${graficoFlujo(fc, 'fcDir')}
+        <div class="hint" style="margin:10px 0 0"><svg class="ic"><use href="#i-alerta"/></svg>
+          <span>El pozo es <b>${esc(piso.mes)}</b>: la siembra de verano ya se pagó y la cosecha todavía no entró. Eso es exactamente lo que tapa el crédito de zafra del BROU.</span></div>
+      </div>
+    </div>`;
+  },
+  luego() {
+    $$('[data-ir]').forEach((el) => { el.onclick = () => irA(el.dataset.ir); });
+    $$('[data-tab-fin]').forEach((el) => { el.onclick = () => { S.finTab = el.dataset.tabFin; irA('finanzas'); }; });
+    $$('[data-neg]').forEach((el) => { el.onclick = () => { S.finTab = 'resultado'; irA('finanzas'); }; });
+    armarTips();
+  },
+};
+
 VISTAS.panel = {
   titulo: 'Panel', sub: () => `Miércoles ${fecha(HOY)} · zafra 26/27`,
   acciones: () => [{ t: 'Cargar labor', ic: 'i-mas', cls: 'pri', fn: nuevaLabor }],
@@ -1259,15 +1785,15 @@ VISTAS.panel = {
     const prodSoja = produccionEstimada('Soja'), venSoja = vendido('Soja', '26/27');
     return `
     <div class="grid kpis">
-      <div class="kpi tap" data-ir="chacras"><div class="lbl"><svg class="ic"><use href="#i-chacra"/></svg>Superficie agrícola</div>
-        <div class="val">${nf(HA_TOTAL)} <small>ha</small></div><div class="foot">${CHACRAS.length} chacras en ${new Set(CHACRAS.map((c) => c.zona)).size} zonas</div>
-        ${sparkline([16800, 17900, 18400, 19200, 19800, HA_TOTAL])}</div>
+      <div class="kpi tap" data-ir="chacras"><div class="lbl"><svg class="ic"><use href="#i-chacra"/></svg>Superficie</div>
+        <div class="val">${nf(HA_TOTAL + HA_GANADERIA)} <small>ha</small></div><div class="foot">${nf(HA_TOTAL)} agrícolas y ${nf(HA_GANADERIA)} ganaderas</div>
+        ${sparkline([31200, 33800, 35100, 37400, 38900, HA_TOTAL + HA_GANADERIA])}</div>
       <div class="kpi tap" data-ir="labores"><div class="lbl"><svg class="ic"><use href="#i-siembra"/></svg>Siembra de verano</div>
         <div class="val">${nf(avance, 1)}<small>%</small></div><div class="foot">${nf(haSembrada())} de ${nf(haASembrar())} ha</div>
         ${sparkline([0, 0, 2, 9, 22, avance])}</div>
       <div class="kpi tap" data-ir="hacienda"><div class="lbl"><svg class="ic"><use href="#i-hacienda"/></svg>Hacienda</div>
         <div class="val">${nf(cabezas())}</div><div class="foot">${nf(suma(CORRALES, (c) => c.cab))} en el feedlot</div>
-        ${sparkline([4980, 5120, 5240, 5310, 5402, cabezas()])}</div>
+        ${sparkline([16400, 17100, 17900, 18600, 19400, cabezas()])}</div>
       <div class="kpi tap" data-ir="granos"><div class="lbl"><svg class="ic"><use href="#i-grano"/></svg>Soja 26/27 vendida</div>
         <div class="val">${nf((venSoja / prodSoja) * 100)}<small>%</small></div><div class="foot">${nf(venSoja)} de ${nf(prodSoja)} t estimadas</div>
         ${sparkline([0, 8, 14, 21, 28, (venSoja / prodSoja) * 100], 'var(--gold)')}</div>
@@ -1663,7 +2189,7 @@ VISTAS.hacienda = {
     const kgVivos = suma(RODEOS, (r) => r.cab * r.pesoProm) + suma(CORRALES, (c) => c.cab * c.pesoHoy);
     return `
     <div class="grid kpis">
-      <div class="kpi"><div class="lbl">Cabezas totales</div><div class="val">${nf(cabezas())}</div><div class="foot">${RODEOS.length} rodeos + feedlot</div>${sparkline([4980, 5120, 5240, 5310, 5402, cabezas()])}</div>
+      <div class="kpi"><div class="lbl">Cabezas totales</div><div class="val">${nf(cabezas())}</div><div class="foot">${RODEOS.length} rodeos + feedlot</div>${sparkline([16400, 17100, 17900, 18600, 19400, cabezas()])}</div>
       <div class="kpi"><div class="lbl">Preñez del rodeo</div><div class="val">${nf((pren / vientres) * 100, 1)}<small>%</small></div><div class="foot">${nf(pren)} preñadas de ${nf(vientres)} vientres</div></div>
       <div class="kpi"><div class="lbl">Kilos vivos</div><div class="val">${nf(kgVivos / 1000)} <small>t</small></div><div class="foot">${nf(kgVivos / HA_GANADERIA)} kg por hectárea</div></div>
       <div class="kpi"><div class="lbl">Carga promedio</div><div class="val">${nf(cabezas() / HA_GANADERIA, 2)} <small>UG/ha</small></div><div class="foot">sobre ${nf(HA_GANADERIA)} ha</div></div>
@@ -1816,37 +2342,240 @@ VISTAS.granos = {
   },
 };
 
+const TABS_FIN = [
+  { k:'resultado', t:'Resultado' },
+  { k:'flujo', t:'Flujo de caja' },
+  { k:'deuda', t:'Deuda y financiación' },
+  { k:'costos', t:'Estructura y reparto' },
+  { k:'movimientos', t:'Movimientos' },
+];
+
 VISTAS.finanzas = {
-  titulo: 'Finanzas', sub: () => `caja, vencimientos y financiación · dólar ${nf(COTIZACION, 2)}`,
+  titulo: 'Finanzas', sub: () => `zafra 26/27 · ejercicio al 30 de junio · dólar ${nf(COTIZACION, 2)}`,
   acciones: () => [
     { t: 'Registrar movimiento', ic: 'i-mas', cls: 'pri', fn: nuevoMovimiento },
-    { t: 'Exportar', ic: 'i-bajar', fn: () => bajarCSV('austrey-movimientos.csv', [['Fecha','Concepto','Tipo','Categoría','Moneda','Monto','Estado','Vencimiento']].concat(MOVIMIENTOS.map((m) => [fecha(d(m.fecha)), m.concepto, m.tipo, m.cat, m.moneda, m.monto, m.estado, fecha(d(m.venc))]))) },
+    { t: 'Exportar', ic: 'i-bajar', fn: () => {
+      if (S.finTab === 'flujo') {
+        bajarCSV('austrey-flujo-caja-26-27.csv', [['Mes','Entra USD','Sale USD','Neto del mes','Caja acumulada']]
+          .concat(flujoCaja().map((f) => [f.mes, Math.round(f.entra), Math.round(f.sale), Math.round(f.neto), Math.round(f.acum)])));
+      } else if (S.finTab === 'deuda') {
+        bajarCSV('austrey-deuda.csv', [['Acreedor','Tipo','Límite USD','Usado USD','Tasa','Tasa implícita','Interés del año','Vence','Garantía']]
+          .concat(LINEAS.map((l) => [l.banco, l.tipo, l.limite, l.usado, l.tasa, l.implicita || 0, Math.round(interesLinea(l) + interesImplicito(l)), fecha(d(l.venc)), l.garantia])));
+      } else if (S.finTab === 'resultado' || S.finTab === 'costos') {
+        const r = resultado();
+        bajarCSV('austrey-resultado-26-27.csv', [['Negocio','Hectáreas','Ingresos','Costo directo','Costo Austrey','Renta','Margen de contribución','Estructura','Costo financiero','Resultado']]
+          .concat(r.negocios.map((n) => [n.nombre, Math.round(n.ha), Math.round(n.ingresos), Math.round(n.directo), Math.round(n.austrey), Math.round(n.renta), Math.round(n.contribucion), Math.round(n.estructura), Math.round(n.financiero), Math.round(n.resultado)])));
+      } else {
+        bajarCSV('austrey-movimientos.csv', [['Fecha','Concepto','Tipo','Categoría','Moneda','Monto','Estado','Vencimiento']]
+          .concat(MOVIMIENTOS.map((m) => [fecha(d(m.fecha)), m.concepto, m.tipo, m.cat, m.moneda, m.monto, m.estado, fecha(d(m.venc))])));
+      }
+    } },
   ],
   html() {
+    const tabs = `<div class="pill-row">${TABS_FIN.map((x) => `<button class="chip ${S.finTab === x.k ? 'on' : ''}" data-tab="${x.k}">${esc(x.t)}</button>`).join('')}</div>`;
+    return tabs + (this['t_' + S.finTab] || this.t_resultado).call(this);
+  },
+
+  /* ------------------------------ resultado ------------------------------ */
+  t_resultado() {
+    const r = resultado(), t = r.total;
+    const pos = (v) => v >= 0 ? 'var(--pos)' : 'var(--neg)';
+    const dinero = (v) => (v < 0 ? 'menos ' : '') + usd(Math.abs(v));
+    const haCultivo = haPorCultivoVerano('Soja') + haPorCultivoVerano('Maiz');
+    const rentaPlanilla = haCultivo * COSTOS.Soja.renta;
+    const linea = (et, f, fuerte) => `<tr${fuerte ? ' style="background:var(--panel-2)"' : ''}>
+      <td class="${fuerte ? 'str' : ''}">${et}</td>
+      ${r.negocios.map((n) => `<td class="num"${fuerte ? ` style="font-weight:700;color:${pos(f(n))}"` : ''}>${dinero(f(n))}</td>`).join('')}
+      <td class="num" style="font-weight:800;color:${fuerte ? pos(suma(r.negocios, f)) : 'inherit'}">${dinero(suma(r.negocios, f))}</td></tr>`;
+    return `
+    <div class="grid kpis">
+      <div class="kpi"><div class="lbl">Facturación</div><div class="val" style="font-size:22px">${usd(t.ingresos)}</div><div class="foot">${usd(t.ingresos / t.ha)} por hectárea</div></div>
+      <div class="kpi"><div class="lbl">Margen de contribución</div><div class="val" style="font-size:22px;color:${pos(t.contribucion)}">${dinero(t.contribucion)}</div><div class="foot">antes de estructura y financiación</div></div>
+      <div class="kpi"><div class="lbl">Estructura y financiero</div><div class="val" style="font-size:22px">${usd(t.estructura + t.financiero)}</div><div class="foot">${nf(((t.estructura + t.financiero) / t.ingresos) * 100, 1)}% de la facturación</div></div>
+      <div class="kpi"><div class="lbl">Resultado</div><div class="val" style="font-size:22px;color:${pos(t.resultado)}">${dinero(t.resultado)}</div><div class="foot">${nf((t.resultado / t.ingresos) * 100, 1)}% sobre ventas</div></div>
+    </div>
+    <div class="card"><div class="card-h"><h3>Resultado por negocio</h3>
+        <div class="sub">estructura y financiación repartidas ${esc(CRITERIOS[S.asignacion].t.toLowerCase())}</div>
+        <div class="r"><div class="seg" id="segCrit">${Object.keys(CRITERIOS).map((k) => `<button class="${S.asignacion === k ? 'on' : ''}" data-crit="${k}">${esc(CRITERIOS[k].t)}</button>`).join('')}</div></div></div>
+      <div class="card-b pad"><div class="tw"><table>
+        <thead><tr><th></th>${r.negocios.map((n) => `<th class="num">${esc(n.nombre.replace('Agrícola · ', '').replace('Ganadería · ', ''))}<div class="mini" style="font-weight:600">${esc(n.tipo)}</div></th>`).join('')}<th class="num">Total</th></tr></thead>
+        <tbody>
+          <tr><td>Hectáreas</td>${r.negocios.map((n) => `<td class="num">${nf(n.ha)}</td>`).join('')}<td class="num"><b>${nf(t.ha)}</b></td></tr>
+          ${linea('Ingresos', (n) => n.ingresos, true)}
+          ${linea('Insumos y ración', (n) => -n.directo)}
+          ${linea('Labores, maquinaria y campo', (n) => -n.austrey)}
+          ${linea('Renta de los campos', (n) => -n.renta)}
+          ${linea('Margen de contribución', (n) => n.contribucion, true)}
+          ${linea('Estructura', (n) => -n.estructura)}
+          ${linea('Costo financiero', (n) => -n.financiero)}
+          ${linea('Resultado', (n) => n.resultado, true)}
+          <tr><td>Resultado por hectárea</td>${r.negocios.map((n) => `<td class="num">${n.porHa != null ? usd(n.porHa) : '—'}</td>`).join('')}<td class="num"><b>${usd(t.resultado / t.ha)}</b></td></tr>
+          <tr><td>De dónde salen los números</td>${r.negocios.map((n) => `<td class="num"><span class="fuente ${n.fuente}">${n.fuente}</span></td>`).join('')}<td></td></tr>
+        </tbody>
+      </table></div>
+      <div class="hint" style="margin:14px 0 0"><svg class="ic"><use href="#i-info"/></svg>
+        <span><b>Por qué la renta no da igual que en la planilla.</b> La planilla carga USD ${nf(COSTOS.Soja.renta)} por hectárea a cada cultivo: sobre ${nf(haCultivo)} ha de verano eso serían ${usd(rentaPlanilla)}. Pero el arrendamiento se paga una vez por hectárea y por año, y una chacra con trigo y soja de segunda lo paga una sola vez. Acá la renta sale de los ${ARRIENDOS.length} contratos de verdad: ${usd(t.renta)}. La diferencia, ${usd(Math.abs(rentaPlanilla - t.renta))}, es margen que la planilla no ve.</span></div>
+      </div></div>`;
+  },
+
+  /* ------------------------------- flujo --------------------------------- */
+  t_flujo() {
+    const fc = flujoCaja();
+    const piso = fc.reduce((a, b) => (b.acum < a.acum ? b : a));
+    const linea = LINEAS.find((l) => l.tipo.includes('zafra'));
+    const dinero = (v) => (v < 0 ? 'menos ' : '') + usd(Math.abs(v));
+    const pos = (v) => v >= 0 ? 'var(--pos)' : 'var(--neg)';
+    return `
+    <div class="grid kpis">
+      <div class="kpi"><div class="lbl">Caja hoy</div><div class="val" style="font-size:22px">${usd(cajaUSD())}</div><div class="foot">${CUENTAS.length} cuentas</div></div>
+      <div class="kpi"><div class="lbl">El piso</div><div class="val" style="font-size:22px;color:${pos(piso.acum)}">${dinero(piso.acum)}</div><div class="foot">en ${esc(piso.mes)}</div></div>
+      <div class="kpi"><div class="lbl">Caja al cierre</div><div class="val" style="font-size:22px;color:${pos(fc[11].acum)}">${dinero(fc[11].acum)}</div><div class="foot">30 de junio de 2027</div></div>
+      <div class="kpi"><div class="lbl">Sin el crédito de zafra</div><div class="val" style="font-size:22px;color:var(--neg)">${dinero(fc.reduce((a, b) => (b.sinCredito < a.sinCredito ? b : a)).sinCredito)}</div><div class="foot">ese es el pozo que tapa la línea del BROU</div></div>
+    </div>
+    <div class="card" style="margin-bottom:15px"><div class="card-h"><h3>Mes a mes</h3><div class="sub">lo que entra, lo que sale y cómo queda la caja</div></div>
+      <div class="card-b">
+        <div class="leyenda"><span><i style="background:var(--pos)"></i>Mes con saldo a favor</span>
+          <span><i style="background:var(--neg)"></i>Mes con saldo en contra</span>
+          <span><i class="raya" style="background:var(--gold)"></i>Caja acumulada</span></div>
+        ${graficoFlujo(fc, 'fcFin')}</div></div>
+    <div class="split">
+      <div class="card"><div class="card-h"><h3>El detalle</h3></div><div class="card-b pad"><div class="tw"><table>
+        <thead><tr><th>Mes</th><th class="num">Entra</th><th class="num">Sale</th><th class="num">Del mes</th><th class="num">Crédito</th><th class="num">Caja</th></tr></thead>
+        <tbody>${fc.map((f) => `<tr${f === piso ? ' style="background:var(--warn-soft)"' : ''}>
+          <td class="str">${esc(f.mes)}</td><td class="num">${usd(f.entra)}</td><td class="num">${usd(f.sale)}</td>
+          <td class="num" style="color:${pos(f.neto)}">${dinero(f.neto)}</td>
+          <td class="num" style="color:${f.credito >= 0 ? 'var(--ink-3)' : 'var(--ink-2)'}">${f.credito ? dinero(f.credito) : '—'}</td>
+          <td class="num" style="font-weight:700;color:${pos(f.acum)}">${dinero(f.acum)}</td></tr>`).join('')}</tbody>
+      </table></div></div></div>
+      <div class="stack">
+        <div class="card"><div class="card-h"><h3>Cómo se tapa el pozo</h3></div><div class="card-b">
+          <dl class="dl">
+            <dt>Caja al arranque</dt><dd>${usd(cajaUSD())}</dd>
+            <dt>Peor momento</dt><dd style="color:${pos(piso.acum)}">${dinero(piso.acum)} en ${esc(piso.mes)}</dd>
+            <dt>Crédito de zafra usado</dt><dd>${usd(linea.usado)}</dd>
+            <dt>Disponible sin pedir nada</dt><dd>${usd(linea.limite - linea.usado)}</dd>
+            <dt>Colchón sobre el piso</dt><dd style="color:${pos(linea.limite - linea.usado + piso.acum)}">${dinero(linea.limite - linea.usado + piso.acum)}</dd>
+          </dl>
+          <div class="hint" style="margin:13px 0 0"><svg class="ic"><use href="#i-banco"/></svg>
+            <span>La garantía del crédito es la prenda de la cosecha de soja 26/27. Si el rinde cae, cae la garantía justo cuando más falta hace la línea.</span></div>
+        </div></div>
+        <div class="card"><div class="card-h"><h3>Cuentas</h3></div><div class="card-b pad"><div class="tw"><table>
+          <tbody>${CUENTAS.map((c) => `<tr><td class="str">${esc(c.nombre)}<div class="mini">${esc(c.banco)}</div></td>
+            <td class="num"><b>${c.moneda === 'USD' ? usd(c.saldo) : uyu(c.saldo)}</b>${c.moneda === 'UYU' ? `<div class="mini">${usd(c.saldo / COTIZACION)}</div>` : ''}</td></tr>`).join('')}</tbody></table></div></div></div>
+      </div>
+    </div>`;
+  },
+
+  /* -------------------------------- deuda -------------------------------- */
+  t_deuda() {
+    const total = deudaFin(), costo = costoFinanciero();
+    const canje = LINEAS.find((l) => l.implicita);
+    return `
+    <div class="grid kpis">
+      <div class="kpi"><div class="lbl">Deuda total</div><div class="val" style="font-size:22px">${usd(total)}</div><div class="foot">${nf((total / suma(LINEAS, (l) => l.limite)) * 100)}% de las líneas</div></div>
+      <div class="kpi"><div class="lbl">Costo financiero del año</div><div class="val" style="font-size:22px">${usd(costo)}</div><div class="foot">tasa promedio ${nf((costo / total) * 100, 2)}%</div></div>
+      <div class="kpi"><div class="lbl">Disponible</div><div class="val" style="font-size:22px">${usd(suma(LINEAS, (l) => l.limite - l.usado))}</div><div class="foot">sin pedir línea nueva</div></div>
+      <div class="kpi"><div class="lbl">Deuda por hectárea</div><div class="val" style="font-size:22px">${usd(total / (HA_TOTAL + HA_GANADERIA))}</div><div class="foot">sobre ${nf(HA_TOTAL + HA_GANADERIA)} ha</div></div>
+    </div>
+    <div class="card" style="margin-bottom:15px"><div class="card-h"><h3>Línea por línea</h3><div class="sub">qué se debe, a qué tasa y contra qué garantía</div></div>
+      <div class="card-b pad"><div class="tw"><table>
+        <thead><tr><th>Acreedor</th><th class="num">Límite</th><th class="num">Usado</th><th></th><th class="num">Tasa</th><th class="num">Interés del año</th><th>Vence</th><th>Garantía</th></tr></thead>
+        <tbody>${LINEAS.map((l) => { const pct = (l.usado / l.limite) * 100; const int = interesLinea(l) + interesImplicito(l);
+          return `<tr><td class="str">${esc(l.banco)}<div class="mini">${esc(l.tipo)}</div></td>
+            <td class="num">${usd(l.limite)}</td><td class="num">${usd(l.usado)}</td>
+            <td style="width:80px"><span class="bar"><i class="${pct > 85 ? 'b' : pct > 65 ? 'w' : ''}" style="width:${pct}%"></i></span>
+              <div class="mini" style="text-align:right">${nf(pct)}%</div></td>
+            <td class="num">${l.tasa ? nf(l.tasa, 1) + '%' : '<span class="tag t-gold">sin interés</span>'}${l.implicita ? `<div class="mini">${nf(l.implicita, 1)}% implícito</div>` : ''}</td>
+            <td class="num">${usd(int)}</td>
+            <td><span class="tag ${l.venc < 60 ? 't-warn' : 't-mute'}">${haceTexto(l.venc)}</span><div class="mini">${fecha(d(l.venc))}</div></td>
+            <td><span class="mini">${esc(l.garantia)}</span></td></tr>`; }).join('')}</tbody>
+        <tfoot><tr><th>Total</th><th class="num">${usd(suma(LINEAS, (l) => l.limite))}</th><th class="num">${usd(total)}</th><th></th><th></th><th class="num">${usd(costo)}</th><th colspan="2"></th></tr></tfoot>
+      </table></div></div></div>
+    <div class="split">
+      <div class="card"><div class="card-h"><h3>Qué acreedor pesa más</h3><div class="sub">por interés del año</div></div><div class="card-b">
+        ${barras(LINEAS.map((l) => ({ n: l.banco + ' · ' + l.tipo.split(' ')[0], v: Math.round(interesLinea(l) + interesImplicito(l)), txt: usd(interesLinea(l) + interesImplicito(l)) })).sort((a, b) => b.v - a.v), { anchoEtiqueta: 150, anchoValor: 96 })}</div></div>
+      <div class="card"><div class="card-h"><h3>El canje no es gratis</h3><div class="sub">${esc(canje.banco)}</div></div><div class="card-b">
+        <dl class="dl">
+          <dt>Insumos tomados en canje</dt><dd>${usd(canje.usado)}</dd>
+          <dt>Tasa nominal</dt><dd>0%</dd>
+          <dt>Descuento sobre la pizarra</dt><dd>${nf(canje.implicita, 1)}%</dd>
+          <dt>Lo que cuesta de verdad</dt><dd style="color:var(--neg)"><b>${usd(interesImplicito(canje))}</b></dd>
+          <dt>Soja comprometida</dt><dd>${nf(canje.usado / S.margenSoja.precio)} t</dd>
+        </dl>
+        <div class="hint" style="margin:13px 0 0"><svg class="ic"><use href="#i-grano"/></svg>
+          <span>El canje se paga entregando grano por debajo del precio de mercado. En la contabilidad aparece como costo de insumo, pero es financiación: acá se separa para poder compararla con la tasa del banco.</span></div>
+      </div></div>
+    </div>`;
+  },
+
+  /* ------------------------------- costos -------------------------------- */
+  t_costos() {
+    const r = resultado();
+    const est = estructuraTotal(), fin = costoFinanciero();
+    const crit = CRITERIOS[S.asignacion];
+    return `
+    ${(() => {
+      const porCrit = {};
+      Object.keys(CRITERIOS).forEach((k) => {
+        const guardo = S.asignacion; S.asignacion = k;
+        porCrit[k] = resultado().negocios.reduce((o, n) => { o[n.id] = n.resultado; return o; }, {});
+        S.asignacion = guardo;
+      });
+      const ids = Object.keys(porCrit.ha);
+      const peor = ids.map((id) => {
+        const vs = Object.keys(porCrit).map((k) => porCrit[k][id]);
+        return { id, min: Math.min.apply(null, vs), max: Math.max.apply(null, vs) };
+      }).sort((a, b) => (b.max - b.min) - (a.max - a.min))[0];
+      const nom = resultado().negocios.find((n) => n.id === peor.id).nombre;
+      return `<div class="hint"><svg class="ic"><use href="#i-balanza"/></svg>
+        <span>Acá está la parte que no tiene una respuesta única: la estructura y el costo financiero no son de ningún negocio en particular. Según cómo los repartas, <b>${esc(nom)}</b> cierra la zafra entre ${usd(peor.min)} y ${usd(peor.max)}. Es la misma empresa y el mismo año: cambia sólo el criterio.</span></div>`;
+    })()}
+    <div class="card" style="margin-bottom:15px">
+      <div class="card-h"><h3>Cómo se reparte lo que no es de nadie</h3><div class="sub">${usd(est + fin)} entre los seis negocios</div>
+        <div class="r"><div class="seg" id="segCrit2">${Object.keys(CRITERIOS).map((k) => `<button class="${S.asignacion === k ? 'on' : ''}" data-crit="${k}">${esc(CRITERIOS[k].t)}</button>`).join('')}</div></div></div>
+      <div class="card-b pad">
+        <p class="mini" style="margin:0 0 12px">${esc(crit.ayuda)}</p>
+        <div class="tw"><table>
+        <thead><tr><th>Negocio</th><th class="num">Base del reparto</th><th class="num">Le toca</th><th class="num">Margen antes</th><th class="num">Resultado después</th><th></th></tr></thead>
+        <tbody>${r.negocios.map((n) => `<tr>
+          <td class="str">${esc(n.nombre)}</td>
+          <td class="num">${S.asignacion === 'ha' ? nf(n.ha) + ' ha' : usd(crit.base(n))}</td>
+          <td class="num">${usd(n.estructura + n.financiero)}<div class="mini">${nf(((n.estructura + n.financiero) / (est + fin)) * 100, 1)}%</div></td>
+          <td class="num">${usd(n.contribucion)}</td>
+          <td class="num" style="font-weight:700;color:${n.resultado >= 0 ? 'var(--pos)' : 'var(--neg)'}">${n.resultado < 0 ? 'menos ' : ''}${usd(Math.abs(n.resultado))}</td>
+          <td><span class="tag ${n.resultado >= 0 ? 't-ok' : 't-bad'}">${n.resultado >= 0 ? 'gana' : 'pierde'}</span></td>
+        </tr>`).join('')}</tbody></table></div></div></div>
+    <div class="split">
+      <div class="card"><div class="card-h"><h3>La estructura, por dentro</h3><div class="sub">${usd(est)} por año · ${usd(est / (HA_TOTAL + HA_GANADERIA))} por hectárea</div></div>
+        <div class="card-b pad"><div class="tw"><table>
+        <thead><tr><th>Concepto</th><th class="num">USD por año</th><th class="num">Por hectárea</th></tr></thead>
+        <tbody>${ESTRUCTURA.map((e) => `<tr><td class="str">${esc(e[0])}</td><td class="num">${usd(e[1])}</td><td class="num">${usd(e[1] / (HA_TOTAL + HA_GANADERIA), 2)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><th>Total</th><th class="num">${usd(est)}</th><th class="num">${usd(est / (HA_TOTAL + HA_GANADERIA), 2)}</th></tr></tfoot>
+        </table></div>
+        <div class="mini" style="margin-top:10px"><span class="fuente supuesto">supuesto</span> Estos montos los estimamos nosotros: hay que sentarse con la contabilidad de Austrey y reemplazarlos.</div>
+        </div></div>
+      <div class="card"><div class="card-h"><h3>Resultado por negocio</h3><div class="sub">con el criterio elegido</div></div><div class="card-b">
+        ${barras(r.negocios.map((n) => ({ n: n.nombre.replace('Agrícola · ', '').replace('Ganadería · ', ''), v: Math.round(n.resultado), c: n.resultado >= 0 ? 'var(--pos)' : 'var(--neg)', txt: (n.resultado < 0 ? 'menos ' : '') + usd(Math.abs(n.resultado)) })), { anchoEtiqueta: 78, anchoValor: 118 })}</div></div>
+    </div>`;
+  },
+
+  /* ---------------------------- movimientos ------------------------------ */
+  t_movimientos() {
     const enUSD = (m) => m.moneda === 'USD' ? m.monto : m.monto / COTIZACION;
-    const ingresos = suma(MOVIMIENTOS.filter((m) => m.tipo === 'Ingreso'), enUSD);
-    const egresos = suma(MOVIMIENTOS.filter((m) => m.tipo === 'Egreso'), enUSD);
     const porCat = {};
     MOVIMIENTOS.filter((m) => m.tipo === 'Egreso').forEach((m) => { porCat[m.cat] = (porCat[m.cat] || 0) + enUSD(m); });
     const vencen = MOVIMIENTOS.filter((m) => m.estado === 'Pendiente').sort((a, b) => a.venc - b.venc);
-    const flujo = [];
-    for (let s = 0; s < 8; s++) {
-      const desde = s * 7, hasta = desde + 7;
-      const sal = suma(MOVIMIENTOS.filter((m) => m.estado === 'Pendiente' && m.tipo === 'Egreso' && m.venc >= desde && m.venc < hasta), enUSD);
-      const ent = suma(CONTRATOS.filter((k) => k.estado === 'Forward' && k.entrega >= desde && k.entrega < hasta), (k) => k.ton * k.precio);
-      flujo.push({ s: s + 1, sal, ent });
-    }
     return `
     <div class="grid kpis">
       <div class="kpi"><div class="lbl">Caja disponible</div><div class="val" style="font-size:21px">${usd(cajaUSD())}</div><div class="foot">${CUENTAS.length} cuentas</div></div>
-      <div class="kpi"><div class="lbl">Por pagar</div><div class="val" style="font-size:21px;color:var(--bad)">${usd(porPagar())}</div><div class="foot">${vencen.length} vencimientos abiertos</div></div>
-      <div class="kpi"><div class="lbl">Deuda financiera</div><div class="val" style="font-size:21px">${usd(deudaFin())}</div><div class="foot">${nf((deudaFin() / suma(LINEAS, (l) => l.limite)) * 100)}% de las líneas usadas</div></div>
-      <div class="kpi"><div class="lbl">Resultado del ejercicio</div><div class="val" style="font-size:21px;color:${ingresos - egresos >= 0 ? 'var(--brand)' : 'var(--bad)'}">${usd(ingresos - egresos)}</div><div class="foot">${usd(ingresos)} de ingresos</div></div>
+      <div class="kpi"><div class="lbl">Por pagar</div><div class="val" style="font-size:21px;color:var(--neg)">${usd(porPagar())}</div><div class="foot">${vencen.length} vencimientos abiertos</div></div>
+      <div class="kpi"><div class="lbl">Vencido</div><div class="val" style="font-size:21px">${vencen.filter((m) => m.venc < 0).length}</div><div class="foot">${usd(suma(vencen.filter((m) => m.venc < 0), enUSD))}</div></div>
+      <div class="kpi"><div class="lbl">Movimientos cargados</div><div class="val">${MOVIMIENTOS.length}</div><div class="foot">últimos dos meses</div></div>
     </div>
     <div class="split">
       <div class="stack">
         <div class="card"><div class="card-h"><h3>Vencimientos</h3><div class="sub">lo que hay que pagar y cuándo</div>
-          <div class="r"><button class="btn sm" id="pagarTodo">Marcar el más urgente como pagado</button></div></div>
+          <div class="r"><button class="btn sm" id="pagarTodo">Pagar el más urgente</button></div></div>
           <div class="card-b pad"><div class="tw"><table>
           <thead><tr><th>Concepto</th><th>Categoría</th><th class="num">Monto</th><th>Vence</th><th></th></tr></thead>
           <tbody>${vencen.map((m) => `<tr class="tap" data-mv="${m.id}">
@@ -1855,45 +2584,35 @@ VISTAS.finanzas = {
             <td class="num">${m.moneda === 'USD' ? usd(m.monto) : uyu(m.monto)}</td>
             <td><span class="tag ${m.venc < 0 ? 't-bad' : m.venc <= 10 ? 't-warn' : 't-mute'}">${haceTexto(m.venc)}</span><div class="mini">${fecha(d(m.venc))}</div></td>
             <td><button class="btn sm" data-pagar="${m.id}">Pagar</button></td></tr>`).join('')}</tbody></table></div></div></div>
-        <div class="card"><div class="card-h"><h3>Movimientos</h3><div class="sub">últimos ${MOVIMIENTOS.length}</div></div>
+        <div class="card"><div class="card-h"><h3>Movimientos</h3></div>
           <div class="card-b pad"><div class="tw"><table>
           <thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th class="num">Monto</th><th>Estado</th></tr></thead>
           <tbody>${MOVIMIENTOS.map((m) => `<tr class="tap" data-mv="${m.id}">
-            <td>${fechaCorta(d(m.fecha))}</td>
-            <td class="str">${esc(m.concepto)}</td><td><span class="mini">${esc(m.cat)}</span></td>
-            <td class="num" style="color:${m.tipo === 'Ingreso' ? 'var(--brand-deep)' : 'inherit'}">${m.tipo === 'Ingreso' ? '+ ' : ''}${m.moneda === 'USD' ? usd(m.monto) : uyu(m.monto)}</td>
+            <td>${fechaCorta(d(m.fecha))}</td><td class="str">${esc(m.concepto)}</td><td><span class="mini">${esc(m.cat)}</span></td>
+            <td class="num" style="color:${m.tipo === 'Ingreso' ? 'var(--pos)' : 'inherit'}">${m.tipo === 'Ingreso' ? '+ ' : ''}${m.moneda === 'USD' ? usd(m.monto) : uyu(m.monto)}</td>
             <td><span class="tag ${m.estado === 'Pendiente' ? 't-warn' : m.estado === 'Canjeado' ? 't-gold' : 't-ok'}">${esc(m.estado)}</span></td></tr>`).join('')}</tbody></table></div></div></div>
       </div>
       <div class="stack">
         <div class="card"><div class="card-h"><h3>Cuentas</h3></div><div class="card-b pad"><div class="tw"><table>
           <tbody>${CUENTAS.map((c) => `<tr><td class="str">${esc(c.nombre)}<div class="mini">${esc(c.banco)}</div></td>
             <td class="num"><b>${c.moneda === 'USD' ? usd(c.saldo) : uyu(c.saldo)}</b>${c.moneda === 'UYU' ? `<div class="mini">${usd(c.saldo / COTIZACION)}</div>` : ''}</td></tr>`).join('')}</tbody></table></div></div></div>
-        <div class="card"><div class="card-h"><h3>Financiación</h3><div class="sub">líneas y canjes</div></div><div class="card-b pad">
-          ${LINEAS.map((l) => { const p = (l.usado / l.limite) * 100;
-            return `<div style="padding:10px 0;border-bottom:1px solid var(--line-2)">
-              <div class="row" style="justify-content:space-between"><b style="font-size:13.4px">${esc(l.banco)}</b>
-                <span class="tag ${p > 85 ? 't-bad' : p > 65 ? 't-warn' : 't-ok'}">${nf(p)}%</span></div>
-              <div class="mini">${esc(l.tipo)} · ${l.tasa ? nf(l.tasa, 1) + '% anual' : 'sin interés'}</div>
-              <span class="bar" style="margin:6px 0 4px;display:block"><i class="${p > 85 ? 'b' : p > 65 ? 'w' : ''}" style="width:${p}%"></i></span>
-              <div class="row" style="justify-content:space-between"><span class="mini">${usd(l.usado)} de ${usd(l.limite)}</span><span class="mini">vence ${haceTexto(l.venc)}</span></div>
-              <div class="mini" style="margin-top:3px;color:var(--ink-3)">${esc(l.garantia)}</div></div>`; }).join('')}
-          <div class="row" style="justify-content:space-between;padding-top:10px"><b>Total usado</b><b>${usd(deudaFin())}</b></div></div></div>
-        <div class="card"><div class="card-h"><h3>Flujo de caja</h3><div class="sub">próximas 8 semanas</div></div><div class="card-b">
-          ${barras(flujo.map((f) => ({ n: 'Semana ' + f.s, v: f.ent - f.sal, c: (f.ent - f.sal) >= 0 ? 'var(--brand)' : 'var(--bad)', txt: usd(f.ent - f.sal) })), { anchoEtiqueta: 78, anchoValor: 96 })}
-          <div class="hint" style="margin:13px 0 0"><svg class="ic"><use href="#i-alerta"/></svg>
-            <span>Las semanas rojas son las que tienen pagos de insumos antes de que entre la cosecha de invierno. Ahí es donde se usa el crédito de zafra.</span></div></div></div>
-        <div class="card"><div class="card-h"><h3>Gasto por categoría</h3></div><div class="card-b">
+        <div class="card"><div class="card-h"><h3>Gasto por categoría</h3><div class="sub">de lo cargado</div></div><div class="card-b">
           ${barras(Object.keys(porCat).sort((a, b) => porCat[b] - porCat[a]).map((k) => ({ n: k, v: Math.round(porCat[k]), txt: usd(porCat[k]) })), { anchoEtiqueta: 104, anchoValor: 96 })}</div></div>
       </div>
     </div>`;
   },
+
   luego() {
+    $$('[data-tab]').forEach((b) => { b.onclick = () => { S.finTab = b.dataset.tab; render(); }; });
+    $$('[data-crit]').forEach((b) => { b.onclick = () => { S.asignacion = b.dataset.crit; render(); }; });
     $$('[data-mv]').forEach((t) => { t.onclick = (e) => { if (e.target.dataset.pagar) return; verMovimiento(t.dataset.mv); }; });
     $$('[data-pagar]').forEach((b) => { b.onclick = (e) => { e.stopPropagation(); pagar(b.dataset.pagar); }; });
-    const urg = MOVIMIENTOS.filter((m) => m.estado === 'Pendiente').sort((a, b) => a.venc - b.venc)[0];
-    $('#pagarTodo').onclick = () => urg && pagar(urg.id);
+    const bt = $('#pagarTodo');
+    if (bt) { const urg = MOVIMIENTOS.filter((m) => m.estado === 'Pendiente').sort((a, b) => a.venc - b.venc)[0]; bt.onclick = () => urg && pagar(urg.id); }
+    armarTips();
   },
 };
+
 function pagar(id) {
   const m = MOVIMIENTOS.find((x) => x.id === id);
   if (!m || m.estado !== 'Pendiente') return;
@@ -1908,7 +2627,7 @@ function pagar(id) {
 }
 
 VISTAS.margen = {
-  titulo: 'Costos y margen', sub: () => 'planilla de zafra 26/27 · dólares por hectárea',
+  titulo: 'Costos por cultivo', sub: () => 'la planilla de Austrey, zafra 26/27 · dólares por hectárea',
   acciones: () => [
     { t: 'Exportar planilla', ic: 'i-bajar', fn: () => {
       const filas = [['Cultivo','Insumo','Dosis/ha','Aplicaciones','Total/ha','Precio USD','USD/ha']];
@@ -2075,8 +2794,9 @@ VISTAS.config = {
         <dt>Actividad</dt><dd>Agrícola y ganadera</dd>
         <dt>Desde</dt><dd>Marzo de 2005</dd>
         <dt>Sede</dt><dd>Durazno, Uruguay</dd>
-        <dt>Superficie agrícola</dt><dd>${nf(HA_TOTAL)} ha</dd>
-        <dt>Superficie ganadera</dt><dd>${nf(HA_GANADERIA)} ha</dd>
+        <dt>Superficie total</dt><dd>${nf(HA_TOTAL + HA_GANADERIA)} ha</dd>
+        <dt>Agrícola</dt><dd>${nf(HA_TOTAL)} ha en ${CHACRAS.length} chacras</dd>
+        <dt>Ganadera</dt><dd>${nf(HA_GANADERIA)} ha en ${CAMPOS_GAN.length} campos</dd>
         <dt>Zafra en curso</dt><dd>26/27</dd>
         <dt>Moneda de gestión</dt><dd>Dólares, con caja en pesos</dd>
         <dt>Cotización</dt><dd>${nf(COTIZACION, 2)} $U por dólar</dd>
@@ -2593,6 +3313,8 @@ function nuevoMovimiento() {
    Navegación, buscador y arranque
    ========================================================================== */
 const MENU = [
+  { g: 'Dirección' },
+  { k: 'direccion', t: 'La zafra entera', ic: 'i-margen' },
   { g: 'Campo' },
   { k: 'panel', t: 'Panel', ic: 'i-panel' },
   { k: 'mapa', t: 'Mapa de chacras', ic: 'i-mapa' },
@@ -2606,7 +3328,7 @@ const MENU = [
   { g: 'Negocio' },
   { k: 'granos', t: 'Granos', ic: 'i-grano' },
   { k: 'finanzas', t: 'Finanzas', ic: 'i-plata', badge: () => MOVIMIENTOS.filter((m) => m.estado === 'Pendiente' && m.venc <= 10).length },
-  { k: 'margen', t: 'Costos y margen', ic: 'i-margen' },
+  { k: 'margen', t: 'Costos por cultivo', ic: 'i-balanza' },
   { k: 'arriendos', t: 'Arrendamientos', ic: 'i-contrato' },
   { g: 'Otros' },
   { k: 'equipo', t: 'Equipo', ic: 'i-equipo' },
@@ -2706,9 +3428,9 @@ function abrirK() {
 
 /* ------------------------------- recorrido ------------------------------ */
 const PASOS_TOUR = [
-  { t: 'Esto es Austrey adentro del sistema', p: `Las ${CHACRAS.length} chacras con sus hectáreas, la rotación de invierno 26 y verano 26/27, y la planilla de costos, tal cual la manejan hoy.` },
-  { t: 'El mapa piensa por chacra', p: 'Cada polígono es una chacra con su área real y el color del cultivo. Cambiá de temporada y el campo entero cambia.' },
-  { t: 'Todo lo que tocás mueve otra cosa', p: 'Arrastrá una labor a Terminada, cambiá el rinde en Costos y margen o pagá un vencimiento: el panel, la posición de venta y las alertas se recalculan solos.' },
+  { t: 'La zafra entera en una pantalla', p: 'Resultado, facturación, deuda y el mes en que la caja toca fondo. Abajo, los seis negocios separados: soja, maíz, invierno, cría, recría y feedlot.' },
+  { t: 'La pregunta difícil, contestada', p: 'En Finanzas, la estructura y el costo financiero no son de ningún negocio en particular. Cambiá el criterio de reparto y mirá cómo se da vuelta quién gana plata.' },
+  { t: 'El campo también está entero', p: `Las ${CHACRAS.length} chacras con sus hectáreas y su rotación, el plan de siembra, las labores, la hacienda y el feedlot.` },
 ];
 function pintarTour() {
   const p = PASOS_TOUR[S.tour];
@@ -2722,8 +3444,8 @@ function pintarTour() {
   $('#tSalir').onclick = () => { $('#tourRoot').innerHTML = ''; };
   $('#tSig').onclick = () => {
     S.tour++;
-    if (S.tour === 1) irA('mapa');
-    if (S.tour === 2) irA('labores');
+    if (S.tour === 1) { S.finTab = 'costos'; irA('finanzas'); }
+    if (S.tour === 2) irA('mapa');
     if (S.tour >= PASOS_TOUR.length) { $('#tourRoot').innerHTML = ''; toast('Si querés volver a verlo, apretá Ctrl+K y buscá <b>recorrido</b>.'); return; }
     pintarTour();
   };
