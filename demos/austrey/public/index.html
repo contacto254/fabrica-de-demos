@@ -1003,12 +1003,32 @@ function confirmar(titulo, texto, textoBoton, alConfirmar, peligro) {
     { luego: (s) => { $('#okConf', s).onclick = () => { cerrarModal(); alConfirmar(); }; } });
 }
 
-function bajarCSV(nombre, filas) {
+// Adentro del visor de claude.ai la página no puede bajar un archivo por su
+// cuenta: lo entrega por la pasarela del visor. En un navegador normal (el link
+// publicado, o corriéndolo local) baja con un Blob, como siempre.
+const pasarelaBajada = (window.claude && typeof window.claude.use === 'function')
+  ? Promise.resolve(window.claude.use('downloads')).catch(() => null)
+  : Promise.resolve(null);
+
+async function bajarCSV(nombre, filas) {
   const csv = filas.map((f) => f.map((c) => {
     const s = String(c == null ? '' : c);
     return /[",;\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   }).join(';')).join('\r\n');
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+  const contenido = '\ufeff' + csv;
+
+  const pasarela = await pasarelaBajada;
+  if (pasarela) {
+    try {
+      await pasarela.save({ filename: nombre, data: contenido });
+      toast(`Bajé <b>${esc(nombre)}</b>. Se abre derecho en Excel.`);
+    } catch (err) {
+      if (!err || err.code !== 'declined') toast('No pude bajar el archivo desde acá.', { mal: true });
+    }
+    return;
+  }
+
+  const blob = new Blob([contenido], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = nombre;
