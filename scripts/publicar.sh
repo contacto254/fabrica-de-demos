@@ -33,7 +33,11 @@ echo "1/5  Servicio en Railway"
 # Los dos tipos de token no son intercambiables: el CLI, si ve RAILWAY_TOKEN,
 # lo usa y exige que sea de proyecto. Si ese no sirve pero esta el de cuenta,
 # seguimos con ese en vez de morir aca.
-if [ -n "${RAILWAY_TOKEN:-}" ] && railway status 2>&1 | grep -qi 'invalid railway_token'; then
+# Ojo con 'set -o pipefail' de arriba: si se filtra la salida con una tuberia,
+# el codigo de salida que manda es el de railway, no el del grep, y la condicion
+# da falso justo cuando el token es invalido. Por eso se guarda primero.
+PRUEBA=$(railway status 2>&1 || true)
+if [ -n "${RAILWAY_TOKEN:-}" ] && printf '%s' "$PRUEBA" | grep -qi 'invalid railway_token'; then
   if [ -n "${RAILWAY_API_TOKEN:-}" ]; then
     echo "     RAILWAY_TOKEN no sirve; sigo con RAILWAY_API_TOKEN (token de cuenta)"
   else
