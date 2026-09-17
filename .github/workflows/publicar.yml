@@ -41,10 +41,16 @@ jobs:
         env:
           CF_TOKEN: ${{ secrets.CF_TOKEN }}
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
         run: |
           FALTA=0
-          [ -z "$CF_TOKEN" ]      && { echo "::error::Falta el secreto CF_TOKEN.";      FALTA=1; }
-          [ -z "$RAILWAY_TOKEN" ] && { echo "::error::Falta el secreto RAILWAY_TOKEN."; FALTA=1; }
+          [ -z "$CF_TOKEN" ] && { echo "::error::Falta el secreto CF_TOKEN."; FALTA=1; }
+          # Railway tiene dos tipos de token y sirve cualquiera: RAILWAY_TOKEN es de
+          # proyecto y RAILWAY_API_TOKEN es de cuenta.
+          if [ -z "$RAILWAY_TOKEN" ] && [ -z "$RAILWAY_API_TOKEN" ]; then
+            echo "::error::Falta el token de Railway: RAILWAY_TOKEN (de proyecto) o RAILWAY_API_TOKEN (de cuenta)."
+            FALTA=1
+          fi
           if [ "$FALTA" = "1" ]; then
             {
               echo "## No puedo publicar todavia"
@@ -53,8 +59,10 @@ jobs:
               echo "**Settings → Secrets and variables → Actions**, o por linea de comandos:"
               echo
               echo '```bash'
-              echo 'gh secret set CF_TOKEN      --repo ${{ github.repository }}'
-              echo 'gh secret set RAILWAY_TOKEN --repo ${{ github.repository }}'
+              echo 'gh secret set CF_TOKEN       --repo ${{ github.repository }}'
+              echo 'gh secret set RAILWAY_TOKEN  --repo ${{ github.repository }}   # token de proyecto'
+              echo '# o, si el token es de cuenta:'
+              echo 'gh secret set RAILWAY_API_TOKEN --repo ${{ github.repository }}'
               echo '```'
               echo
               echo "Como sacar cada uno esta en [ENTORNO-WEB.md](../blob/main/ENTORNO-WEB.md)."
@@ -90,6 +98,7 @@ jobs:
         env:
           CF_TOKEN: ${{ secrets.CF_TOKEN }}
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
           INSTALAR_RAILWAY: '0'
         run: |
           FALLO=0

@@ -30,13 +30,25 @@ echo
 echo "1/5  Servicio en Railway"
 # Antes de nada, que se vea contra que proyecto estamos hablando. Si el token no
 # sirve, conviene enterarse aca y no tres pasos despues.
+# Los dos tipos de token no son intercambiables: el CLI, si ve RAILWAY_TOKEN,
+# lo usa y exige que sea de proyecto. Si ese no sirve pero esta el de cuenta,
+# seguimos con ese en vez de morir aca.
+if [ -n "${RAILWAY_TOKEN:-}" ] && [ -n "${RAILWAY_API_TOKEN:-}" ] \
+   && railway status 2>&1 | grep -qi 'invalid railway_token'; then
+  echo "     RAILWAY_TOKEN no sirve para este proyecto; sigo con RAILWAY_API_TOKEN"
+  unset RAILWAY_TOKEN
+fi
+
 ESTADO=$(railway status 2>&1)
-if echo "$ESTADO" | grep -qiE 'unauthoriz|not logged|invalid token|no linked project'; then
+if echo "$ESTADO" | grep -qiE 'unauthoriz|not logged|invalid token|invalid railway|no linked project'; then
   echo "     Railway no acepta el token:"
   echo "$ESTADO" | sed 's/^/       /' | head -8
   echo
-  echo "     RAILWAY_TOKEN tiene que ser un token DE PROYECTO de '$PROYECTO'."
-  echo "     Se crea en railway.com/account/tokens eligiendo el proyecto."
+  echo "     Sirve cualquiera de los dos, pero cada uno en su variable:"
+  echo "       RAILWAY_TOKEN      token DE PROYECTO de '$PROYECTO'"
+  echo "       RAILWAY_API_TOKEN  token DE CUENTA"
+  echo "     Los dos se crean en railway.com/account/tokens; el de proyecto es"
+  echo "     el que sale al elegir un proyecto en el desplegable."
   exit 1
 fi
 echo "$ESTADO" | head -3 | sed 's/^/       /'
