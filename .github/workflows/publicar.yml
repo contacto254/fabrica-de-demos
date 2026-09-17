@@ -69,7 +69,11 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-          echo "Secretos presentes."
+          # Que se vea cual llego y cual no. Solo presencia, nunca el valor.
+          echo "Secretos que ve el flujo:"
+          [ -n "$CF_TOKEN" ]          && echo "  CF_TOKEN            cargado (${#CF_TOKEN} caracteres)"          || echo "  CF_TOKEN            NO"
+          [ -n "$RAILWAY_TOKEN" ]     && echo "  RAILWAY_TOKEN       cargado (${#RAILWAY_TOKEN} caracteres)"     || echo "  RAILWAY_TOKEN       NO"
+          [ -n "$RAILWAY_API_TOKEN" ] && echo "  RAILWAY_API_TOKEN   cargado (${#RAILWAY_API_TOKEN} caracteres)" || echo "  RAILWAY_API_TOKEN   NO"
 
       - name: Instalar el cliente de Railway
         run: npm install -g @railway/cli

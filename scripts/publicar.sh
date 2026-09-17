@@ -33,9 +33,12 @@ echo "1/5  Servicio en Railway"
 # Los dos tipos de token no son intercambiables: el CLI, si ve RAILWAY_TOKEN,
 # lo usa y exige que sea de proyecto. Si ese no sirve pero esta el de cuenta,
 # seguimos con ese en vez de morir aca.
-if [ -n "${RAILWAY_TOKEN:-}" ] && [ -n "${RAILWAY_API_TOKEN:-}" ] \
-   && railway status 2>&1 | grep -qi 'invalid railway_token'; then
-  echo "     RAILWAY_TOKEN no sirve para este proyecto; sigo con RAILWAY_API_TOKEN"
+if [ -n "${RAILWAY_TOKEN:-}" ] && railway status 2>&1 | grep -qi 'invalid railway_token'; then
+  if [ -n "${RAILWAY_API_TOKEN:-}" ]; then
+    echo "     RAILWAY_TOKEN no sirve; sigo con RAILWAY_API_TOKEN (token de cuenta)"
+  else
+    echo "     RAILWAY_TOKEN no sirve y no hay RAILWAY_API_TOKEN para caer atras"
+  fi
   unset RAILWAY_TOKEN
 fi
 
@@ -43,6 +46,10 @@ ESTADO=$(railway status 2>&1)
 if echo "$ESTADO" | grep -qiE 'unauthoriz|not logged|invalid token|invalid railway|no linked project'; then
   echo "     Railway no acepta el token:"
   echo "$ESTADO" | sed 's/^/       /' | head -8
+  echo
+  echo "     Tokens que llegaron a este script:"
+  [ -n "${RAILWAY_TOKEN:-}" ]     && echo "       RAILWAY_TOKEN      si" || echo "       RAILWAY_TOKEN      no"
+  [ -n "${RAILWAY_API_TOKEN:-}" ] && echo "       RAILWAY_API_TOKEN  si" || echo "       RAILWAY_API_TOKEN  no"
   echo
   echo "     Sirve cualquiera de los dos, pero cada uno en su variable:"
   echo "       RAILWAY_TOKEN      token DE PROYECTO de '$PROYECTO'"
