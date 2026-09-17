@@ -125,9 +125,19 @@ cd - >/dev/null || exit 1
 
 echo
 echo "4/5  DNS en Cloudflare"
-ZONE=$(curl -s "$API/zones?name=$ZONA" -H "Authorization: Bearer $CF_TOKEN" \
-       | grep -o '"id":"[a-f0-9]\{32\}"' | head -1 | cut -d'"' -f4)
-[ -z "$ZONE" ] && { echo "     No pude leer la zona $ZONA. Revisa el token."; exit 1; }
+# La respuesta se guarda entera: cuando esto falla, Cloudflare explica por que
+# en el cuerpo, y antes se perdia en el pipe. El token nunca se imprime.
+RES_ZONA=$(curl -s "$API/zones?name=$ZONA" -H "Authorization: Bearer $CF_TOKEN")
+ZONE=$(printf '%s' "$RES_ZONA" | grep -o '"id":"[a-f0-9]\{32\}"' | head -1 | cut -d'"' -f4)
+if [ -z "$ZONE" ]; then
+  echo "     No pude leer la zona $ZONA. Esto contesto Cloudflare:"
+  printf '%s\n' "$RES_ZONA" | head -c 600 | sed 's/^/       /'
+  echo
+  echo "     El token tiene que ser de la plantilla 'Edit zone DNS' y en Zone"
+  echo "     Resources incluir la zona $ZONA. Si la lista viene vacia, el token"
+  echo "     es de otra cuenta de Cloudflare o no alcanza a esa zona."
+  exit 1
+fi
 
 upsert() { # tipo nombre contenido
   local TYPE="$1" NAME="$2" CONTENT="$3" ID BODY RES
