@@ -28,57 +28,65 @@ cd "$DIR" || exit 1
 
 echo
 echo "1/5  Servicio en Railway"
-# Antes de nada, que se vea contra que proyecto estamos hablando. Si el token no
-# sirve, conviene enterarse aca y no tres pasos despues.
-# Los dos tipos de token no son intercambiables: el CLI, si ve RAILWAY_TOKEN,
-# lo usa y exige que sea de proyecto. Si ese no sirve pero esta el de cuenta,
-# seguimos con ese en vez de morir aca.
-# Ojo con 'set -o pipefail' de arriba: si se filtra la salida con una tuberia,
-# el codigo de salida que manda es el de railway, no el del grep, y la condicion
-# da falso justo cuando el token es invalido. Por eso se guarda primero.
+# Railway tiene dos tipos de token y se usan distinto:
+#   RAILWAY_TOKEN      es de proyecto: ya viene apuntando a un proyecto.
+#   RAILWAY_API_TOKEN  es de cuenta: hay que elegirle el proyecto con 'railway link'.
+# Ojo con el 'set -o pipefail' de arriba: filtrar con una tuberia devuelve el
+# codigo de railway y no el del grep, asi que la salida se guarda antes.
 PRUEBA=$(railway status 2>&1 || true)
 if [ -n "${RAILWAY_TOKEN:-}" ] && printf '%s' "$PRUEBA" | grep -qi 'invalid railway_token'; then
   if [ -n "${RAILWAY_API_TOKEN:-}" ]; then
     echo "     RAILWAY_TOKEN no sirve; sigo con RAILWAY_API_TOKEN (token de cuenta)"
+    unset RAILWAY_TOKEN
   else
     echo "     RAILWAY_TOKEN no sirve y no hay RAILWAY_API_TOKEN para caer atras"
+    exit 1
   fi
-  unset RAILWAY_TOKEN
 fi
 
-ESTADO=$(railway status 2>&1)
-if echo "$ESTADO" | grep -qiE 'unauthoriz|not logged|invalid token|invalid railway|no linked project'; then
+# Con token de cuenta hay que elegir el proyecto ANTES de preguntar nada: que
+# diga "no linked project" sin haber linkeado todavia es lo esperado, no un error.
+if [ -z "${RAILWAY_TOKEN:-}" ]; then
+  SALIDA_LINK=$(railway link --project "$PROYECTO" --environment production 2>&1 || true)
+  if printf '%s' "$SALIDA_LINK" | grep -qiE 'unauthoriz|invalid|not found|no projects'; then
+    echo "     No pude entrar al proyecto '$PROYECTO'. Railway dijo:"
+    printf '%s\n' "$SALIDA_LINK" | sed 's/^/       /' | head -10
+    echo
+    echo "     El token de cuenta tiene que pertenecer a la cuenta duena de ese proyecto."
+    exit 1
+  fi
+  echo "     proyecto $PROYECTO"
+fi
+
+# Recien ahora tiene sentido preguntar el estado.
+ESTADO=$(railway status 2>&1 || true)
+if printf '%s' "$ESTADO" | grep -qiE 'unauthoriz|not logged|invalid token|invalid railway'; then
   echo "     Railway no acepta el token:"
-  echo "$ESTADO" | sed 's/^/       /' | head -8
+  printf '%s\n' "$ESTADO" | sed 's/^/       /' | head -8
   echo
   echo "     Tokens que llegaron a este script:"
   [ -n "${RAILWAY_TOKEN:-}" ]     && echo "       RAILWAY_TOKEN      si" || echo "       RAILWAY_TOKEN      no"
   [ -n "${RAILWAY_API_TOKEN:-}" ] && echo "       RAILWAY_API_TOKEN  si" || echo "       RAILWAY_API_TOKEN  no"
-  echo
-  echo "     Sirve cualquiera de los dos, pero cada uno en su variable:"
-  echo "       RAILWAY_TOKEN      token DE PROYECTO de '$PROYECTO'"
-  echo "       RAILWAY_API_TOKEN  token DE CUENTA"
-  echo "     Los dos se crean en railway.com/account/tokens; el de proyecto es"
-  echo "     el que sale al elegir un proyecto en el desplegable."
   exit 1
 fi
-echo "$ESTADO" | head -3 | sed 's/^/       /'
+printf '%s\n' "$ESTADO" | head -4 | sed 's/^/       /'
 
-if echo "$ESTADO" | grep -q "$SLUG"; then
+# El servicio puede existir de una corrida anterior.
+if printf '%s' "$ESTADO" | grep -q "$SLUG"; then
   echo "     el servicio ya existe"
 else
-  SALIDA_ADD=$(railway add --service "$SLUG" 2>&1) || true
-  if echo "$SALIDA_ADD" | grep -qiE 'error|unauthoriz|not found|invalid'; then
+  SALIDA_ADD=$(railway add --service "$SLUG" 2>&1 || true)
+  if printf '%s' "$SALIDA_ADD" | grep -qiE 'unauthoriz|invalid|forbidden'; then
     echo "     No pude crear el servicio. Railway dijo:"
-    echo "$SALIDA_ADD" | sed 's/^/       /' | head -12
+    printf '%s\n' "$SALIDA_ADD" | sed 's/^/       /' | head -12
     exit 1
   fi
   echo "     servicio creado"
 fi
-# Con un token de proyecto (RAILWAY_TOKEN) el proyecto ya viene fijado por el token, y
-# 'railway link' no tiene con que sesion resolver el nombre: solo se linkea si no hay token.
+
+# Con token de cuenta, apuntar tambien al servicio antes de subir.
 if [ -z "${RAILWAY_TOKEN:-}" ]; then
-  railway link --project "$PROYECTO" --environment production --service "$SLUG" >/dev/null 2>&1
+  railway link --project "$PROYECTO" --environment production --service "$SLUG" >/dev/null 2>&1 || true
 fi
 
 echo
