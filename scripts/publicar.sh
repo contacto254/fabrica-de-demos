@@ -28,11 +28,29 @@ cd "$DIR" || exit 1
 
 echo
 echo "1/5  Servicio en Railway"
-if railway status --json 2>/dev/null | grep -q "\"name\":\"$SLUG\""; then
-  echo "     ya existe"
+# Antes de nada, que se vea contra que proyecto estamos hablando. Si el token no
+# sirve, conviene enterarse aca y no tres pasos despues.
+ESTADO=$(railway status 2>&1)
+if echo "$ESTADO" | grep -qiE 'unauthoriz|not logged|invalid token|no linked project'; then
+  echo "     Railway no acepta el token:"
+  echo "$ESTADO" | sed 's/^/       /' | head -8
+  echo
+  echo "     RAILWAY_TOKEN tiene que ser un token DE PROYECTO de '$PROYECTO'."
+  echo "     Se crea en railway.com/account/tokens eligiendo el proyecto."
+  exit 1
+fi
+echo "$ESTADO" | head -3 | sed 's/^/       /'
+
+if echo "$ESTADO" | grep -q "$SLUG"; then
+  echo "     el servicio ya existe"
 else
-  railway add --service "$SLUG" >/dev/null 2>&1
-  echo "     creado"
+  SALIDA_ADD=$(railway add --service "$SLUG" 2>&1) || true
+  if echo "$SALIDA_ADD" | grep -qiE 'error|unauthoriz|not found|invalid'; then
+    echo "     No pude crear el servicio. Railway dijo:"
+    echo "$SALIDA_ADD" | sed 's/^/       /' | head -12
+    exit 1
+  fi
+  echo "     servicio creado"
 fi
 # Con un token de proyecto (RAILWAY_TOKEN) el proyecto ya viene fijado por el token, y
 # 'railway link' no tiene con que sesion resolver el nombre: solo se linkea si no hay token.
@@ -42,11 +60,16 @@ fi
 
 echo
 echo "2/5  Subiendo (tarda 1-2 minutos)"
-if railway up --service "$SLUG" --ci 2>&1 | tail -3 | grep -q "Deploy complete"; then
+# La salida se guarda entera: cuando esto falla, lo unico que sirve es lo que
+# dijo Railway, y antes se perdia en el pipe.
+SALIDA_UP=$(railway up --service "$SLUG" --ci 2>&1)
+if echo "$SALIDA_UP" | grep -q "Deploy complete"; then
   echo "     desplegado"
 else
-  echo "     El deploy fallo. Mira el detalle con:"
-  echo "       railway logs --service $SLUG --build"
+  echo "     El deploy fallo. Esto dijo Railway:"
+  echo "$SALIDA_UP" | sed 's/^/       /' | tail -30
+  echo
+  echo "     Para ver el detalle del build:  railway logs --service $SLUG --build"
   exit 1
 fi
 
