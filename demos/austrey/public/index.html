@@ -1215,7 +1215,7 @@ function alertas() {
     p: 'Hay lugar para encerrar la próxima tanda de terneros de la recría.', ir: () => irA('feedlot') });
   ARRIENDOS.filter((x) => { const [dd, mm, yy] = x.fin.split('/').map(Number); return (new Date(yy, mm - 1, dd) - HOY) / DIA < 300; }).slice(0, 2).forEach((x) => {
     a.push({ n: 'warn', ic: 'i-contrato', t: `Arrendamiento de ${x.campo} vence el ${x.fin}`,
-      p: `${nf(x.ha)} ha de ${x.propietario}. Conviene abrir la renovación antes de la siembra.`, ir: () => irA('arriendos') });
+      p: `${nf(x.ha)} ha de ${x.propietario.replace(/\.$/, '')}. Conviene abrir la renovación antes de la siembra.`, ir: () => irA('arriendos') });
   });
   const sinLlegar = COMPRAS.filter((c) => c.estado === 'Pendiente de entrega' && c.det.includes('Semilla'));
   sinLlegar.forEach((c) => a.push({ n: 'bad', ic: 'i-camion', t: 'Semilla comprada que todavía no llegó',
