@@ -31,8 +31,14 @@ echo "1/5  Servicio en Railway"
 if railway status --json 2>/dev/null | grep -q "\"name\":\"$SLUG\""; then
   echo "     ya existe"
 else
-  railway add --service "$SLUG" >/dev/null 2>&1
-  echo "     creado"
+  SALIDA_ADD=$(railway add --service "$SLUG" 2>&1)
+  if [ $? -eq 0 ]; then
+    echo "     creado"
+  else
+    echo "     No pude crear el servicio:"
+    echo "$SALIDA_ADD" | sed 's/^/       /'
+    exit 1
+  fi
 fi
 # Con un token de proyecto (RAILWAY_TOKEN) el proyecto ya viene fijado por el token, y
 # 'railway link' no tiene con que sesion resolver el nombre: solo se linkea si no hay token.
@@ -42,11 +48,19 @@ fi
 
 echo
 echo "2/5  Subiendo (tarda 1-2 minutos)"
-if railway up --service "$SLUG" --ci 2>&1 | tail -3 | grep -q "Deploy complete"; then
+# La salida entera, no las ultimas tres lineas: cuando esto falla el motivo esta
+# arriba del todo y sin el no hay forma de saber que paso desde el registro.
+SALIDA_UP=$(railway up --service "$SLUG" --ci 2>&1)
+if echo "$SALIDA_UP" | grep -q "Deploy complete"; then
   echo "     desplegado"
 else
-  echo "     El deploy fallo. Mira el detalle con:"
-  echo "       railway logs --service $SLUG --build"
+  echo "     El deploy fallo. Esto dijo Railway:"
+  echo "$SALIDA_UP" | tail -25 | sed 's/^/       /'
+  echo
+  echo "     Contexto:"
+  railway status 2>&1 | head -12 | sed 's/^/       /'
+  echo "       servicios del proyecto:"
+  railway service list 2>&1 | head -12 | sed 's/^/         /'
   exit 1
 fi
 
