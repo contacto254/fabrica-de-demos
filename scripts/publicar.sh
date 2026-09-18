@@ -23,6 +23,45 @@ API="https://api.cloudflare.com/client/v4"
 
 echo "== Demo $SLUG -> https://$HOST =="
 
+# ---------- 0. Credenciales ----------
+# Las dos se prueban juntas y se informan las dos. Cuando una falla, el resto del
+# script no llega a tocar la otra, y saber cual de las dos hay que rehacer es la
+# diferencia entre arreglarlo en un minuto o a ciegas.
+echo
+echo "0/5  Credenciales"
+MAL=0
+
+RW_QUIEN=$(railway whoami 2>&1)
+if echo "$RW_QUIEN" | grep -qi "invalid\|unauthor\|not logged"; then
+  RW_PROY=$(railway status 2>&1)
+  if echo "$RW_PROY" | grep -qi "invalid\|unauthor"; then
+    echo "     Railway ..... NO SIRVE"
+    echo "       $(echo "$RW_QUIEN" | head -1)"
+    echo "       El token no pasa ni como de proyecto ni como de cuenta. Suele ser que"
+    echo "       esta vencido, revocado, cortado al copiarlo, o que es de otra cosa"
+    echo "       (el Account ID de Railway, o el token de Cloudflare)."
+    echo "       Se rehace en https://railway.com/account/tokens"
+    MAL=1
+  else
+    echo "     Railway ..... OK (token de proyecto)"
+  fi
+else
+  echo "     Railway ..... OK ($(echo "$RW_QUIEN" | head -1))"
+fi
+
+CF_ZONA=$(curl -s "$API/zones?name=$ZONA" -H "Authorization: Bearer $CF_TOKEN")
+if echo "$CF_ZONA" | grep -q '"success":true' && echo "$CF_ZONA" | grep -q '"id":"'; then
+  echo "     Cloudflare .. OK (zona $ZONA)"
+else
+  echo "     Cloudflare .. NO SIRVE"
+  echo "       $(echo "$CF_ZONA" | head -c 200)"
+  echo "       Hace falta un token con permiso Edit zone DNS sobre $ZONA."
+  echo "       Se rehace en https://dash.cloudflare.com/profile/api-tokens"
+  MAL=1
+fi
+
+[ "$MAL" = "1" ] && { echo; echo "     Sin credenciales validas no puedo publicar."; exit 1; }
+
 # ---------- 1. Railway ----------
 cd "$DIR" || exit 1
 
