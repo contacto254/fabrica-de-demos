@@ -43,7 +43,12 @@ fi
 # Con un token de proyecto (RAILWAY_TOKEN) el proyecto ya viene fijado por el token, y
 # 'railway link' no tiene con que sesion resolver el nombre: solo se linkea si no hay token.
 if [ -z "${RAILWAY_TOKEN:-}" ]; then
-  railway link --project "$PROYECTO" --environment production --service "$SLUG" >/dev/null 2>&1
+  SALIDA_LINK=$(railway link --project "$PROYECTO" --environment production --service "$SLUG" 2>&1)
+  if [ $? -ne 0 ]; then
+    echo "     No pude linkear el proyecto $PROYECTO:"
+    echo "$SALIDA_LINK" | sed 's/^/       /'
+    exit 1
+  fi
 fi
 
 echo

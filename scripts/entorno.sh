@@ -19,9 +19,25 @@ if ! command -v railway >/dev/null 2>&1; then
 fi
 
 # Autenticacion sin navegador: el CLI toma el token de la variable de entorno.
-# RAILWAY_TOKEN es de un proyecto puntual: es el que usa GitHub Actions, y alcanza
-# para desplegar y crear servicios dentro de customerp-demos.
-# RAILWAY_API_TOKEN es de cuenta, y sirve ademas para crear proyectos nuevos.
+# RAILWAY_TOKEN es de un proyecto puntual: alcanza para desplegar y crear
+# servicios dentro de customerp-demos, y el proyecto ya viene fijado por el token.
+# RAILWAY_API_TOKEN es de cuenta, sirve para cualquier proyecto, y por eso ademas
+# hay que linkear el proyecto a mano.
+#
+# Railway rechaza un token de cuenta guardado con el nombre del de proyecto, y el
+# mensaje ("Invalid RAILWAY_TOKEN") no dice que el problema es el nombre. Como la
+# pagina donde se crean los dos es la misma, el error es facil de cometer y caro
+# de encontrar: si el token no pasa como de proyecto, lo probamos como de cuenta.
+if [ -n "${RAILWAY_TOKEN:-}" ] && [ -z "${RAILWAY_API_TOKEN:-}" ]; then
+  if ! railway status --json >/dev/null 2>&1; then
+    if RAILWAY_API_TOKEN="$RAILWAY_TOKEN" RAILWAY_TOKEN="" railway whoami >/dev/null 2>&1; then
+      echo "  El token de Railway es de cuenta, no de proyecto: lo uso como RAILWAY_API_TOKEN."
+      export RAILWAY_API_TOKEN="$RAILWAY_TOKEN"
+      unset RAILWAY_TOKEN
+    fi
+  fi
+fi
+
 if [ -z "${RAILWAY_API_TOKEN:-}" ] && [ -z "${RAILWAY_TOKEN:-}" ]; then
   if ! railway whoami >/dev/null 2>&1; then
     echo "  Aviso: Railway sin credenciales. Falta RAILWAY_TOKEN o RAILWAY_API_TOKEN."

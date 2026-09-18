@@ -32,8 +32,11 @@ Create Token → plantilla **Edit zone DNS** → en Zone Resources elegir `custo
 pantalla final el token está debajo del título **Your API Token**; la caja de arriba dice
 *Account ID* y no sirve.
 
-**Railway.** En [railway.com/account/tokens](https://railway.com/account/tokens), crear uno
-para el proyecto `customerp-demos`.
+**Railway.** En [railway.com/account/tokens](https://railway.com/account/tokens). Esa página
+crea dos cosas distintas y conviene no confundirlas: si elegís el proyecto
+`customerp-demos` sale un **token de proyecto**, y si no elegís ninguno sale un **token de
+cuenta**. Cualquiera de los dos sirve; el flujo se da cuenta de cuál es y lo usa como
+corresponde. Guardalo igual como `RAILWAY_TOKEN`.
 
 Con los dos a mano:
 
