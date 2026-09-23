@@ -483,48 +483,65 @@ const dd = n => { const x = new Date(HOY); x.setDate(x.getDate() + n); x.setHour
 const DIA = 86400000;
 
 const CFG = {
-  comVend: 3.0,        // % comisión al vendedor
-  comComp: 2.0,        // % comisión al comprador
+  // Comisiones: el sistema no trae porcentajes. Se cargan los del escritorio en Configuración
+  // y todo (proformas, reparto por agente, cobranza) se recalcula con esos valores.
+  comVend: null,       // % comisión al vendedor, a cargar
+  comComp: null,       // % comisión al comprador, a cargar
+  cobraComp: true,     // si el escritorio cobra comisión al comprador (se apaga en Configuración)
   iva: 22,             // IVA sobre comisiones
-  reten: 2.6,          // IMEBA y adicionales, % sobre el bruto
-  plazo: 30,           // días de plazo de pago por defecto
+  plazo: 90,           // días de plazo por defecto (catálogo de Plaza Rural)
   autoWeb: true,       // publicar lotes en la web al entrar al catálogo
   autoProforma: true,  // generar proforma al bajar el martillo
   autoEnvio: true,     // enviar proforma por WhatsApp y mail
   autoAsignar: true,   // asignar leads por zona
   bot: true            // respuesta automática fuera de hora
 };
+const comCargada = () => CFG.comVend != null;
 
 const AGENTES = [
   { id: 'a1', nom: 'Joaquín Falcón', ini: 'JF', rol: 'Director · Ganados y Campos', zona: ['Montevideo', 'Canelones'], tel: '099 612 208', pct: 0, casa: true },
   { id: 'a2', nom: 'Ricardo Stewart', ini: 'RS', rol: 'Socio', zona: ['San José', 'Colonia'], tel: '099 318 440', pct: 0, casa: true },
-  { id: 'a3', nom: 'Martín Pereyra', ini: 'MP', rol: 'Representante', zona: ['Florida', 'Lavalleja'], tel: '099 524 117', pct: 30 },
-  { id: 'a4', nom: 'Santiago Olivera', ini: 'SO', rol: 'Representante', zona: ['Durazno', 'Flores'], tel: '098 441 902', pct: 30 },
-  { id: 'a5', nom: 'Gonzalo Viera', ini: 'GV', rol: 'Representante', zona: ['Tacuarembó', 'Rivera'], tel: '099 870 356', pct: 30 },
-  { id: 'a6', nom: 'Nicolás Bentancur', ini: 'NB', rol: 'Representante', zona: ['Cerro Largo', 'Treinta y Tres', 'Rocha'], tel: '098 207 663', pct: 30 },
-  { id: 'a7', nom: 'Agustín Rovira', ini: 'AR', rol: 'Representante', zona: ['Paysandú', 'Salto', 'Río Negro', 'Artigas', 'Soriano'], tel: '099 155 780', pct: 30 }
+  { id: 'a3', nom: 'Martín Pereyra', ini: 'MP', rol: 'Representante', zona: ['Florida', 'Lavalleja'], tel: '099 524 117', pct: null },
+  { id: 'a4', nom: 'Santiago Olivera', ini: 'SO', rol: 'Representante', zona: ['Durazno', 'Flores'], tel: '098 441 902', pct: null },
+  { id: 'a5', nom: 'Gonzalo Viera', ini: 'GV', rol: 'Representante', zona: ['Tacuarembó', 'Rivera'], tel: '099 870 356', pct: null },
+  { id: 'a6', nom: 'Nicolás Bentancur', ini: 'NB', rol: 'Representante', zona: ['Cerro Largo', 'Treinta y Tres', 'Rocha'], tel: '098 207 663', pct: null },
+  { id: 'a7', nom: 'Agustín Rovira', ini: 'AR', rol: 'Representante', zona: ['Paysandú', 'Salto', 'Río Negro', 'Artigas', 'Soriano'], tel: '099 155 780', pct: null }
 ];
 const SECRE = { nom: 'Lucía Cabrera', ini: 'LC', rol: 'Secretaría comercial', mail: 'secretaria@romualdo.com.uy' };
 
 const DEPTOS = ['Artigas', 'Canelones', 'Cerro Largo', 'Colonia', 'Durazno', 'Flores', 'Florida', 'Lavalleja', 'Maldonado', 'Montevideo', 'Paysandú', 'Río Negro', 'Rivera', 'Rocha', 'Salto', 'San José', 'Soriano', 'Tacuarembó', 'Treinta y Tres'];
 
-/* Categorías y precios de referencia (US$/kg salvo las que van por cabeza).
-   Terneros y vaca de invernada: promedios del remate 327 de Plaza Rural. */
+/* Categorías con los resultados reales del Remate 327 de Plaza Rural (catálogo del 328).
+   ref = promedio, max y min en US$/kg o US$ por cabeza, bulto = US$ promedio por animal. */
 const CATS = [
-  { id: 'tm', nom: 'Terneros machos', grupo: 'Terneros', ref: 4.39, ant: 4.21, u: 'kg', form: 'ternero' },
-  { id: 'th', nom: 'Terneras', grupo: 'Terneros', ref: 3.72, ant: 3.64, u: 'kg', form: 'ternero' },
-  { id: 'tt', nom: 'Terneros/as', grupo: 'Terneros', ref: 4.02, ant: 3.90, u: 'kg', form: 'ternero' },
-  { id: 'n12', nom: 'Novillos 1 a 2 años', grupo: 'Novillos', ref: 3.36, ant: 3.31, u: 'kg', form: 'novillo' },
-  { id: 'n23', nom: 'Novillos 2 a 3 años', grupo: 'Novillos', ref: 3.06, ant: 3.02, u: 'kg', form: 'novillo' },
-  { id: 'v12', nom: 'Vaquillonas 1 a 2 años', grupo: 'Hembras', ref: 3.14, ant: 3.10, u: 'kg', form: 'hembra' },
-  { id: 'vi', nom: 'Vacas de invernada', grupo: 'Vacas', ref: 2.60, ant: 2.68, u: 'kg', form: 'vaca' },
-  { id: 'vp', nom: 'Vacas preñadas', grupo: 'Hembras', ref: 1180, ant: 1150, u: 'cab', form: 'hembra' },
-  { id: 'pc', nom: 'Piezas de cría', grupo: 'Hembras', ref: 1360, ant: 1320, u: 'cab', form: 'hembra' },
-  { id: 'co', nom: 'Corderos', grupo: 'Lanares', ref: 4.10, ant: 4.02, u: 'kg', form: 'lanar' },
-  { id: 'ov', nom: 'Ovejas de cría', grupo: 'Lanares', ref: 148, ant: 142, u: 'cab', form: 'lanar' }
+  { id: 'tm', nom: 'Terneros', grupo: 'Terneros', ref: 4.39, max: 5.57, min: 3.65, bulto: 888, cab: 1605, lotes: 22, col: 100, u: 'kg', form: 'ternero' },
+  { id: 'th', nom: 'Terneras', grupo: 'Terneros', ref: 4.17, max: 4.90, min: 3.55, bulto: 823, cab: 1158, lotes: 21, col: 100, u: 'kg', form: 'ternero' },
+  { id: 'tt', nom: 'Terneros/terneras', grupo: 'Terneros', ref: 4.38, max: 5.51, min: 3.85, bulto: 726, cab: 648, lotes: 13, col: 100, u: 'kg', form: 'ternero' },
+  { id: 'ho', nom: 'Holando', grupo: 'Terneros', ref: null, u: 'kg', form: 'ternero' },
+  { id: 'n12', nom: 'Novillos 1 a 2 años', grupo: 'Novillos', ref: 3.72, max: 4.58, min: 3.42, bulto: 1183, cab: 747, lotes: 13, col: 100, u: 'kg', form: 'novillo' },
+  { id: 'n23', nom: 'Novillos 2 a 3 años', grupo: 'Novillos', ref: 3.34, max: 3.54, min: 3.10, bulto: 1305, cab: 355, lotes: 6, col: 100, u: 'kg', form: 'novillo' },
+  { id: 'n3', nom: 'Novillos más de 3 años', grupo: 'Novillos', ref: 3.05, max: 3.05, min: 3.05, bulto: 1584, cab: 79, lotes: 2, col: 100, u: 'kg', form: 'novillo' },
+  { id: 'v12', nom: 'Vaquillonas 1 a 2 años', grupo: 'Hembras', ref: 3.83, max: 4.15, min: 3.24, bulto: 1001, cab: 1163, lotes: 17, col: 100, u: 'kg', form: 'hembra' },
+  { id: 'v2', nom: 'Vaquillonas más de 2 años', grupo: 'Hembras', ref: 3.62, max: 3.72, min: 3.56, bulto: 1140, cab: 92, lotes: 2, col: 100, u: 'kg', form: 'hembra' },
+  { id: 'vi', nom: 'Vacas de invernada', grupo: 'Vacas', ref: 2.60, max: 2.84, min: 2.46, bulto: 1013, cab: 772, lotes: 18, col: 95.66, u: 'kg', form: 'vaca' },
+  { id: 'vp', nom: 'Vientres preñados', grupo: 'Hembras', ref: 1306.05, max: 1655, min: 1100, bulto: 1306, cab: 822, lotes: 19, col: 95.69, u: 'cab', form: 'hembra' },
+  { id: 've', nom: 'Vientres entorados', grupo: 'Hembras', ref: 1098.66, max: 1255, min: 925, bulto: 1099, cab: 516, lotes: 11, col: 100, u: 'cab', form: 'hembra' },
+  { id: 'pc', nom: 'Piezas de cría', grupo: 'Hembras', ref: 782.67, max: 875, min: 713, bulto: 783, cab: 384, lotes: 5, col: 100, u: 'cab', form: 'hembra' },
+  { id: 'co', nom: 'Corderos', grupo: 'Lanares', ref: null, u: 'kg', form: 'lanar' },
+  { id: 'cp', nom: 'Capones 2 a 4 dientes', grupo: 'Lanares', ref: 96, max: 96, min: 96, bulto: 96, cab: 1150, lotes: 1, col: 100, u: 'cab', form: 'lanar' },
+  { id: 'ov', nom: 'Ovejas de cría', grupo: 'Lanares', ref: null, u: 'cab', form: 'lanar' }
 ];
-const HIST_TERNERO = [['316', 3.55], ['317', 3.68], ['318', 3.82], ['319', 4.03], ['320', 3.96], ['321', 4.05], ['322', 4.10], ['323', 3.98], ['324', 4.02], ['325', 4.15], ['326', 4.21], ['327', 4.39]];
-const HIST_VACA = [['316', 2.12], ['317', 2.20], ['318', 2.31], ['319', 2.38], ['320', 2.35], ['321', 2.44], ['322', 2.52], ['323', 2.49], ['324', 2.55], ['325', 2.63], ['326', 2.68], ['327', 2.60]];
+const R327 = { cab: 8369, lotes: 150, col: 99.15 };
+
+/* Reglamento de Plaza Rural, tal como sale en el catálogo del 328 */
+const TABLA_CARGA = [[490, 2.0], [470, 2.1], [450, 2.2], [430, 2.3], [410, 2.4], [390, 2.5], [370, 2.6], [350, 2.7], [330, 2.8], [310, 2.9], [290, 3.0], [270, 3.2], [250, 3.4], [230, 3.6], [210, 3.8], [190, 4.1], [170, 4.4], [150, 4.7], [130, 5.0], [110, 5.4], [90, 6.0]];
+const cargaPorMetro = k => { let r = TABLA_CARGA[0][1]; for (const [kk, v] of TABLA_CARGA) if (k <= kk + 9) r = v; return r; };
+const destarePorKm = km => km <= 70 ? 6 : km <= 150 ? 5 : 4;               // Art. 11.2
+const toleranciaKg = (c, k) => ['vi'].includes(c.id) || c.grupo === 'Novillos' && k > 350 ? 10 : k <= 150 ? 15 : k <= 250 ? 12.5 : k <= 350 ? 10 : null; // Art. 15
+const minCabezas = c => c.grupo === 'Lanares' ? 150 : c.grupo === 'Terneros' ? 40 : 30;  // Art. 3 vacunos y Art. 3 ovinos
+const PLAZOS = [[7, 'Contado (7 días hábiles)'], [90, '90 días'], [120, '120 días'], [180, 'Hasta 180 días (crédito BROU)']];
+const plazoTxt = p => p === 7 ? 'Contado' : p === 0 ? 'Contado' : p + ' días';
+const CLASES = ['B', 'BMB', 'MB', 'MBB'];
 
 const RAZAS = ['Hereford', 'Aberdeen Angus', 'Braford', 'Cruza Hereford x Angus', 'Holando', 'Corriedale', 'Merino Dohne', 'Brangus', 'Cruza continental'];
 
@@ -548,6 +565,14 @@ const PRODUCTORES = [
   { id: 'p17', nom: 'Hugo Barreiro', est: 'Est. Santa Rita', depto: 'Tacuarembó', paraje: 'Paso de los Toros', dicose: '180101944', tel: '098 330 902', ag: 'a5', temp: 'caliente', desde: 2008, has: 2100 },
   { id: 'p18', nom: 'Martina Rodríguez Zeballos', est: 'La Invernada', depto: 'Florida', paraje: 'Cardal', dicose: '070129551', tel: '099 223 874', ag: 'a3', temp: 'caliente', desde: 2012, has: 950 },
   { id: 'p19', nom: 'Estancias del Queguay S.A.', est: 'Est. Queguay', depto: 'Paysandú', paraje: 'Piedras Coloradas', dicose: '110045278', tel: '4722 8120', ag: 'a7', temp: 'caliente', desde: 1990, has: 7400 },
+  // Establecimientos con lotes de Romualdo & Cía. en el catálogo del Remate 328 de Plaza Rural
+  { id: 'e1', nom: 'El Tero', est: 'El Tero', depto: 'Maldonado', paraje: 'A 25 km de San Carlos', ubic: 'En R9 km 151, 6 km al S por vecinal, a 50 km de Rocha y a 25 de San Carlos', dicose: '', tel: '', ag: 'a1', temp: 'caliente', desde: null, has: 0, real: true },
+  { id: 'e2', nom: 'Cerco de Piedra', est: 'Cerco de Piedra', depto: 'Rocha', paraje: 'Lascano', ubic: 'Ruta 14 km 465. Lascano 36 km, Castillos 43 km', dicose: '', tel: '', ag: 'a6', temp: 'caliente', desde: null, has: 0, real: true },
+  { id: 'e3', nom: 'Gamezan', est: 'Gamesan', depto: 'Florida', paraje: 'A 15 km de Florida', ubic: 'Ruta 5 km 109, al este 6 km. A 15 km de Florida', dicose: '', tel: '', ag: 'a3', temp: 'caliente', desde: null, has: 0, real: true },
+  { id: 'e4', nom: 'El Saladero', est: 'El Saladero', depto: 'Colonia', paraje: 'Colonia', dicose: '', tel: '', ag: 'a2', temp: 'caliente', desde: null, has: 0, real: true },
+  { id: 'e5', nom: 'La Sabina', est: 'La Sabina', depto: 'Durazno', paraje: 'Durazno', dicose: '', tel: '', ag: 'a4', temp: 'caliente', desde: null, has: 0, real: true },
+  { id: 'e6', nom: 'Silcafi', est: 'Silcafi', depto: 'Florida', paraje: 'Florida', dicose: '', tel: '', ag: 'a3', temp: 'caliente', desde: null, has: 0, real: true },
+  { id: 'e7', nom: 'El Caballito', est: 'El Caballito', depto: 'Florida', paraje: 'Florida', dicose: '', tel: '', ag: 'a3', temp: 'caliente', desde: null, has: 0, real: true },
   { id: 'p20', nom: 'Álvaro Silveira', est: 'Los Molles', depto: 'Colonia', paraje: 'Tarariras', dicose: '030088412', tel: '099 450 663', ag: 'a2', temp: 'frío', desde: 2026, has: 330 }
 ];
 
@@ -570,56 +595,95 @@ const COMPRADORES = [
   { id: 'c16', nom: 'Ganadera San Gabriel', tipo: 'Invernador', depto: 'Rivera', tel: '4622 5178', ag: 'a5', cats: ['tm', 'tt', 'v12', 'vi'], zonas: ['Rivera', 'Tacuarembó', 'Cerro Largo'], cred: 160000, desde: 2014 }
 ];
 
-const REMATES = [
-  { id: 'PR327', canal: 'Plaza Rural', nom: 'Remate 327 · Plaza Rural', lugar: 'Transmisión por TV e internet desde Durazno', fecha: dd(-19), dias: 2, estado: 'Realizado' },
-  { id: 'RP13', canal: 'Remate particular', nom: 'Remate Anual de Criadores', lugar: 'Local de remates Romualdo · Florida', fecha: dd(-11), dias: 1, estado: 'Realizado' },
-  { id: 'RP14', canal: 'Remate particular', nom: 'Remate de Primavera', lugar: 'Local de remates Romualdo · Florida', fecha: dd(9), dias: 1, estado: 'Catálogo abierto', cierre: dd(5) },
-  { id: 'PR328', canal: 'Plaza Rural', nom: 'Remate 328 · Plaza Rural', lugar: 'Transmisión por TV e internet desde Durazno', fecha: dd(15), dias: 2, estado: 'Inscripción abierta', cierre: dd(6) },
-  { id: 'RP15', canal: 'Remate particular', nom: 'Liquidación Est. Los Ceibos', lugar: 'En el establecimiento · Sarandí del Yí', fecha: dd(24), dias: 1, estado: 'En preparación', cierre: dd(17) }
-];
+// Compras del año antes de estas proformas, para el control de debida diligencia (Art. 23)
+const COMPRAS_PREVIAS = { c1: 128000, c4: 96000, c6: 410000, c7: 285000, c9: 64000, c13: 38000 };
+COMPRADORES.forEach(c => { c.prev = COMPRAS_PREVIAS[c.id] || 0; c.autorizado = !['c11', 'c15'].includes(c.id); });
 
-/* Lotes. ch = características del formulario estandarizado. */
-let LN = 1040;
-const L = (o) => Object.assign({ id: 'RC-' + (++LN), hist: [], interes: [], envios: 0, web: false, flete: 'Comprador', balanza: 'Balanza del establecimiento, 4ª pesada con 3% de desbaste', plazo: 30, destino: 'Invernada' }, o);
-const LOTES = [
-  // Plaza Rural 327, realizado
-  L({ prod: 'p2', cat: 'tm', cab: 180, kg: 176, raza: 'Hereford', edad: '7 a 8 meses', rem: 'PR327', estado: 'Vendido', ag: 'a4', ch: { castrados: 'Sí', destete: 'Destetados hace 30 días', sanidad: 'Aftosa, clostridiosis, queratoconjuntivitis', mio: 'Buena' }, venta: { comp: 'c1', precio: 4.41, fecha: dd(-19), kgReal: 175 } }),
-  L({ prod: 'p3', cat: 'tt', cab: 240, kg: 168, raza: 'Braford', edad: '7 a 9 meses', rem: 'PR327', estado: 'Vendido', ag: 'a5', ch: { castrados: 'Machos sí', destete: 'Al pie de la madre', sanidad: 'Aftosa, clostridiosis', mio: 'Muy buena' }, venta: { comp: 'c6', precio: 4.08, fecha: dd(-19), kgReal: 166 } }),
-  L({ prod: 'p10', cat: 'vi', cab: 95, kg: 392, raza: 'Hereford', edad: 'Boca llena', rem: 'PR327', estado: 'Vendido', ag: 'a4', destino: 'Invernada', ch: { dent: 'Boca llena / media boca', estado: 'Regular a bueno', sanidad: 'Aftosa' }, venta: { comp: 'c7', precio: 2.62, fecha: dd(-18), kgReal: 388 } }),
-  L({ prod: 'p8', cat: 'n12', cab: 120, kg: 268, raza: 'Aberdeen Angus', edad: '14 a 16 meses', rem: 'PR327', estado: 'Vendido', ag: 'a7', ch: { castrados: 'Sí', sanidad: 'Aftosa, clostridiosis, parasitarios', estado: 'Bueno' }, venta: { comp: 'c9', precio: 3.38, fecha: dd(-18), kgReal: 265 } }),
-  L({ prod: 'p13', cat: 'th', cab: 150, kg: 158, raza: 'Hereford', edad: '7 a 8 meses', rem: 'PR327', estado: 'Vendido', ag: 'a7', ch: { destete: 'Destetadas', sanidad: 'Aftosa, brucelosis (vacunadas)', mio: 'Buena' }, venta: { comp: 'c5', precio: 3.70, fecha: dd(-19), kgReal: 157 } }),
-  L({ prod: 'p6', cat: 'vi', cab: 60, kg: 360, raza: 'Cruza Hereford x Angus', edad: 'Boca llena', rem: 'PR327', estado: 'Sin vender', ag: 'a6', precioBase: 2.70, ch: { dent: 'Boca llena', estado: 'Regular', sanidad: 'Aftosa' } }),
-  // Remate particular 13, realizado
-  L({ prod: 'p1', cat: 'vp', cab: 45, kg: 440, raza: 'Hereford', edad: '3 a 5 años', rem: 'RP13', estado: 'Vendido', ag: 'a3', destino: 'Cría', ch: { prenez: 'Preñez confirmada por ecografía, parición set-oct', toro: 'Toros Angus', sanidad: 'Aftosa, brucelosis, leptospirosis' }, venta: { comp: 'c14', precio: 1210, fecha: dd(-11), kgReal: 440 } }),
-  L({ prod: 'p4', cat: 'tm', cab: 70, kg: 182, raza: 'Aberdeen Angus', edad: '8 meses', rem: 'RP13', estado: 'Vendido', ag: 'a3', ch: { castrados: 'Sí', destete: 'Destetados', sanidad: 'Aftosa, clostridiosis', mio: 'Buena' }, venta: { comp: 'c3', precio: 4.30, fecha: dd(-11), kgReal: 181 } }),
-  L({ prod: 'p18', cat: 'v12', cab: 55, kg: 255, raza: 'Hereford', edad: '15 a 18 meses', rem: 'RP13', estado: 'Vendido', ag: 'a3', destino: 'Cría', ch: { entore: 'Aptas para entore', sanidad: 'Aftosa, brucelosis', estado: 'Bueno' }, venta: { comp: 'c10', precio: 3.18, fecha: dd(-11), kgReal: 252 } }),
-  L({ prod: 'p12', cat: 'tt', cab: 38, kg: 171, raza: 'Cruza Hereford x Angus', edad: '8 meses', rem: 'RP13', estado: 'Vendido', ag: 'a2', ch: { castrados: 'Machos sí', destete: 'Destetados', sanidad: 'Aftosa, clostridiosis', mio: 'Regular' }, venta: { comp: 'c11', precio: 3.98, fecha: dd(-11), kgReal: 170 } }),
-  // Venta directa
-  L({ prod: 'p19', cat: 'n23', cab: 160, kg: 395, raza: 'Hereford', edad: '26 a 30 meses', rem: null, canal: 'Venta directa', estado: 'Vendido', ag: 'a7', destino: 'Faena', ch: { castrados: 'Sí', estado: 'Gordo, listo para faena', sanidad: 'Aftosa' }, venta: { comp: 'c7', precio: 3.05, fecha: dd(-4), kgReal: 391 } }),
-  L({ prod: 'p17', cat: 'n12', cab: 85, kg: 280, raza: 'Braford', edad: '15 meses', rem: null, canal: 'Venta directa', estado: 'Ofrecido', ag: 'a5', precioBase: 3.35, ch: { castrados: 'Sí', estado: 'Bueno', sanidad: 'Aftosa, clostridiosis' }, interes: ['c16', 'c9'] }),
-  L({ prod: 'p9', cat: 'vi', cab: 70, kg: 380, raza: 'Hereford', edad: 'Media boca', rem: null, canal: 'Venta directa', estado: 'Ofrecido', ag: 'a6', precioBase: 2.62, ch: { dent: 'Media boca a boca llena', estado: 'Bueno', sanidad: 'Aftosa' }, interes: ['c2'] }),
-  // Remate de Primavera (RP14)
-  L({ prod: 'p1', cat: 'tm', cab: 110, kg: 172, raza: 'Hereford', edad: '7 meses', rem: 'RP14', estado: 'En catálogo', ag: 'a3', precioBase: 4.30, web: true, envios: 14, ch: { castrados: 'Sí', destete: 'Destetados hace 20 días', sanidad: 'Aftosa, clostridiosis, queratoconjuntivitis', mio: 'Muy buena' }, interes: ['c3', 'c4', 'c1'] }),
-  L({ prod: 'p4', cat: 'th', cab: 64, kg: 160, raza: 'Aberdeen Angus', edad: '7 meses', rem: 'RP14', estado: 'En catálogo', ag: 'a3', precioBase: 3.65, web: true, envios: 9, ch: { destete: 'Destetadas', sanidad: 'Aftosa, brucelosis', mio: 'Buena' }, interes: ['c3', 'c11'] }),
-  L({ prod: 'p18', cat: 'vp', cab: 40, kg: 450, raza: 'Hereford', edad: '4 a 6 años', rem: 'RP14', estado: 'En catálogo', ag: 'a3', precioBase: 1150, destino: 'Cría', web: true, envios: 7, ch: { prenez: 'Preñadas de toro Angus, parición octubre', toro: 'Toros Angus PI', sanidad: 'Aftosa, brucelosis, leptospirosis' }, interes: ['c14', 'c10'] }),
-  L({ prod: 'p7', cat: 'pc', cab: 22, kg: 460, raza: 'Hereford', edad: 'Vacas 4 a 7 años', rem: 'RP14', estado: 'Revisado', ag: 'a3', precioBase: 1300, destino: 'Cría', ch: { prenez: 'Vacas con ternero al pie de 2 meses', sanidad: 'Aftosa, brucelosis' } }),
-  L({ prod: 'p14', cat: 'tt', cab: 48, kg: 165, raza: 'Cruza Hereford x Angus', edad: '8 meses', rem: 'RP14', estado: 'En catálogo', ag: 'a3', precioBase: 3.95, web: true, envios: 11, ch: { castrados: 'Machos sí', destete: 'Destetados', sanidad: 'Aftosa, clostridiosis', mio: 'Buena' }, interes: ['c3'] }),
-  // Plaza Rural 328
-  L({ prod: 'p2', cat: 'tm', cab: 210, kg: 185, raza: 'Hereford', edad: '8 meses', rem: 'PR328', estado: 'En catálogo', ag: 'a4', precioBase: 4.35, web: true, envios: 22, ch: { castrados: 'Sí', destete: 'Destetados hace 40 días', sanidad: 'Aftosa, clostridiosis, queratoconjuntivitis', mio: 'Muy buena' }, interes: ['c1', 'c4', 'c6', 'c8'] }),
-  L({ prod: 'p3', cat: 'tm', cab: 300, kg: 170, raza: 'Braford', edad: '7 a 8 meses', rem: 'PR328', estado: 'En catálogo', ag: 'a5', precioBase: 4.25, web: true, envios: 18, ch: { castrados: 'Sí', destete: 'Destetados', sanidad: 'Aftosa, clostridiosis', mio: 'Buena' }, interes: ['c6', 'c16', 'c1'] }),
-  L({ prod: 'p5', cat: 'th', cab: 180, kg: 162, raza: 'Hereford', edad: '8 meses', rem: 'PR328', estado: 'En catálogo', ag: 'a4', precioBase: 3.70, web: true, envios: 12, ch: { destete: 'Destetadas', sanidad: 'Aftosa, brucelosis', mio: 'Buena' }, interes: ['c5', 'c3'] }),
-  L({ prod: 'p8', cat: 'n12', cab: 140, kg: 275, raza: 'Aberdeen Angus', edad: '15 a 17 meses', rem: 'PR328', estado: 'En catálogo', ag: 'a7', precioBase: 3.35, web: true, envios: 10, ch: { castrados: 'Sí', estado: 'Bueno', sanidad: 'Aftosa, clostridiosis, parasitarios' }, interes: ['c9', 'c15'] }),
-  L({ prod: 'p10', cat: 'vi', cab: 110, kg: 398, raza: 'Hereford', edad: 'Boca llena', rem: 'PR328', estado: 'En catálogo', ag: 'a4', precioBase: 2.60, web: true, envios: 8, ch: { dent: 'Boca llena', estado: 'Bueno', sanidad: 'Aftosa' }, interes: ['c7', 'c4'] }),
-  L({ prod: 'p13', cat: 'co', cab: 420, kg: 32, raza: 'Merino Dohne', edad: '6 meses', rem: 'PR328', estado: 'En catálogo', ag: 'a7', precioBase: 4.05, web: true, envios: 6, ch: { esquila: 'Sin esquilar', sanidad: 'Dosificados, vacunados contra clostridiosis', estado: 'Bueno' }, interes: ['c12'] }),
-  L({ prod: 'p15', cat: 'tt', cab: 130, kg: 168, raza: 'Hereford', edad: '7 meses', rem: 'PR328', estado: 'Revisado', ag: 'a4', precioBase: 4.00, ch: { castrados: 'Machos sí', destete: 'Destetados', sanidad: 'Aftosa, clostridiosis', mio: 'Buena' } }),
-  L({ prod: 'p6', cat: 'vi', cab: 60, kg: 372, raza: 'Cruza Hereford x Angus', edad: 'Boca llena', rem: 'PR328', estado: 'Revisado', ag: 'a6', precioBase: 2.58, ch: { dent: 'Boca llena', estado: 'Regular a bueno', sanidad: 'Aftosa' }, nota: 'Reingresa del remate 327 con 12 kg más.' }),
-  L({ prod: 'p17', cat: 'tm', cab: 95, kg: 178, raza: 'Braford', edad: '8 meses', rem: 'PR328', estado: 'Borrador', ag: 'a5', precioBase: 4.28, ch: { castrados: 'Sí', destete: '', sanidad: 'Aftosa', mio: '' } }),
-  // Liquidación Los Ceibos (RP15)
-  L({ prod: 'p5', cat: 'pc', cab: 80, kg: 455, raza: 'Hereford', edad: 'Vacas 4 a 8 años', rem: 'RP15', estado: 'Revisado', ag: 'a4', precioBase: 1320, destino: 'Cría', ch: { prenez: 'Vacas con ternero al pie', sanidad: 'Aftosa, brucelosis' } }),
-  L({ prod: 'p5', cat: 'v12', cab: 90, kg: 262, raza: 'Hereford', edad: '16 a 18 meses', rem: 'RP15', estado: 'Revisado', ag: 'a4', precioBase: 3.10, destino: 'Cría', ch: { entore: 'Aptas para entore', sanidad: 'Aftosa, brucelosis', estado: 'Bueno' } }),
-  L({ prod: 'p5', cat: 'vi', cab: 120, kg: 385, raza: 'Hereford', edad: 'Boca llena', rem: 'RP15', estado: 'Borrador', ag: 'a4', precioBase: 2.55, ch: { dent: 'Boca llena', estado: '', sanidad: 'Aftosa' } }),
-  L({ prod: 'p5', cat: 'ov', cab: 350, kg: 48, raza: 'Corriedale', edad: '2 a 5 años', rem: 'RP15', estado: 'Borrador', ag: 'a4', precioBase: 145, destino: 'Cría', ch: { esquila: 'Esquiladas en agosto', sanidad: 'Dosificadas', estado: '' } })
+const REMATES = [
+  { id: 'PR327', canal: 'Plaza Rural', nom: 'Remate 327 · Plaza Rural', lugar: 'Remate por pantalla', fecha: dd(-19), dias: 2, estado: 'Realizado' },
+  { id: 'RP13', canal: 'Remate particular', nom: 'Remate Anual de Criadores', lugar: 'Local de remates Romualdo · Florida', fecha: dd(-11), dias: 1, estado: 'Realizado' },
+  { id: 'PR328', canal: 'Plaza Rural', nom: 'Remate 328 · Plaza Angus', lugar: 'Remate por pantalla · Plaza Rural', fecha: dd(1), dias: 2, estado: 'Catálogo cerrado', cierre: dd(-6) },
+  { id: 'RP14', canal: 'Remate particular', nom: 'Remate de Primavera', lugar: 'Local de remates Romualdo · Florida', fecha: dd(9), dias: 1, estado: 'Catálogo abierto', cierre: dd(5) },
+  { id: 'RP15', canal: 'Remate particular', nom: 'Liquidación Est. Los Ceibos', lugar: 'En el establecimiento · Sarandí del Yí', fecha: dd(24), dias: 1, estado: 'En preparación', cierre: dd(17) },
+  { id: 'PR329', canal: 'Plaza Rural', nom: 'Remate 329 · Plaza Rural', lugar: 'Remate por pantalla · Plaza Rural', fecha: dd(40), dias: 2, estado: 'Fecha a confirmar', aConfirmar: true }
 ];
+const fechaRem = r => r.aConfirmar ? 'Fecha a confirmar' : fdate(r.fecha) + (r.dias > 1 ? ' y ' + fdate(new Date(r.fecha.getTime() + DIA)) : '');
+
+/* Lotes. ch = los campos de la ficha de catálogo de Plaza Rural. */
+let LN = 1040;
+const L = (o) => Object.assign({ id: 'RC-' + (++LN), hist: [], interes: [], envios: 0, web: false, flete: 'Comprador', balanza: '', plazo: 90, destino: 'Invernada' }, o);
+const LOTES = [
+  // Plaza Rural 327, realizado (datos de ejemplo, precios dentro de los rangos reales del 327)
+  L({ prod: 'p2', cat: 'tm', cab: 180, kg: 176, raza: 'Hereford', edad: 'Primavera 2025', rem: 'PR327', estado: 'Vendido', ag: 'a4', ch: { sanidad: 'Aftosa, clostridiosis, queratoconjuntivitis' }, venta: { comp: 'c1', precio: 4.41, fecha: dd(-19), kgReal: 175 } }),
+  L({ prod: 'p3', cat: 'tt', cab: 240, kg: 168, raza: 'Braford', edad: 'Primavera 2025', rem: 'PR327', estado: 'Vendido', ag: 'a5', ch: { sanidad: 'Aftosa, clostridiosis' }, venta: { comp: 'c6', precio: 4.30, fecha: dd(-19), kgReal: 166 } }),
+  L({ prod: 'p10', cat: 'vi', cab: 95, kg: 392, raza: 'Hereford', edad: 'Boca llena', rem: 'PR327', estado: 'Vendido', ag: 'a4', ch: { dent: 'Boca llena', sanidad: 'Aftosa' }, venta: { comp: 'c7', precio: 2.62, fecha: dd(-18), kgReal: 388 } }),
+  L({ prod: 'p8', cat: 'n12', cab: 120, kg: 268, raza: 'Aberdeen Angus', edad: '14 a 16 meses', rem: 'PR327', estado: 'Vendido', ag: 'a7', ch: { sanidad: 'Aftosa, clostridiosis, parasitarios' }, venta: { comp: 'c9', precio: 3.70, fecha: dd(-18), kgReal: 265 } }),
+  L({ prod: 'p13', cat: 'th', cab: 150, kg: 158, raza: 'Hereford', edad: 'Primavera 2025', rem: 'PR327', estado: 'Vendido', ag: 'a7', ch: { sanidad: 'Aftosa, brucelosis (vacunadas)' }, venta: { comp: 'c5', precio: 4.12, fecha: dd(-19), kgReal: 157 } }),
+  L({ prod: 'p6', cat: 'vi', cab: 60, kg: 360, raza: 'Cruza Hereford x Angus', edad: 'Boca llena', rem: 'PR327', estado: 'Sin vender', ag: 'a6', precioBase: 2.70, ch: { dent: 'Boca llena', sanidad: 'Aftosa' } }),
+  // Remate particular 13, realizado
+  L({ prod: 'p1', cat: 'vp', cab: 45, kg: 440, raza: 'Hereford', edad: '3 a 5 años', rem: 'RP13', estado: 'Vendido', ag: 'a3', destino: 'Cría', plazo: 30, ch: { reproductivo: 'Preñez confirmada por ecografía, parición set-oct', sanidad: 'Aftosa, brucelosis, leptospirosis' }, venta: { comp: 'c14', precio: 1210, fecha: dd(-11), kgReal: 440 } }),
+  L({ prod: 'p4', cat: 'tm', cab: 70, kg: 182, raza: 'Aberdeen Angus', edad: 'Primavera 2025', rem: 'RP13', estado: 'Vendido', ag: 'a3', plazo: 30, ch: { sanidad: 'Aftosa, clostridiosis' }, venta: { comp: 'c3', precio: 4.30, fecha: dd(-11), kgReal: 181 } }),
+  L({ prod: 'p18', cat: 'v12', cab: 55, kg: 255, raza: 'Hereford', edad: '15 a 18 meses', rem: 'RP13', estado: 'Vendido', ag: 'a3', destino: 'Cría', ch: { reproductivo: 'Aptas para entore', sanidad: 'Aftosa, brucelosis' }, venta: { comp: 'c10', precio: 3.80, fecha: dd(-11), kgReal: 252 } }),
+  L({ prod: 'p12', cat: 'tt', cab: 38, kg: 171, raza: 'Cruza Hereford x Angus', edad: 'Primavera 2025', rem: 'RP13', estado: 'Vendido', ag: 'a2', ch: { sanidad: 'Aftosa, clostridiosis' }, venta: { comp: 'c11', precio: 4.25, fecha: dd(-11), kgReal: 170 } }),
+  // Venta directa
+  L({ prod: 'p19', cat: 'n23', cab: 160, kg: 395, raza: 'Hereford', edad: '26 a 30 meses', rem: null, canal: 'Venta directa', estado: 'Vendido', ag: 'a7', destino: 'Faena', ch: { sanidad: 'Aftosa' }, venta: { comp: 'c7', precio: 3.30, fecha: dd(-4), kgReal: 391 } }),
+  L({ prod: 'p17', cat: 'n12', cab: 85, kg: 280, raza: 'Braford', edad: '15 meses', rem: null, canal: 'Venta directa', estado: 'Ofrecido', ag: 'a5', precioBase: 3.65, ch: { sanidad: 'Aftosa, clostridiosis' }, interes: ['c16', 'c9'] }),
+  L({ prod: 'p9', cat: 'vi', cab: 70, kg: 380, raza: 'Hereford', edad: 'Media boca', rem: null, canal: 'Venta directa', estado: 'Ofrecido', ag: 'a6', precioBase: 2.62, ch: { dent: 'Media boca a boca llena', sanidad: 'Aftosa' }, interes: ['c2'] }),
+  // Remate de Primavera (RP14)
+  L({ prod: 'p1', cat: 'tm', cab: 110, kg: 172, raza: 'Hereford', edad: 'Primavera 2025', rem: 'RP14', estado: 'En catálogo', ag: 'a3', precioBase: 4.30, web: true, envios: 14, ch: { sanidad: 'Aftosa, clostridiosis, queratoconjuntivitis' }, interes: ['c3', 'c4', 'c1'] }),
+  L({ prod: 'p4', cat: 'th', cab: 64, kg: 160, raza: 'Aberdeen Angus', edad: 'Primavera 2025', rem: 'RP14', estado: 'En catálogo', ag: 'a3', precioBase: 4.00, web: true, envios: 9, ch: { sanidad: 'Aftosa, brucelosis' }, interes: ['c3', 'c11'] }),
+  L({ prod: 'p18', cat: 'vp', cab: 40, kg: 450, raza: 'Hereford', edad: '4 a 6 años', rem: 'RP14', estado: 'En catálogo', ag: 'a3', precioBase: 1200, destino: 'Cría', web: true, envios: 7, ch: { reproductivo: 'Preñadas de toro Angus, parición octubre', sanidad: 'Aftosa, brucelosis, leptospirosis' }, interes: ['c14', 'c10'] }),
+  L({ prod: 'p7', cat: 'pc', cab: 22, kg: 460, raza: 'Hereford', edad: 'Vacas 4 a 7 años', rem: 'RP14', estado: 'Revisado', ag: 'a3', precioBase: 780, destino: 'Cría', ch: { reproductivo: 'Vacas con ternero al pie de 2 meses', sanidad: 'Aftosa, brucelosis' } }),
+  L({ prod: 'p14', cat: 'tt', cab: 48, kg: 165, raza: 'Cruza Hereford x Angus', edad: 'Primavera 2025', rem: 'RP14', estado: 'En catálogo', ag: 'a3', precioBase: 4.20, web: true, envios: 11, ch: { sanidad: 'Aftosa, clostridiosis' }, interes: ['c3'] }),
+  // Remate 328 · Plaza Angus: lotes de Romualdo & Cía. tal como figuran en el catálogo
+  L({ prod: 'e1', cat: 'tm', cab: 59, kg: 220, raza: '40 AA, 13 RA, 4 HE x RA, 2 HE x AA', edad: 'Primavera 2025', rem: 'PR328', nro: 37, hora: '11:24', estado: 'En catálogo', ag: 'a1', web: true, envios: 16, fuente: 'cat', interes: ['c4', 'c3'],
+     ch: { clase: 'MB', estado: 'MB', tnut: 'Verdeo', obnut: 'Están en verdeos con ración en autoconsumo', miomio: 'No', racion: 'Sí', garrapata: 'Sí', pesada: '17/09/2026. 100% lleno', sanidad: '2 clostridiosis; moxidectina del 16/8/26', destete: 'Destetados', castrados: 'Castrados 100%', cuernos: 'Mochos' },
+     conteo: { destetados: 59, alpie: 0, enteros: 0, castrados: 59, mochos: 58, astados: 1, mochados: 0, tocos: 0 }, insp: 'S. Scremini, 17/09/26', tipoInsp: 'Presencial',
+     obs: 'Muy buen ganado, lote de terneros de buen peso, desarrollo y muy buen estado, evidenciando una recría inicial bien realizada. Ganado de biotipo carnicero bien definido. Lote DESTACADO.' }),
+  L({ prod: 'e2', cat: 'tm', cab: 84, kg: 230, raza: 'RA 34, HE x RA 30, HE 19, HE x AA 1', edad: 'Primavera 2025', rem: 'PR328', nro: 48, hora: '12:08', estado: 'En catálogo', ag: 'a6', web: true, envios: 19, fuente: 'cat', interes: ['c1', 'c2', 'c13'],
+     ch: { clase: 'MB', estado: 'MBB', tnut: 'Pradera', obnut: 'Suplementados con 2 kg de ración por día', miomio: 'No', racion: 'Sí', garrapata: 'No', pesada: '17/09/2026. Pesado 100%: máx. 278, mín. 170 kg', sanidad: 'Ivermectina con metionina 15/8; clostridiosis 15/5', destete: 'Destetados', castrados: 'Castrados 100%', cuernos: 'Mochos' },
+     conteo: { destetados: '100%', alpie: 0, enteros: 0, castrados: '100%', mochos: '100%', astados: 0, mochados: 0, tocos: 0 }, insp: 'A. Aguirre, 17/09/26', tipoInsp: 'Presencial',
+     obs: 'Excelente lote de terneros pampas, R Angus y sus cruzas, con muy buena genética (hijos de toros de Arrarte, Rubio y Caliverde), con muy buenas cualidades carniceras. Reposición muy destacada. Lote recomendado por calidad y sanidad.' }),
+  L({ prod: 'e3', cat: 'tm', cab: 60, kg: 245, raza: '35 AA/RA x HE, 13 HE, 6 cruza CH, 3 cruza NOR, 1 cruza BD, 1 cruza BS, 1 cruza cebú', edad: 'Primavera 2025', rem: 'PR328', nro: 53, hora: '12:28', estado: 'En catálogo', ag: 'a3', web: true, envios: 21, fuente: 'cat', interes: ['c3', 'c4', 'c1', 'c8'],
+     ch: { clase: 'BMB', estado: 'MBB', tnut: 'Pradera', obnut: 'Continúan en pradera. Ganan kilos a la carga', miomio: 'Sí', racion: 'Sí', garrapata: 'No', pesada: '18/09/2026. Balanza del inspector, pesado el 70%. Máx. 340, mín. 200 kg', sanidad: '12/8: ivermectina, clostridiosis y roborante', destete: 'Destetados', castrados: 'Castrados 100%', cuernos: 'Mixto' },
+     conteo: { destetados: '100%', alpie: 0, enteros: 0, castrados: '100%', mochos: 52, astados: 0, mochados: 6, tocos: 2 }, insp: 'Dr. E. Aloy, 18/09/26', tipoInsp: 'Presencial',
+     obs: 'Buen lote de terneros castrados y comedores, de características bien carniceras, de buenas carcasas y conformación. Ganado manso, bien manejado. 4 con secuela de Q, 1 ojo bochón, 4 con absceso de vacuna, 2 con tiña. Buena reposición. Se recomiendan.' }),
+  L({ prod: 'e4', cat: 'n23', cab: 85, kg: 395, raza: '', edad: '', rem: 'PR328', nro: 122, ninsp: '108616', hora: 'jue 17:34', estado: 'En catálogo', ag: 'a2', web: true, envios: 9, fuente: 'orden', ch: {} }),
+  L({ prod: 'e4', cat: 'n23', cab: 66, kg: 455, raza: '', edad: '', rem: 'PR328', nro: 123, ninsp: '108615', hora: 'jue 17:38', estado: 'En catálogo', ag: 'a2', web: true, envios: 9, fuente: 'orden', ch: {} }),
+  L({ prod: 'e4', cat: 'n3', cab: 35, kg: 440, raza: '', edad: '', rem: 'PR328', nro: 126, ninsp: '108618', hora: 'jue 17:50', estado: 'En catálogo', ag: 'a2', web: true, envios: 7, fuente: 'orden', ch: {} }),
+  L({ prod: 'e5', cat: 'ho', cab: 43, kg: 136, raza: 'Holando', edad: '', rem: 'PR328', nro: 131, ninsp: '107723', hora: 'jue 18:10', estado: 'En catálogo', ag: 'a4', web: true, envios: 5, fuente: 'orden', ch: {} }),
+  L({ prod: 'e6', cat: 'ho', cab: 68, kg: 173, raza: 'Holando', edad: '', rem: 'PR328', nro: 132, ninsp: '107721', hora: 'jue 18:14', estado: 'En catálogo', ag: 'a3', web: true, envios: 6, fuente: 'orden', ch: {} }),
+  L({ prod: 'e7', cat: 'ho', cab: 73, kg: 175, raza: 'Holando', edad: '', rem: 'PR328', nro: 133, ninsp: '109222', hora: 'jue 18:18', estado: 'En catálogo', ag: 'a3', web: true, envios: 6, fuente: 'orden', ch: {} }),
+  L({ prod: 'e4', cat: 'ho', cab: 24, kg: 334, raza: 'Holando', edad: '', rem: 'PR328', nro: 134, ninsp: '108619', hora: 'jue 18:22', estado: 'En catálogo', ag: 'a2', web: true, envios: 4, fuente: 'orden', ch: {} }),
+  // Próximo Plaza Rural (329)
+  L({ prod: 'p15', cat: 'tt', cab: 130, kg: 168, raza: 'Hereford', edad: 'Primavera 2025', rem: 'PR329', estado: 'Revisado', ag: 'a4', precioBase: 4.30, ch: { sanidad: 'Aftosa, clostridiosis' } }),
+  L({ prod: 'p17', cat: 'tm', cab: 95, kg: 178, raza: 'Braford', edad: 'Primavera 2025', rem: 'PR329', estado: 'Borrador', ag: 'a5', precioBase: 4.35, ch: { sanidad: 'Aftosa' } }),
+  L({ prod: 'p2', cat: 'tm', cab: 210, kg: 185, raza: 'Hereford', edad: 'Primavera 2025', rem: 'PR329', estado: 'Revisado', ag: 'a4', precioBase: 4.40, ch: { sanidad: 'Aftosa, clostridiosis, queratoconjuntivitis' }, interes: ['c1', 'c8'] }),
+  // Liquidación Los Ceibos (RP15)
+  L({ prod: 'p5', cat: 'pc', cab: 80, kg: 455, raza: 'Hereford', edad: 'Vacas 4 a 8 años', rem: 'RP15', estado: 'Revisado', ag: 'a4', precioBase: 790, destino: 'Cría', ch: { reproductivo: 'Vacas con ternero al pie', sanidad: 'Aftosa, brucelosis' } }),
+  L({ prod: 'p5', cat: 'v12', cab: 90, kg: 262, raza: 'Hereford', edad: '16 a 18 meses', rem: 'RP15', estado: 'Revisado', ag: 'a4', precioBase: 3.70, destino: 'Cría', ch: { reproductivo: 'Aptas para entore', sanidad: 'Aftosa, brucelosis' } }),
+  L({ prod: 'p5', cat: 'vi', cab: 120, kg: 385, raza: 'Hereford', edad: 'Boca llena', rem: 'RP15', estado: 'Borrador', ag: 'a4', precioBase: 2.55, ch: { dent: 'Boca llena', sanidad: 'Aftosa' } }),
+  L({ prod: 'p5', cat: 'ov', cab: 350, kg: 48, raza: 'Corriedale', edad: '2 a 5 años', rem: 'RP15', estado: 'Borrador', ag: 'a4', precioBase: 145, destino: 'Cría', ch: { esquila: 'Esquiladas en agosto', sanidad: 'Dosificadas' } })
+];
+// Completa la ficha de los lotes de ejemplo con valores verosímiles; los borradores quedan con faltantes.
+function fichaEjemplo() {
+  const NORTE = ['Artigas', 'Rivera', 'Tacuarembó', 'Salto', 'Paysandú', 'Cerro Largo'];
+  LOTES.forEach((l, i) => {
+    if (l.fuente) return;
+    const p = PRODUCTORES.find(x => x.id === l.prod), c = CATS.find(x => x.id === l.cat), r = REMATES.find(x => x.id === l.rem);
+    const pr = r && r.canal === 'Plaza Rural';
+    l.balanza = l.balanza || (pr ? 'Balanza oficial, destare según distancia (Art. 11)' : 'Balanza del establecimiento, destare de común acuerdo');
+    const ch = l.ch;
+    const borr = l.estado === 'Borrador';
+    const f = r && !r.aConfirmar ? new Date(r.fecha.getTime() - 12 * DIA) : new Date(HOY.getTime() - 6 * DIA);
+    const d = { clase: CLASES[1 + i % 3], estado: CLASES[(i + 2) % 4 === 0 ? 3 : 2], tnut: ['Campo natural', 'Pradera', 'Verdeo', 'Campo mejorado'][i % 4], obnut: ['En campo natural', 'Suplementados con ración', 'Continúan en pradera', 'En verdeo de avena'][i % 4], miomio: i % 3 ? 'Sí' : 'No', racion: i % 2 ? 'Sí' : 'No', garrapata: NORTE.includes(p.depto) ? 'Sí' : 'No', filmacion: fdateL(f), pesada: fdateL(f) + '. Pesado el 100%' };
+    if (c.form === 'ternero') Object.assign(d, { destete: 'Destetados', castrados: i % 2 ? 'Castrados 100%' : 'Mixto', cuernos: i % 3 ? 'Mochos' : 'Mixto' });
+    if (c.form === 'novillo') Object.assign(d, { castrados: 'Castrados 100%', cuernos: 'Mochos' });
+    if (c.form === 'lanar') { delete d.tnut; delete d.obnut; delete d.miomio; delete d.racion; delete d.garrapata; }
+    Object.keys(d).forEach(k => { if (ch[k] == null) ch[k] = d[k]; });
+    if (borr) { ch.clase = ''; ch.estado = ''; ch.filmacion = ''; ch.pesada = ''; }
+  });
+}
 
 /* Negocios en curso: el embudo del contacto comercial. */
 const ETAPAS = [
@@ -638,10 +702,10 @@ const NEGOCIOS = [
   { id: 'n6', prod: 'p9', cat: 'n23', cab: 80, etapa: 'contactado', ag: 'a6', nota: 'Espera precio del gordo antes de decidir.', dias: 6 },
   { id: 'n7', prod: 'p12', cat: 'tt', cab: 42, etapa: 'contactado', ag: 'a2', nota: 'Le mandamos resultados del 327.', dias: 2 },
   { id: 'n8', prod: 'p15', cat: 'v12', cab: 70, etapa: 'revision', ag: 'a4', nota: 'Revisación el viernes a las 8 en Carmen.', dias: 1 },
-  { id: 'n9', prod: 'p19', cat: 'tm', cab: 260, etapa: 'revision', ag: 'a7', nota: 'Lote grande para Plaza Rural 328. Ir con balanza.', dias: 2 },
+  { id: 'n9', prod: 'p19', cat: 'tm', cab: 260, etapa: 'revision', ag: 'a7', nota: 'Lote grande para el próximo Plaza Rural. Ir con balanza.', dias: 2 },
   { id: 'n10', prod: 'p1', cat: 'tm', cab: 110, etapa: 'cargado', ag: 'a3', nota: 'Lote RC-1054 en catálogo del Remate de Primavera.', dias: 4, lote: 'RC-1054' },
-  { id: 'n11', prod: 'p2', cat: 'tm', cab: 210, etapa: 'cargado', ag: 'a4', nota: 'Lote RC-1059 en Plaza Rural 328.', dias: 6, lote: 'RC-1059' },
-  { id: 'n12', prod: 'p3', cat: 'tm', cab: 300, etapa: 'cargado', ag: 'a5', nota: 'Lote RC-1060 en Plaza Rural 328.', dias: 7, lote: 'RC-1060' },
+  { id: 'n11', prod: 'e3', cat: 'tm', cab: 60, etapa: 'cargado', ag: 'a3', nota: 'Lote 53 del Remate 328, inspeccionado por el Dr. E. Aloy.', dias: 5, lote: 'RC-1061' },
+  { id: 'n12', prod: 'e2', cat: 'tm', cab: 84, etapa: 'cargado', ag: 'a6', nota: 'Lote 48 del Remate 328, recomendado por calidad y sanidad.', dias: 6, lote: 'RC-1060' },
   { id: 'n13', prod: 'p19', cat: 'n23', cab: 160, etapa: 'vendido', ag: 'a7', nota: 'Venta directa a Frigorífico del Centro.', dias: 4, lote: 'RC-1051' },
   { id: 'n14', prod: 'p4', cat: 'tm', cab: 70, etapa: 'vendido', ag: 'a3', nota: 'Remate de Criadores, US$ 4,30.', dias: 11, lote: 'RC-1048' }
 ];
@@ -656,7 +720,7 @@ const LEADS = [
   { id: 'w3', nom: 'Andrés Cabrera', tel: '099 812 330', canal: 'WhatsApp', tipo: 'Vende', depto: 'Salto', ag: null, estado: 'Nuevo', temp: 'frío', unread: true,
     msgs: [{ de: 'el', t: 'Hola, me pasó el contacto un vecino. Tengo 90 novillos de sobreaño en Salto, ¿cómo trabajan ustedes?', h: H(38) }, { de: 'bot', t: 'Hola Andrés, gracias por escribir a Romualdo & Cía. Te derivamos con el representante de tu zona, en minutos te contacta.', h: H(37) }] },
   { id: 'w4', nom: 'Corrales del Yí S.A.', tel: '4362 5510', canal: 'WhatsApp', tipo: 'Compra', depto: 'Durazno', ag: 'a4', estado: 'Contactado', temp: 'caliente', comp: 'c1',
-    msgs: [{ de: 'el', t: 'Santiago, ¿el lote de María Inés de 210 terneros está confirmado para el 328?', h: H(95) }, { de: 'yo', t: 'Confirmado, 185 kg promedio, destetados hace 40 días. Te paso la ficha.', h: H(80) }, { de: 'el', t: 'Dale, pasame la ficha y el video.', h: H(78) }] },
+    msgs: [{ de: 'el', t: 'Santiago, ¿el lote 53 de Gamezan sale el jueves en el 328? ¿A qué hora entra?', h: H(95) }, { de: 'yo', t: 'Sale en el 328, a las 12:28 según el orden de venta. 60 terneros de 245 kg, pesados el 18/9 con balanza del inspector. Te paso la ficha.', h: H(80) }, { de: 'el', t: 'Dale, pasame la ficha y el video.', h: H(78) }] },
   { id: 'w5', nom: 'Rosana Pereira', tel: '098 667 104', canal: 'Web', tipo: 'Vende', depto: 'Lavalleja', ag: null, estado: 'Nuevo', temp: 'frío', unread: true,
     msgs: [{ de: 'el', t: 'Formulario web: Quiero vender 25 vacas de invernada. Minas, Lavalleja. Contactar de tarde.', h: H(64) }] },
   { id: 'w6', nom: 'Juan Martín Vidart', tel: '099 745 812', canal: 'WhatsApp', tipo: 'Compra', depto: 'Flores', ag: 'a4', estado: 'Contactado', temp: 'caliente', comp: 'c8',
@@ -689,7 +753,7 @@ const COBROS = {}; // proformaId -> {comp: fecha cobro comprador, prod: fecha pa
 const ACTIVIDAD = [
   { ico: 'i-martillo', t: 'Venta directa cerrada: 160 novillos de Estancias del Queguay a Frigorífico del Centro', h: dd(-4), c: '' },
   { ico: 'i-doc', t: 'Proformas del Remate de Criadores enviadas a 8 contactos', h: dd(-11), c: 'i' },
-  { ico: 'i-globo', t: '7 lotes del Remate 328 publicados en romualdo.com.uy', h: dd(-2), c: 'g' },
+  { ico: 'i-globo', t: '10 lotes del Remate 328 publicados en romualdo.com.uy', h: dd(-2), c: 'g' },
   { ico: 'i-enviar', t: 'Lote RC-1059 enviado a 22 compradores que buscan terneros en la zona centro', h: dd(-1), c: 'wa' }
 ];
 
@@ -741,21 +805,28 @@ const avatar = (a, cls = '') => `<span class="av ${cls}" title="${esc(a ? a.nom 
 const canalIco = c => c === 'WhatsApp' ? 'i-wa' : c === 'Web' ? 'i-globo' : c === 'Instagram' ? 'i-ojo' : 'i-tel';
 
 /* ================= Formulario estandarizado por categoría ================= */
+/* Campos de la ficha, en el mismo orden que la ficha del catálogo de Plaza Rural */
+const SINO = ['Sí', 'No'];
+const F_BASE = [['clase', 'Clase', CLASES], ['estado', 'Estado', CLASES], ['tnut', 'T. Nut', ['Campo natural', 'Campo mejorado', 'Pradera', 'Verdeo']], ['obnut', 'Ob. Nut', 'text', 'Ej: suplementados con 2 kg de ración por día'], ['miomio', 'Mio mio', SINO], ['racion', 'Sabe comer ración', SINO], ['garrapata', 'Zona garrapata', SINO], ['sanidad', 'Sanidad', 'text', 'Vacunas y dosificaciones con fecha'], ['filmacion', 'Fecha de filmación', 'text', 'dd/mm/aaaa'], ['pesada', 'Pesada', 'text', 'Fecha, % pesado, máx. y mín.']];
+const F_TERN = [['destete', 'Destetados / al pie', ['Destetados', 'Al pie', 'Parcial']], ['castrados', 'Castrados', ['Castrados 100%', 'Enteros', 'Mixto']], ['cuernos', 'Mochos / astados', ['Mochos', 'Astados', 'Mochados', 'Mixto']]];
 const FORMS = {
-  ternero: [['castrados', 'Castrados', ['Sí', 'No', 'Machos sí']], ['destete', 'Destete', 'text', 'Ej: destetados hace 30 días'], ['mio', 'Conformación', ['Muy buena', 'Buena', 'Regular']], ['sanidad', 'Sanidad', 'text', 'Vacunas y dosificaciones']],
-  novillo: [['castrados', 'Castrados', ['Sí', 'No']], ['estado', 'Estado', ['Gordo, listo para faena', 'Muy bueno', 'Bueno', 'Regular']], ['sanidad', 'Sanidad', 'text', 'Vacunas y dosificaciones']],
-  hembra: [['prenez', 'Preñez / entore', 'text', 'Ej: preñez por ecografía, parición octubre'], ['toro', 'Toro', 'text', 'Raza y origen del toro'], ['entore', 'Aptitud', ['Aptas para entore', 'Entoradas', 'Con ternero al pie', 'No aplica']], ['sanidad', 'Sanidad', 'text', 'Brucelosis obligatoria en hembras']],
-  vaca: [['dent', 'Dentición', ['Boca llena', 'Media boca', 'Boca llena / media boca', 'Diente gastado']], ['estado', 'Estado', ['Bueno', 'Regular a bueno', 'Regular']], ['sanidad', 'Sanidad', 'text', 'Vacunas y dosificaciones']],
-  lanar: [['esquila', 'Esquila', ['Sin esquilar', 'Esquilados', 'Esquiladas en agosto']], ['estado', 'Estado', ['Muy bueno', 'Bueno', 'Regular']], ['sanidad', 'Sanidad', 'text', 'Dosificaciones y vacunas']]
+  ternero: F_BASE.concat(F_TERN),
+  novillo: F_BASE.concat(F_TERN.slice(1)),
+  hembra: F_BASE.concat([['reproductivo', 'Estado reproductivo', 'text', 'Ej: preñez por ecografía, parición octubre']]),
+  vaca: F_BASE.concat([['dent', 'Dentición', ['Boca llena', 'Media boca', 'Boca llena / media boca', 'Diente gastado']]]),
+  lanar: [['clase', 'Clase', CLASES], ['estado', 'Estado', CLASES], ['esquila', 'Esquila', ['Sin esquilar', 'Esquilados', 'Esquiladas en agosto']], ['sanidad', 'Sanidad', 'text', 'Dosificaciones y vacunas'], ['filmacion', 'Fecha de filmación', 'text', 'dd/mm/aaaa'], ['pesada', 'Pesada', 'text', 'Fecha y % pesado']]
 };
+const camposDe = l => FORMS[cat(l.cat).form];
 const camposLote = l => {
-  const base = [['raza', l.raza], ['edad', l.edad], ['kg', l.kg], ['cab', l.cab], ['precioBase', l.precioBase || (l.venta && l.venta.precio)], ['balanza', l.balanza], ['plazo', l.plazo], ['flete', l.flete]];
-  const esp = FORMS[cat(l.cat).form].filter(f => !(f[0] === 'toro' && l.cat !== 'vp')).map(f => [f[0], (l.ch || {})[f[0]]]);
+  // Lo que pide el Art. 4 del reglamento más la ficha del inspector
+  const base = [['raza', l.raza], ['edad', l.edad], ['kg', l.kg], ['cab', l.cab], ['plazo', l.plazo]];
+  const esp = camposDe(l).map(f => [f[0], (l.ch || {})[f[0]]]);
   const all = base.concat(esp);
+  if (l.fuente === 'orden') return { total: all.length, ok: all.length, faltan: [], catalogo: true };
   const ok = all.filter(x => x[1] !== undefined && x[1] !== null && String(x[1]).trim() !== '');
   return { total: all.length, ok: ok.length, faltan: all.filter(x => !ok.includes(x)).map(x => x[0]) };
 };
-const NOMBRE_CAMPO = { raza: 'Raza', edad: 'Edad', kg: 'Kg promedio', cab: 'Cabezas', precioBase: 'Precio base', balanza: 'Balanza y desbaste', plazo: 'Plazo', flete: 'Flete', castrados: 'Castrados', destete: 'Destete', mio: 'Conformación', sanidad: 'Sanidad', estado: 'Estado', prenez: 'Preñez', toro: 'Toro', entore: 'Aptitud', dent: 'Dentición', esquila: 'Esquila' };
+const NOMBRE_CAMPO = { raza: 'Raza', edad: 'Edad', kg: 'Kg promedio', cab: 'Cabezas', plazo: 'Plazo', clase: 'Clase', estado: 'Estado', tnut: 'T. Nut', obnut: 'Ob. Nut', miomio: 'Mio mio', racion: 'Sabe comer ración', garrapata: 'Zona garrapata', sanidad: 'Sanidad', filmacion: 'Fecha de filmación', pesada: 'Pesada', destete: 'Destetados', castrados: 'Castrados', cuernos: 'Mochos / astados', reproductivo: 'Estado reproductivo', dent: 'Dentición', esquila: 'Esquila' };
 
 /* ================= Compradores que le sirven a un lote ================= */
 const match = (l, c) => {
@@ -770,23 +841,33 @@ const match = (l, c) => {
 const compradoresPara = l => COMPRADORES.map(c => Object.assign({ c }, match(l, c))).filter(x => x.s >= 2).sort((a, b) => b.s - a.s);
 
 /* ================= Proformas ================= */
+// Comisiones: si el escritorio todavía no cargó sus porcentajes, los importes quedan en null
+// y la pantalla muestra "a cargar". Nunca se inventa un porcentaje.
 const calcPF = pf => {
   const l = lote(pf.lote), c = cat(l.cat), v = l.venta, cp = comp(v.comp);
   const kgR = v.kgReal || l.kg, kgTot = kgR * l.cab;
   const bruto = c.u === 'kg' ? kgTot * v.precio : l.cab * v.precio;
-  const comV = bruto * pf.pv / 100, ivaV = comV * pf.iva / 100, ret = bruto * pf.reten / 100;
-  const comC = bruto * pf.pc / 100, ivaC = comC * pf.iva / 100;
+  const pv = pf.pv != null ? pf.pv : CFG.comVend;
+  const pc = !CFG.cobraComp ? null : pf.pc != null ? pf.pc : CFG.comComp;
+  const comV = pv == null ? null : bruto * pv / 100, ivaV = comV == null ? null : comV * pf.iva / 100;
+  const comC = pc == null ? null : bruto * pc / 100, ivaC = comC == null ? null : comC * pf.iva / 100;
   const agV = ag(l.ag), agC = ag(cp.ag);
-  const agVm = comV * agV.pct / 100, agCm = comC * agC.pct / 100;
-  const flete = l.flete === 'Vendedor' ? Math.round(l.cab * 9) : 0;
-  return { l, c, v, cp, kgR, kgTot, bruto, comV, ivaV, ret, comC, ivaC, agV, agC, agVm, agCm, casa: comV + comC - agVm - agCm, flete,
-    netoProd: bruto - comV - ivaV - ret - flete, totComp: bruto + comC + ivaC, vence: new Date(v.fecha.getTime() + pf.plazo * DIA) };
+  const agVm = comV == null || agV.casa ? (agV.casa ? 0 : null) : agV.pct == null ? null : comV * agV.pct / 100;
+  const agCm = comC == null || agC.casa ? (agC.casa ? 0 : null) : agC.pct == null ? null : comC * agC.pct / 100;
+  const casa = comV == null ? null : comV + (comC || 0) - (agVm || 0) - (agCm || 0);
+  return { l, c, v, cp, kgR, kgTot, bruto, pv, pc, comV, ivaV, comC, ivaC, agV, agC, agVm, agCm, casa,
+    netoProd: bruto - (comV || 0) - (ivaV || 0), totComp: bruto + (comC || 0) + (ivaC || 0), vence: new Date(v.fecha.getTime() + pf.plazo * DIA) };
 };
 const generaProforma = (l, fecha) => {
-  const pf = { id: 'PF-' + (++PFN), lote: l.id, fecha: fecha || l.venta.fecha, pv: CFG.comVend, pc: CFG.comComp, iva: CFG.iva, reten: CFG.reten, plazo: l.plazo, estado: CFG.autoEnvio ? 'Enviada' : 'Emitida' };
+  const pf = { id: 'PF-' + (++PFN), lote: l.id, fecha: fecha || l.venta.fecha, pv: CFG.comVend, pc: CFG.comComp, iva: CFG.iva, plazo: l.plazo, estado: CFG.autoEnvio ? 'Enviada' : 'Emitida' };
   PROFORMAS.unshift(pf);
   return pf;
 };
+// Importe de comisión o "a cargar" si el escritorio no cargó porcentajes
+const mc = v => v == null ? '<span class="muted">a cargar</span>' : usd(v);
+const mc2 = v => v == null ? '<span class="muted">a cargar</span>' : usd2(v);
+const pct = v => v == null ? 'a cargar' : nf1.format(v) + '%';
+const esBROU = l => canalDe(l) === 'Plaza Rural';
 const estadoCobro = pf => {
   const k = calcPF(pf), cb = COBROS[pf.id] || {};
   if (cb.comp) return { t: 'Cobrado', c: 'ok' };
@@ -808,7 +889,7 @@ const S = { view: 'inicio', arg: null, prev: [], f: {}, thread: 'w1', liq: {} };
 const NAV = [
   ['Hoy', [['inicio', 'Inicio', 'i-inicio'], ['bandeja', 'Bandeja WhatsApp', 'i-wa', () => { const n = LEADS.filter(x => x.unread).length; return n ? `<span class="cnt hot">${n}</span>` : ''; }]]],
   ['Comercial', [['negocios', 'Contacto comercial', 'i-kanban', () => `<span class="cnt">${NEGOCIOS.filter(n => n.etapa !== 'vendido').length}</span>`], ['productores', 'Productores', 'i-user'], ['compradores', 'Compradores', 'i-comprador'], ['ofertas', 'Ofertas y filtros', 'i-filtro']]],
-  ['Lotes y remates', [['lotes', 'Lotes', 'i-lote', () => `<span class="cnt">${LOTES.filter(l => !['Vendido', 'Sin vender'].includes(l.estado)).length}</span>`], ['remates', 'Remates', 'i-martillo'], ['precios', 'Precios de referencia', 'i-trend']]],
+  ['Lotes y remates', [['lotes', 'Lotes', 'i-lote', () => `<span class="cnt">${LOTES.filter(l => !['Vendido', 'Sin vender'].includes(l.estado)).length}</span>`], ['remates', 'Remates', 'i-martillo'], ['precios', 'Precios y reglamento', 'i-trend']]],
   ['Plata', [['proformas', 'Proformas', 'i-doc'], ['comisiones', 'Comisiones', 'i-pct'], ['cobranza', 'Cobranza', 'i-plata', () => { const n = PROFORMAS.filter(p => estadoCobro(p).venc).length; return n ? `<span class="cnt" style="background:var(--bad)">${n}</span>` : ''; }]]],
   ['Análisis', [['reportes', 'Reportes', 'i-chart'], ['web', 'Web y captación', 'i-globo']]],
   ['Sistema', [['config', 'Configuración', 'i-config']]]
@@ -932,27 +1013,34 @@ const empty = (ico, txt, btn) => `<div class="empty"><div class="bubble">${ic(ic
 const VIEWS = {};
 
 /* ---------- Inicio ---------- */
+// Debida diligencia (Art. 23 del reglamento, Ley 19.574): compras de más de US$ 150.000 en el año
+const comprasAnio = c => c.prev + PROFORMAS.filter(p => lote(p.lote).venta.comp === c.id).reduce((a, p) => a + calcPF(p).bruto, 0);
+const pideDD = c => comprasAnio(c) > 150000;
+
 VIEWS.inicio = () => {
-  const pr = rem('PR328'), lp = LOTES.filter(l => l.rem === 'PR328');
+  const pr = rem('PR328'), lp = LOTES.filter(l => l.rem === 'PR328').sort((a, b) => a.nro - b.nro);
   const cabP = lp.reduce((a, l) => a + l.cab, 0);
   const nuevos = LEADS.filter(x => !x.ag);
   const prep = LOTES.filter(l => ['Borrador', 'Revisado'].includes(l.estado));
   const vend = LOTES.filter(l => l.venta && l.venta.fecha.getMonth() === HOY.getMonth());
   const cabV = vend.reduce((a, l) => a + l.cab, 0);
   const pfs = PROFORMAS.filter(p => p.fecha.getMonth() === HOY.getMonth()).map(calcPF);
-  const comTot = pfs.reduce((a, k) => a + k.comV + k.comC, 0);
+  const comTot = pfs.reduce((a, k) => a + (k.comV || 0) + (k.comC || 0), 0);
   const brutoMes = pfs.reduce((a, k) => a + k.bruto, 0);
+  const dias328 = diasEntre(HOY, pr.fecha);
 
   // tareas derivadas de los datos
   const tareas = [];
+  if (dias328 >= 0 && dias328 <= 2) tareas.push({ c: 'g', i: 'i-tv', t: `${dias328 === 0 ? 'Hoy' : 'Mañana'} arranca el ${pr.nom}: ${lp.length} lotes nuestros`, s: `Primer lote nuestro: Nº ${lp[0].nro}, ${lp[0].cab} ${cat(lp[0].cat).nom.toLowerCase()} de ${prod(lp[0].prod).nom}, ${lp[0].hora}`, go: ['remate', 'PR328'] });
   nuevos.forEach(x => tareas.push({ c: 'wa', i: 'i-wa', t: `${x.nom} escribió y nadie lo tomó`, s: `${x.canal} · ${x.tipo} · ${x.depto} · ${relMin(x.msgs[x.msgs.length - 1].h)}`, go: ['bandeja', x.id] }));
+  const dd = COMPRADORES.filter(pideDD); if (dd.length) tareas.push({ c: 'i', i: 'i-escudo', t: `${dd.length} compradores pasaron los US$ 150.000 en el año`, s: `Debida diligencia (Art. 23, Ley 19.574): ${dd.map(c => c.nom).join(', ')}`, go: ['compradores'] });
   PROFORMAS.forEach(p => { const e = estadoCobro(p); if (e.venc || e.pronto) { const k = calcPF(p); tareas.push({ c: e.venc ? 'r' : 'w', i: 'i-plata', t: `${k.cp.nom}: ${usd(k.totComp)} ${e.venc ? 'vencido' : 'por vencer'}`, s: `${p.id} · lote ${k.l.id} · ${e.t}`, go: ['cobranza'] }); } });
-  LOTES.filter(l => l.estado === 'Borrador').forEach(l => { const c = camposLote(l); tareas.push({ c: 'w', i: 'i-lote', t: `Lote ${l.id} incompleto: faltan ${c.total - c.ok} datos`, s: `${prod(l.prod).nom} · ${cat(l.cat).nom} · ${l.rem ? rem(l.rem).nom : 'Venta directa'}`, go: ['lote', l.id] }); });
+  LOTES.filter(l => l.estado === 'Borrador').forEach(l => { const c = camposLote(l); tareas.push({ c: 'w', i: 'i-lote', t: `Lote ${l.id} incompleto: faltan ${c.total - c.ok} datos de la ficha`, s: `${prod(l.prod).nom} · ${cat(l.cat).nom} · ${l.rem ? rem(l.rem).nom : 'Venta directa'}`, go: ['lote', l.id] }); });
   LOTES.filter(l => ['En catálogo', 'Ofrecido'].includes(l.estado) && !l.envios).forEach(l => tareas.push({ c: 'i', i: 'i-enviar', t: `Lote ${l.id} todavía no se mandó a compradores`, s: `${compradoresPara(l).length} compradores le sirven`, go: ['lote', l.id] }));
   NEGOCIOS.filter(n => n.etapa === 'revision').forEach(n => tareas.push({ c: 'g', i: 'i-ojo', t: `Revisación: ${prod(n.prod).nom}`, s: n.nota, go: ['negocios'] }));
-  const cierre = diasEntre(HOY, pr.cierre);
 
   const refs = ['tm', 'th', 'n12', 'vi'].map(cat);
+  const porAg = AGENTES.map(a => [a.nom, LOTES.filter(l => l.venta && l.ag === a.id).reduce((x, l) => x + l.cab, 0)]).filter(r => r[1]).sort((a, b) => b[1] - a[1]);
   return {
     t: 'Buen día, Ricardo', s: `${fdate(HOY)} · ${tareas.length} cosas para mirar hoy`,
     a: `<button class="btn" data-act="nuevoLead">${ic('i-wa')}<span>Nuevo contacto</span></button><button class="btn pri" data-act="nuevoLote">${ic('i-mas')}<span>Cargar lote</span></button>`,
@@ -960,55 +1048,56 @@ VIEWS.inicio = () => {
     <div class="hero">
       <svg class="pat" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-vaca" style="stroke:#fff;fill:none;stroke-width:1"/></svg>
       <div style="flex:1;min-width:240px">
-        <span class="tag" style="background:rgba(255,255,255,.16);color:#fff">${ic('i-tv')} Próximo remate por pantalla</span>
+        <span class="tag" style="background:rgba(255,255,255,.16);color:#fff">${ic('i-tv')} Remate por pantalla</span>
         <h2 style="margin-top:8px">${pr.nom}</h2>
-        <p>${fdate(pr.fecha)} y ${fdate(new Date(pr.fecha.getTime() + DIA))} · ${pr.lugar}</p>
+        <p>${fechaRem(pr)} · catálogo cerrado · plazos de hasta 180 días con crédito BROU</p>
       </div>
       <div class="stats">
         <div><b>${lp.length}</b><span>Lotes nuestros</span></div>
         <div><b>${num(cabP)}</b><span>Cabezas</span></div>
-        <div><b>${lp.filter(l => ['En catálogo', 'Vendido'].includes(l.estado)).length}/${lp.length}</b><span>Listos</span></div>
+        <div><b>${lp.filter(l => l.venta).length}/${lp.length}</b><span>Vendidos</span></div>
       </div>
-      <div class="count"><b>${cierre}</b><span>días para cerrar<br>inscripción</span></div>
-      <div class="flex wrap"><button class="btn" data-go="remate" data-arg="PR328">${ic('i-lote')} Ver catálogo</button></div>
+      <div class="count"><b>${dias328 <= 0 ? 'Hoy' : dias328 === 1 ? 'Mañana' : dias328 + ' días'}</b><span>primer lote nuestro<br>${lp[0].hora}</span></div>
+      <div class="flex wrap"><button class="btn" data-go="remate" data-arg="PR328">${ic('i-lote')} Orden de venta</button></div>
     </div>
     <div class="grid g4 mb">
       <div class="card kpi" data-go="bandeja"><div class="ico w">${ic('i-wa')}</div><div class="lbl">Contactos sin tomar</div><div class="val">${nuevos.length}</div><div class="foot">de ${LEADS.length} conversaciones abiertas</div></div>
       <div class="card kpi" data-go="lotes" data-arg="prep"><div class="ico">${ic('i-lote')}</div><div class="lbl">Lotes en preparación</div><div class="val">${prep.length}</div><div class="foot">${num(prep.reduce((a, l) => a + l.cab, 0))} cabezas por revisar o completar</div></div>
       <div class="card kpi" data-go="reportes"><div class="ico g">${ic('i-vaca')}</div><div class="lbl">Cabezas vendidas en ${MES[HOY.getMonth()]}</div><div class="val">${num(cabV)}</div><div class="foot"><b class="up">${usd(brutoMes)}</b> negociados</div></div>
-      <div class="card kpi" data-go="comisiones"><div class="ico">${ic('i-pct')}</div><div class="lbl">Comisiones del mes</div><div class="val">${usd(comTot)}</div><div class="foot">vendedor + comprador, sin IVA</div></div>
+      ${comCargada() ? `<div class="card kpi" data-go="comisiones"><div class="ico">${ic('i-pct')}</div><div class="lbl">Comisiones del mes</div><div class="val">${usd(comTot)}</div><div class="foot">con los porcentajes del escritorio, sin IVA</div></div>`
+        : `<div class="card kpi" data-go="comisiones"><div class="ico">${ic('i-pct')}</div><div class="lbl">Comisiones del mes</div><div class="val" style="font-size:18px;margin-top:12px">A cargar</div><div class="foot">Cargá los porcentajes del escritorio y se calculan solas</div></div>`}
     </div>
     <div class="grid g21 mb">
       <div class="card"><h3>${ic('i-rayo')} Para hacer hoy<span class="grow"></span><small>se calcula solo con los datos</small></h3>
         <div class="list">${tareas.length ? tareas.slice(0, 9).map(t => `<div class="li click" data-go="${t.go[0]}" ${t.go[1] ? `data-arg="${t.go[1]}"` : ''}><div class="bubble ${t.c}">${ic(t.i)}</div><div class="grow"><div class="t ellip">${esc(t.t)}</div><div class="s ellip">${esc(t.s)}</div></div>${ic('i-flecha', 'muted')}</div>`).join('') : empty('i-ok', 'No hay nada pendiente. Día tranquilo.')}</div>
       </div>
       <div class="grid" style="align-content:start">
-        <div class="card"><h3>${ic('i-trend')} Precios de referencia<span class="grow"></span><button class="btn sm ghost" data-go="precios">Ver todos</button></h3>
-          <div class="list">${refs.map(c => { const d = c.ref - c.ant; return `<div class="li"><div class="grow"><div class="t">${c.nom}</div><div class="s">Remate 327 Plaza Rural</div></div><div style="text-align:right"><b class="mono">${precioU(c, c.ref)}</b><div class="s" style="color:${d >= 0 ? 'var(--brand)' : 'var(--bad-ink)'};font-weight:700">${d >= 0 ? '+' : ''}${nf2.format(d)}</div></div></div>`; }).join('')}</div>
+        <div class="card"><h3>${ic('i-trend')} Resultados del Remate 327<span class="grow"></span><button class="btn sm ghost" data-go="precios">Ver todos</button></h3>
+          <div class="list">${refs.map(c => `<div class="li"><div class="grow"><div class="t">${c.nom}</div><div class="s">${num(c.cab)} cabezas · máx. ${nf2.format(c.max)} · mín. ${nf2.format(c.min)}</div></div><div style="text-align:right"><b class="mono">${precioU(c, c.ref)}</b><div class="s">US$ ${num(c.bulto)} al bulto</div></div></div>`).join('')}</div>
         </div>
         <div class="card"><h3>${ic('i-reloj')} Actividad</h3><div class="timeline">${ACTIVIDAD.slice(0, 5).map(a => `<div class="tl"><div class="bubble ${a.c}">${ic(a.ico)}</div><div><div class="t">${esc(a.t)}</div><div class="s">${a.h.getTime() > HOY.getTime() - DIA ? relMin(a.h) : rel(a.h)}</div></div></div>`).join('')}</div></div>
       </div>
     </div>
     <div class="grid g2">
       <div class="card"><h3>${ic('i-cal')} Próximos remates<span class="grow"></span><button class="btn sm ghost" data-go="remates">Ver todos</button></h3>
-        <div class="list">${REMATES.filter(r => r.fecha > HOY).map(r => { const ls = LOTES.filter(l => l.rem === r.id); return `<div class="li click" data-go="remate" data-arg="${r.id}"><div class="bubble ${r.canal === 'Plaza Rural' ? 'g' : ''}">${ic(r.canal === 'Plaza Rural' ? 'i-tv' : 'i-martillo')}</div><div class="grow"><div class="t">${esc(r.nom)}</div><div class="s">${fdate(r.fecha)} · ${esc(r.lugar)}</div></div><div style="text-align:right"><b class="mono">${num(ls.reduce((a, l) => a + l.cab, 0))} cab.</b><div class="s">${ls.length} lotes · ${rel(r.fecha)}</div></div></div>`; }).join('')}</div>
+        <div class="list">${REMATES.filter(r => r.fecha > HOY).map(r => { const ls = LOTES.filter(l => l.rem === r.id); return `<div class="li click" data-go="remate" data-arg="${r.id}"><div class="bubble ${r.canal === 'Plaza Rural' ? 'g' : ''}">${ic(r.canal === 'Plaza Rural' ? 'i-tv' : 'i-martillo')}</div><div class="grow"><div class="t">${esc(r.nom)}</div><div class="s">${fechaRem(r)} · ${esc(r.lugar)}</div></div><div style="text-align:right"><b class="mono">${num(ls.reduce((a, l) => a + l.cab, 0))} cab.</b><div class="s">${ls.length} lotes${r.aConfirmar ? '' : ' · ' + rel(r.fecha)}</div></div></div>`; }).join('')}</div>
       </div>
-      <div class="card"><h3>${ic('i-users')} Comisiones por agente, ${MES[HOY.getMonth()]}<span class="grow"></span><button class="btn sm ghost" data-go="comisiones">Detalle</button></h3>
-        ${hbars(comisionesPorAgente().map(r => [r.a.nom, r.gen]), usd)}
+      <div class="card"><h3>${ic('i-users')} Cabezas vendidas por agente<span class="grow"></span><button class="btn sm ghost" data-go="comisiones">Comisiones</button></h3>
+        ${porAg.length ? hbars(porAg, num) : empty('i-users', 'Todavía no hay ventas.')}
       </div>
     </div>`
   };
 };
 
 function comisionesPorAgente() {
-  const res = AGENTES.map(a => ({ a, gen: 0, parte: 0, lv: 0, lc: 0, lineas: [] }));
+  const res = AGENTES.map(a => ({ a, gen: 0, parte: 0, lv: 0, lc: 0, cab: 0, lineas: [] }));
   PROFORMAS.forEach(p => {
     const k = calcPF(p);
     const rv = res.find(r => r.a.id === k.agV.id), rc = res.find(r => r.a.id === k.agC.id);
-    rv.gen += k.comV; rv.parte += k.agVm; rv.lv++; rv.lineas.push({ p, lado: 'Vendedor', base: k.comV, parte: k.agVm, k });
-    rc.gen += k.comC; rc.parte += k.agCm; rc.lc++; rc.lineas.push({ p, lado: 'Comprador', base: k.comC, parte: k.agCm, k });
+    rv.gen += k.comV || 0; rv.parte += k.agVm || 0; rv.lv++; rv.cab += k.l.cab; rv.lineas.push({ p, lado: 'Vendedor', base: k.comV, parte: k.agVm, k });
+    if (CFG.cobraComp) { rc.gen += k.comC || 0; rc.parte += k.agCm || 0; rc.lc++; rc.lineas.push({ p, lado: 'Comprador', base: k.comC, parte: k.agCm, k }); }
   });
-  return res.sort((a, b) => b.gen - a.gen);
+  return res.sort((a, b) => b.gen - a.gen || (b.lv + b.lc) - (a.lv + a.lc));
 }
 
 /* ---------- Bandeja ---------- */
@@ -1039,7 +1128,7 @@ VIEWS.bandeja = (arg) => {
 };
 const PLANTILLAS = [
   ['Pedir datos del lote', 'Gracias por escribir. Para armar el lote necesito: categoría, cantidad, kilos promedio, raza, sanidad y dónde están. Si podés mandame un video.'],
-  ['Fecha de remate', 'El Remate de Primavera es el viernes 2 de octubre en Florida y Plaza Rural 328 el 8 y 9 de octubre. La inscripción del 328 cierra el 29 de setiembre.'],
+  ['Fecha de remate', 'El Remate 328 de Plaza Rural (Plaza Angus) es este jueves 24 y viernes 25 de setiembre. El Remate de Primavera en Florida es el viernes 2 de octubre.'],
   ['Agendar revisación', 'Coordinemos la revisación. ¿Te sirve esta semana de mañana? Pasame la ubicación del establecimiento.'],
   ['Mandar catálogo', 'Te paso el catálogo con los lotes que te pueden servir. Cualquier duda me escribís.']
 ];
@@ -1117,9 +1206,9 @@ function moverNegocio(id, etapa) {
   const p = prod(n.prod);
   if (etapa === 'contactado' || etapa === 'revision') p.temp = 'caliente';
   if (etapa === 'cargado' && !n.lote) {
-    const l = L({ prod: n.prod, cat: n.cat, cab: n.cab, kg: 0, raza: '', edad: '', rem: 'PR328', estado: 'Borrador', ag: n.ag, ch: {}, precioBase: cat(n.cat).ref });
+    const l = L({ prod: n.prod, cat: n.cat, cab: n.cab, kg: 0, raza: '', edad: '', rem: 'PR329', estado: 'Borrador', ag: n.ag, ch: {}, precioBase: cat(n.cat).ref });
     l.kg = ''; l.hist.push({ t: 'Lote creado desde el embudo comercial', h: ahora(), i: 'i-kanban' });
-    LOTES.push(l); n.lote = l.id; n.nota = `Lote ${l.id} en borrador para Plaza Rural 328.`;
+    LOTES.push(l); n.lote = l.id; n.nota = `Lote ${l.id} en borrador para el Remate 329.`;
     render();
     toast(`${p.nom} pasó a Lote cargado. Se creó el lote ${l.id} en borrador.`, { act: 'Completar', fn: () => go('lote', l.id), ms: 6000 });
     return;
@@ -1179,7 +1268,8 @@ VIEWS.lote = (id) => {
   const cps = compradoresPara(l);
   const vendible = ['En catálogo', 'Ofrecido'].includes(l.estado);
   const ch = l.ch || {};
-  const campos = FORMS[c.form].filter(f => !(f[0] === 'toro' && l.cat !== 'vp'));
+  const campos = camposDe(l);
+  const pr = canalDe(l) === 'Plaza Rural', tol = l.kg ? toleranciaKg(c, l.kg) : null, minC = minCabezas(c);
   const hist = [
     { t: 'Lote creado por ' + ag(l.ag).nom, i: 'i-mas', h: r ? new Date(r.fecha.getTime() - 20 * DIA) : dd(-14) },
     ...(nivel >= 1 ? [{ t: 'Revisación hecha en el establecimiento', i: 'i-ojo', h: r ? new Date(r.fecha.getTime() - 12 * DIA) : dd(-9) }] : []),
@@ -1198,7 +1288,7 @@ VIEWS.lote = (id) => {
        ${vendible ? `<button class="btn pri" data-act="martillo" data-id="${l.id}">${ic('i-martillo')}<span>${l.rem ? 'Bajar martillo' : 'Cerrar venta'}</span></button>` : ''}
        ${pf ? `<button class="btn pri" data-act="verPF" data-id="${pf.id}">${ic('i-doc')}<span>Proforma ${pf.id}</span></button>` : ''}`,
     h: `<button class="back" data-act="back">${ic('i-atras')} Volver</button>
-    <div class="card mb"><div class="flex wrap" style="gap:14px;margin-bottom:6px"><div class="bubble g" style="width:44px;height:44px">${ic(c.grupo === 'Lanares' ? 'i-oveja' : 'i-vaca')}</div><div class="grow" style="flex:1;min-width:200px"><div style="font-size:18px;font-weight:800">${l.cab} ${esc(c.nom.toLowerCase())} ${l.raza ? '· ' + esc(l.raza) : ''}</div><div class="muted">${r ? esc(r.nom) + ' · ' + fdate(r.fecha) : 'Venta directa'} · Agente ${esc(ag(l.ag).nom)}</div></div>${estTag(l.estado)}${l.web ? '<span class="tag info">' + ic('i-globo') + ' En la web</span>' : ''}</div>
+    <div class="card mb"><div class="flex wrap" style="gap:14px;margin-bottom:6px"><div class="bubble g" style="width:44px;height:44px">${ic(c.grupo === 'Lanares' ? 'i-oveja' : 'i-vaca')}</div><div class="grow" style="flex:1;min-width:200px"><div style="font-size:18px;font-weight:800">${l.cab} ${esc(c.nom.toLowerCase())}${l.raza && l.raza.length < 30 ? ' · ' + esc(l.raza) : ''}${l.nro ? ' · ' + esc(prod(l.prod).nom) : ''}</div><div class="muted">${r ? esc(r.nom) + ' · ' + fechaRem(r) : 'Venta directa'}${l.nro ? ' · Lote Nº ' + l.nro + (l.hora ? ', ' + l.hora : '') : ''} · Agente ${esc(ag(l.ag).nom)}</div></div>${estTag(l.estado)}${l.web ? '<span class="tag info">' + ic('i-globo') + ' En la web</span>' : ''}</div>
       <div class="steps">${pasos.map((s, i) => `<div class="${i < nivel ? 'done' : i === nivel ? 'cur' : ''}">${s}</div>`).join('')}</div>
       ${l.nota ? `<div class="note">${ic('i-alerta')}<span>${esc(l.nota)}</span></div>` : ''}
     </div>
@@ -1207,34 +1297,50 @@ VIEWS.lote = (id) => {
         <div class="facts">
           <div><span>Canal</span><b>${esc(canalDe(l))}</b></div>
           <div><span>Remate</span><b>${r ? esc(r.nom) : 'No aplica'}</b></div>
-          <div><span>${l.venta ? 'Precio de venta' : 'Precio base'}</span><b>${l.venta ? precioU(c, l.venta.precio) : l.precioBase ? precioU(c, l.precioBase) : 'sin dato'}</b></div>
-          <div><span>Referencia 327</span><b>${precioU(c, c.ref)}</b></div>
-          <div><span>Plazo</span><b>${l.plazo ? l.plazo + ' días' : 'Contado'}</b></div>
-          <div><span>Flete</span><b>A cargo del ${esc(l.flete.toLowerCase())}</b></div>
-          <div style="grid-column:1/-1"><span>Balanza y desbaste</span><b>${esc(l.balanza)}</b></div>
+          <div><span>${l.venta ? 'Precio de venta' : 'Precio base'}</span><b>${l.venta ? precioU(c, l.venta.precio) : l.precioBase ? precioU(c, l.precioBase) : 'Sin base'}</b></div>
+          <div><span>Promedio en el 327</span><b>${c.ref ? precioU(c, c.ref) : 'Sin referencia'}</b></div>
+          <div><span>Plazo</span><b>${plazoTxt(l.plazo)}${pr ? ' · administra BROU' : ''}</b></div>
+          <div><span>Se vende</span><b>${c.u === 'kg' ? 'Al kilo' : 'Por unidad'}</b></div>
+          <div style="grid-column:1/-1"><span>Balanza y destare</span><b>${esc(l.balanza || (pr ? 'Balanza oficial, destare según distancia (Art. 11)' : 'A acordar'))}</b></div>
           <div><span>Destino</span><b>${esc(l.destino)}</b></div>
-          <div><span>Comisiones</span><b>${CFG.comVend}% vend. · ${CFG.comComp}% comp.</b></div>
-          <div><span>Valor estimado</span><b>${l.kg || c.u === 'cab' ? usd((c.u === 'kg' ? l.cab * l.kg : l.cab) * (l.venta ? l.venta.precio : (l.precioBase || c.ref))) : 'sin dato'}</b></div>
-          <div><span>Comisión estimada</span><b>${l.kg || c.u === 'cab' ? usd((c.u === 'kg' ? l.cab * l.kg : l.cab) * (l.venta ? l.venta.precio : (l.precioBase || c.ref)) * (CFG.comVend + CFG.comComp) / 100) : 'sin dato'}</b></div>
+          <div><span>Flete</span><b>A cargo del ${esc(l.flete.toLowerCase())}</b></div>
+          <div><span>Valor estimado</span><b>${(l.kg || c.u === 'cab') && (l.venta || l.precioBase || c.ref) ? usd((c.u === 'kg' ? l.cab * l.kg : l.cab) * (l.venta ? l.venta.precio : (l.precioBase || c.ref))) : 'sin dato'}</b></div>
+          <div><span>Comisiones</span><b>${comCargada() ? 'Según tabla del escritorio' : '<span style="color:var(--warn-ink)">A cargar en Configuración</span>'}</b></div>
+          ${l.insp ? `<div><span>Inspección</span><b>${esc(l.tipoInsp)} · ${esc(l.insp)}</b></div>` : ''}
+          ${l.ninsp ? `<div><span>Nº de inspección</span><b>${l.ninsp}</b></div>` : ''}
         </div>
       </div>
-      <div class="card"><h3>${ic('i-vaca')} Categoría y características<span class="grow"></span><span class="tag ${cc.ok === cc.total ? 'ok' : 'warn'}">${cc.ok}/${cc.total} completos</span></h3>
+      <div class="card"><h3>${ic('i-vaca')} Ficha del lote<span class="grow"></span>${cc.catalogo ? '<span class="tag gold">Del orden de venta</span>' : `<span class="tag ${cc.ok === cc.total ? 'ok' : 'warn'}">${cc.ok}/${cc.total} completos</span>`}</h3>
         <div class="facts">
-          <div><span>Categoría</span><b>${esc(c.nom)}</b></div><div><span>Raza</span><b>${esc(l.raza || 'sin dato')}</b></div>
+          <div><span>Categoría</span><b>${esc(c.nom)}</b></div><div><span>Raza</span><b>${esc(l.raza || (cc.catalogo ? 'Ver catálogo' : 'sin dato'))}</b></div>
           <div><span>Cabezas</span><b>${num(l.cab)}</b></div><div><span>Kg promedio</span><b>${l.kg ? kg(l.kg) : 'sin dato'}</b></div>
-          <div><span>Edad</span><b>${esc(l.edad || 'sin dato')}</b></div>
-          ${campos.map(f => `<div><span>${f[1]}</span><b style="${ch[f[0]] ? '' : 'color:var(--warn-ink)'}">${esc(ch[f[0]] || 'falta completar')}</b></div>`).join('')}
+          <div><span>Edad</span><b>${esc(l.edad || (cc.catalogo ? 'Ver catálogo' : 'sin dato'))}</b></div>
+          ${cc.catalogo ? '' : campos.map(f => `<div ${['sanidad', 'pesada', 'obnut', 'reproductivo'].includes(f[0]) ? 'style="grid-column:1/-1"' : ''}><span>${f[1]}</span><b style="${ch[f[0]] ? '' : 'color:var(--warn-ink)'}">${esc(ch[f[0]] || 'falta completar')}</b></div>`).join('')}
         </div>
-        ${cc.ok < cc.total ? `<div class="note" style="margin-top:12px">${ic('i-alerta')}<span>Faltan: ${cc.faltan.map(x => NOMBRE_CAMPO[x] || x).join(', ')}. Sin esto no se puede pasar a catálogo.</span></div>` : ''}
+        ${l.conteo ? `<div class="tbl-wrap" style="margin:14px -17px 0"><table><thead><tr>${['Destetados', 'Al pie', 'Enteros', 'Castrados', 'Mochos', 'Astados', 'Mochados', 'Tocos'].map(h => `<th class="num">${h}</th>`).join('')}</tr></thead><tbody><tr>${['destetados', 'alpie', 'enteros', 'castrados', 'mochos', 'astados', 'mochados', 'tocos'].map(k => `<td class="num">${l.conteo[k]}</td>`).join('')}</tr></tbody></table></div>` : ''}
+        ${l.obs ? `<div class="note i" style="margin-top:12px">${ic('i-ojo')}<span><b>Obs. del inspector:</b> ${esc(l.obs)}</span></div>` : ''}
+        ${cc.catalogo ? `<div class="note i" style="margin-top:12px">${ic('i-doc')}<span>De este lote cargamos lo que publica el orden de venta: cabezas, peso, departamento y hora. El resto de la ficha se completa con el formulario.</span></div>` : ''}
+        ${!cc.catalogo && cc.ok < cc.total ? `<div class="note" style="margin-top:12px">${ic('i-alerta')}<span>Faltan: ${cc.faltan.map(x => NOMBRE_CAMPO[x] || x).join(', ')}. Sin esto no se puede pasar a catálogo.</span></div>` : ''}
       </div>
     </div>
+    ${pr ? `<div class="card mb"><h3>${ic('i-escudo')} Lo que dice el reglamento de Plaza Rural para este lote</h3>
+      <div class="facts f3">
+        <div><span>Mínimo de cabezas (Art. 3)</span><b>${minC} por lote, con 10% de tolerancia${l.cab < Math.ceil(minC * 0.9) ? ' · <span style="color:var(--warn-ink)">queda a criterio del inspector</span>' : ''}</b></div>
+        <div><span>Tolerancia de kilos (Art. 15)</span><b>${tol ? nf1.format(tol).replace(',0', '') + '% para ' + (l.kg ? kg(l.kg) : '') : 'No aplica'}</b></div>
+        <div><span>Destare (Art. 11)</span><b>6% hasta 70 km, 5% hasta 150 km, 4% más lejos</b></div>
+        <div><span>Retiro del lote (Art. 13)</span><b>Hasta 15 días</b></div>
+        <div><span>Reclamos (Art. 14)</span><b>Hasta 7 días de entregado</b></div>
+        <div><span>Si se retira inspeccionado (Art. 7)</span><b>US$ 100 más US$ 2 por animal</b></div>
+      </div>
+      <div class="flex" style="margin-top:12px"><button class="btn sm" data-go="precios">${ic('i-camion')} Calcular destare y carga</button></div>
+    </div>` : ''}
     <div class="grid g21">
       <div class="card"><h3>${ic('i-comprador')} Compradores que le sirven<span class="grow"></span><small>por categoría, zona e interés</small></h3>
         <div class="list">${cps.slice(0, 7).map(x => `<div class="li"><div class="bubble i">${ic('i-comprador')}</div><div class="grow"><div class="t ellip">${esc(x.c.nom)} <span class="tag" style="margin-left:4px">${esc(x.c.tipo)}</span></div><div class="s ellip">${esc(x.why.join(' · '))}</div></div><div class="pill-row">${[1, 2, 3, 4].map(i => `<span class="dot" style="color:${i <= x.s ? 'var(--brand)' : 'var(--line)'}"></span>`).join('')}</div>${l.venta && l.venta.comp === x.c.id ? '<span class="tag ok">Compró</span>' : ''}</div>`).join('') || empty('i-comprador', 'No hay compradores con este perfil todavía.')}</div>
         ${!l.venta && cps.length ? `<button class="btn wa" style="margin-top:10px" data-act="enviarLote" data-id="${l.id}">${ic('i-enviar')} Mandar la ficha a los ${cps.length}</button>` : ''}
       </div>
       <div class="grid" style="align-content:start">
-        <div class="card"><h3>${ic('i-user')} Productor</h3><div class="li click" data-act="fichaProd" data-id="${p.id}"><div class="av">${p.nom.split(' ').map(w => w[0]).slice(0, 2).join('')}</div><div class="grow"><div class="t">${esc(p.nom)}</div><div class="s">${esc(p.est)} · ${esc(p.paraje)}, ${esc(p.depto)}</div><div class="s">DICOSE ${p.dicose} · ${esc(p.tel)}</div></div></div></div>
+        <div class="card"><h3>${ic('i-user')} Productor</h3><div class="li click" data-act="fichaProd" data-id="${p.id}"><div class="av">${p.nom.split(' ').map(w => w[0]).slice(0, 2).join('')}</div><div class="grow"><div class="t">${esc(p.nom)}</div><div class="s">${esc(p.est)} · ${esc(p.paraje)}, ${esc(p.depto)}</div><div class="s">${p.dicose ? 'DICOSE ' + p.dicose : 'Trazabilidad: consultar escritorio'}${p.tel ? ' · ' + esc(p.tel) : ''}</div></div></div></div>
         <div class="card"><h3>${ic('i-reloj')} Historial</h3><div class="timeline">${hist.map(x => `<div class="tl"><div class="bubble">${ic(x.i)}</div><div><div class="t">${esc(x.t)}</div><div class="s">${fdate(x.h)}</div></div></div>`).join('')}</div></div>
       </div>
     </div>`
@@ -1244,32 +1350,33 @@ VIEWS.lote = (id) => {
 /* ---------- Formulario estandarizado ---------- */
 function loteForm(l, pre = {}) {
   const nuevo = !l;
-  const d = l || Object.assign({ prod: '', cat: 'tm', cab: '', kg: '', raza: '', edad: '', rem: 'PR328', canal: 'Plaza Rural', ag: '', ch: {}, precioBase: '', plazo: CFG.plazo, flete: 'Comprador', balanza: 'Balanza del establecimiento, 4ª pesada con 3% de desbaste', destino: 'Invernada' }, pre);
-  const remSel = d.rem || (d.canal === 'Venta directa' ? '' : 'PR328');
+  const d = l || Object.assign({ prod: '', cat: 'tm', cab: '', kg: '', raza: '', edad: '', rem: 'PR329', canal: 'Plaza Rural', ag: '', ch: {}, precioBase: '', plazo: CFG.plazo, flete: 'Comprador', balanza: '', destino: 'Invernada', obs: '' }, pre);
+  const remSel = d.rem || (d.canal === 'Venta directa' ? '' : 'PR329');
   const html = `${mHead(nuevo ? 'Nuevo lote · formulario estandarizado' : 'Formulario del lote ' + d.id)}
   <div class="modal-b">
-    <div class="note i" style="margin-bottom:14px">${ic('i-doc')}<span>El mismo formulario para todos los lotes. Los campos cambian según la categoría, y con todo completo el lote pasa a <b>Revisado</b> y queda listo para el catálogo, la web y el envío a compradores.</span></div>
+    <div class="note i" style="margin-bottom:14px">${ic('i-doc')}<span>Los mismos campos que la ficha del catálogo de Plaza Rural y lo que pide el Art. 4 del reglamento. Con todo completo el lote pasa a <b>Revisado</b> y queda listo para el catálogo, la web y el envío a compradores.</span></div>
     <div class="form form3">
       <div class="field full" style="grid-column:1/-1"><label for="fProd">Productor <span class="req">*</span></label><select class="sel" id="fProd"><option value="">Elegí un productor</option>${PRODUCTORES.map(p => `<option value="${p.id}" ${d.prod === p.id ? 'selected' : ''}>${esc(p.nom)} · ${esc(p.est)} · ${esc(p.depto)}</option>`).join('')}</select></div>
       <div class="field"><label for="fCat">Categoría <span class="req">*</span></label><select class="sel" id="fCat">${CATS.map(c => `<option value="${c.id}" ${d.cat === c.id ? 'selected' : ''}>${c.nom}</option>`).join('')}</select></div>
-      <div class="field"><label for="fCab">Cabezas <span class="req">*</span></label><input class="inp" id="fCab" type="number" min="1" value="${esc(d.cab)}"></div>
+      <div class="field"><label for="fCab">Cabezas <span class="req">*</span></label><input class="inp" id="fCab" type="number" min="1" value="${esc(d.cab)}"><span class="hint" id="fMin"></span></div>
       <div class="field"><label for="fKg">Kg promedio <span class="req">*</span></label><input class="inp" id="fKg" type="number" min="1" value="${esc(d.kg)}"></div>
-      <div class="field"><label for="fRaza">Raza <span class="req">*</span></label><select class="sel" id="fRaza"><option value="">Elegí</option>${RAZAS.map(r => `<option ${d.raza === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
-      <div class="field"><label for="fEdad">Edad <span class="req">*</span></label><input class="inp" id="fEdad" value="${esc(d.edad)}" placeholder="Ej: 7 a 8 meses"></div>
+      <div class="field"><label for="fRaza">Raza <span class="req">*</span></label><input class="inp" id="fRaza" list="razasL" value="${esc(d.raza)}" placeholder="Ej: 40 AA, 13 RA, 4 HE x RA"><datalist id="razasL">${RAZAS.map(r => `<option value="${r}">`).join('')}</datalist></div>
+      <div class="field"><label for="fEdad">Edad <span class="req">*</span></label><input class="inp" id="fEdad" value="${esc(d.edad)}" placeholder="Ej: Primavera 2025"></div>
       <div class="field"><label for="fAg">Agente</label><select class="sel" id="fAg"><option value="">Según la zona</option>${AGENTES.map(a => `<option value="${a.id}" ${d.ag === a.id ? 'selected' : ''}>${a.nom}</option>`).join('')}</select></div>
     </div>
     <div class="sep"></div>
     <b style="font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--brand-deep)">Categoría y características</b>
     <div class="form form3" id="fEsp" style="margin-top:10px"></div>
+    <div class="field" style="margin-top:12px"><label for="fObs">Observaciones</label><textarea class="inp" id="fObs" placeholder="Lo que diría el inspector: conformación, uniformidad, genética, defectos">${esc(d.obs || '')}</textarea></div>
     <div class="sep"></div>
     <b style="font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--brand-deep)">Plato del negocio</b>
     <div class="form form3" style="margin-top:10px">
-      <div class="field"><label for="fRem">Dónde se vende</label><select class="sel" id="fRem">${REMATES.filter(r => r.fecha > HOY).map(r => `<option value="${r.id}" ${remSel === r.id ? 'selected' : ''}>${r.nom} · ${fdate(r.fecha)}</option>`).join('')}<option value="" ${!remSel ? 'selected' : ''}>Venta directa</option></select></div>
+      <div class="field"><label for="fRem">Dónde se vende</label><select class="sel" id="fRem">${REMATES.filter(r => (r.fecha > HOY && r.estado !== 'Catálogo cerrado') || r.id === d.rem).map(r => `<option value="${r.id}" ${remSel === r.id ? 'selected' : ''}>${r.nom} · ${fechaRem(r)}</option>`).join('')}<option value="" ${!remSel ? 'selected' : ''}>Venta directa</option></select></div>
       <div class="field"><label for="fPre">Precio base <span id="fU" class="muted"></span></label><input class="inp" id="fPre" type="number" step="0.01" value="${esc(d.precioBase)}"><span class="hint" id="fRef"></span></div>
-      <div class="field"><label for="fPlazo">Plazo (días)</label><input class="inp" id="fPlazo" type="number" min="0" value="${esc(d.plazo)}"></div>
+      <div class="field"><label for="fPlazo">Plazo</label><select class="sel" id="fPlazo">${PLAZOS.concat(PLAZOS.some(x => x[0] === +d.plazo) ? [] : [[+d.plazo, plazoTxt(+d.plazo)]]).map(([k, t]) => `<option value="${k}" ${+d.plazo === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
       <div class="field"><label for="fFlete">Flete a cargo del</label><select class="sel" id="fFlete">${['Comprador', 'Vendedor'].map(x => `<option ${d.flete === x ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
       <div class="field"><label for="fDest">Destino</label><select class="sel" id="fDest">${['Invernada', 'Cría', 'Faena', 'Exportación en pie'].map(x => `<option ${d.destino === x ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
-      <div class="field"><label for="fBal">Balanza y desbaste</label><input class="inp" id="fBal" value="${esc(d.balanza)}"></div>
+      <div class="field"><label for="fBal">Balanza y destare</label><input class="inp" id="fBal" value="${esc(d.balanza)}" placeholder="En Plaza Rural: balanza oficial, destare por distancia"></div>
     </div>
     <div id="fErr" style="margin-top:12px"></div>
   </div>
@@ -1278,15 +1385,17 @@ function loteForm(l, pre = {}) {
   const esp = () => {
     const c = cat($('#fCat').value);
     const ch = d.cat === c.id ? d.ch || {} : {};
-    $('#fEsp').innerHTML = FORMS[c.form].filter(f => !(f[0] === 'toro' && c.id !== 'vp')).map(f => `<div class="field ${f[2] === 'text' && f[0] === 'sanidad' ? '' : ''}"><label for="e_${f[0]}">${f[1]} <span class="req">*</span></label>${Array.isArray(f[2]) ? `<select class="sel" id="e_${f[0]}" data-esp="${f[0]}"><option value="">Elegí</option>${f[2].map(o => `<option ${ch[f[0]] === o ? 'selected' : ''}>${o}</option>`).join('')}</select>` : `<input class="inp" id="e_${f[0]}" data-esp="${f[0]}" value="${esc(ch[f[0]] || '')}" placeholder="${esc(f[3] || '')}">`}</div>`).join('');
+    $('#fEsp').innerHTML = FORMS[c.form].map(f => `<div class="field ${f[2] === 'text' && f[0] === 'sanidad' ? '' : ''}"><label for="e_${f[0]}">${f[1]} <span class="req">*</span></label>${Array.isArray(f[2]) ? `<select class="sel" id="e_${f[0]}" data-esp="${f[0]}"><option value="">Elegí</option>${f[2].map(o => `<option ${ch[f[0]] === o ? 'selected' : ''}>${o}</option>`).join('')}</select>` : `<input class="inp" id="e_${f[0]}" data-esp="${f[0]}" value="${esc(ch[f[0]] || '')}" placeholder="${esc(f[3] || '')}">`}</div>`).join('');
     $('#fU').textContent = c.u === 'kg' ? '(US$/kg)' : '(US$/cab)';
-    $('#fRef').textContent = 'Referencia: ' + precioU(c, c.ref);
-    if (!$('#fPre').value || nuevo) $('#fPre').placeholder = c.ref;
+    $('#fRef').textContent = c.ref ? 'Promedio en el 327: ' + precioU(c, c.ref) : 'Sin referencia en el 327';
+    $('#fPre').placeholder = c.ref ? String(c.ref) : '';
     prog();
   };
   const prog = () => {
-    const req = ['#fProd', '#fCab', '#fKg', '#fRaza', '#fEdad', '#fPre'].map(s => $(s)).concat($$('[data-esp]'));
+    const req = ['#fProd', '#fCab', '#fKg', '#fRaza', '#fEdad'].map(s => $(s)).concat($$('[data-esp]'));
     const ok = req.filter(x => String(x.value).trim() !== '').length;
+    const c = cat($('#fCat').value), r = $('#fRem').value ? rem($('#fRem').value) : null, n = +$('#fCab').value, m = minCabezas(c);
+    $('#fMin').innerHTML = r && r.canal === 'Plaza Rural' ? (n && n < Math.ceil(m * 0.9) ? `<span style="color:var(--warn-ink);font-weight:700">Plaza Rural pide ${m} cabezas en esta categoría (${Math.ceil(m * 0.9)} con tolerancia). Queda a criterio del inspector.</span>` : `Mínimo en Plaza Rural: ${m} cabezas (Art. 3)`) : '';
     $('#fProg').textContent = `${ok} de ${req.length} campos completos`;
     return { req, ok };
   };
@@ -1310,7 +1419,7 @@ function loteForm(l, pre = {}) {
     }
     const chN = {}; $$('[data-esp]').forEach(x => chN[x.dataset.esp] = x.value.trim());
     const p = prod($('#fProd').value);
-    const o = { prod: p.id, cat: $('#fCat').value, cab: +$('#fCab').value, kg: +$('#fKg').value || '', raza: $('#fRaza').value, edad: $('#fEdad').value.trim(), ag: $('#fAg').value || p.ag, ch: chN, rem: $('#fRem').value || null, canal: $('#fRem').value ? rem($('#fRem').value).canal : 'Venta directa', precioBase: +$('#fPre').value || '', plazo: +$('#fPlazo').value, flete: $('#fFlete').value, destino: $('#fDest').value, balanza: $('#fBal').value.trim() };
+    const o = { prod: p.id, cat: $('#fCat').value, cab: +$('#fCab').value, kg: +$('#fKg').value || '', raza: $('#fRaza').value, edad: $('#fEdad').value.trim(), ag: $('#fAg').value || p.ag, ch: chN, obs: $('#fObs').value.trim(), rem: $('#fRem').value || null, canal: $('#fRem').value ? rem($('#fRem').value).canal : 'Venta directa', precioBase: +$('#fPre').value || '', plazo: +$('#fPlazo').value, flete: $('#fFlete').value, destino: $('#fDest').value, balanza: $('#fBal').value.trim() };
     let t;
     if (nuevo) {
       t = L(Object.assign(o, { estado: revisar ? 'Revisado' : 'Borrador' }));
@@ -1333,7 +1442,7 @@ function aCatalogo(id) {
   const l = lote(id);
   const cc = camposLote(l);
   if (cc.ok < cc.total) { toast(`Al lote ${l.id} le faltan ${cc.total - cc.ok} datos del formulario.`, { ico: 'i-alerta', act: 'Completar', fn: () => loteForm(l) }); return; }
-  if (l.rem && rem(l.rem).fecha < HOY) { l.hist.push({ t: `Reingresa: pasa de ${rem(l.rem).nom} a Remate 328`, h: ahora(), i: 'i-martillo' }); l.rem = 'PR328'; }
+  if (l.rem && (rem(l.rem).fecha < HOY || rem(l.rem).estado === 'Catálogo cerrado')) { l.hist.push({ t: `Reingresa: pasa de ${rem(l.rem).nom} al Remate 329`, h: ahora(), i: 'i-martillo' }); l.rem = 'PR329'; }
   l.estado = l.rem ? 'En catálogo' : 'Ofrecido';
   if (CFG.autoWeb) l.web = true;
   l.hist.push({ t: l.rem ? `Entró al catálogo de ${rem(l.rem).nom}` : 'Ofrecido en venta directa', h: ahora(), i: 'i-lote' });
@@ -1343,23 +1452,32 @@ function aCatalogo(id) {
 }
 
 /* ---------- Ficha PDF ---------- */
+// La ficha sale con el mismo orden que la ficha del catálogo de Plaza Rural
 function docLote(l) {
   const p = prod(l.prod), c = cat(l.cat), r = l.rem ? rem(l.rem) : null, ch = l.ch || {};
+  const box = (t, v) => `<div style="background:var(--ink);color:#fff;border-radius:6px;padding:4px 8px;text-align:center;min-width:64px"><div style="font-size:9px;letter-spacing:.8px;opacity:.75">${t}</div><div style="font-size:17px;font-weight:800">${v}</div></div>`;
+  const row = (k, v) => v ? `<div style="margin-bottom:3px"><b>${k}:</b> ${esc(v)}</div>` : '';
   return `<div class="doc">
-    <div class="dh"><div><b>Romualdo &amp; Cía.</b><div class="muted">Negocios rurales desde 1964</div><div class="muted" style="font-size:11.5px">Av. Italia 6919, Montevideo · Herrera 484, Florida · 2605 2222</div></div><div style="text-align:right"><b>Lote ${l.id}</b><div class="muted">${r ? esc(r.nom) : 'Venta directa'}</div><div class="muted">${r ? fdateL(r.fecha) : fdateL(HOY)}</div></div></div>
-    <div style="font-size:20px;font-weight:800;margin-bottom:4px">${l.cab} ${esc(c.nom.toLowerCase())}</div>
-    <div class="muted">${esc(l.raza || '')} · ${esc(l.edad || '')} · ${l.kg ? kg(l.kg) + ' promedio' : ''}</div>
-    <h4>Plato del negocio</h4>
-    <table><tbody>
-      <tr><td class="muted">Precio base</td><td class="strong">${l.precioBase ? precioU(c, l.precioBase) : 'A definir en remate'}</td><td class="muted">Plazo</td><td class="strong">${l.plazo ? l.plazo + ' días' : 'Contado'}</td></tr>
-      <tr><td class="muted">Balanza</td><td class="strong" colspan="3">${esc(l.balanza)}</td></tr>
-      <tr><td class="muted">Flete</td><td class="strong">A cargo del ${esc(l.flete.toLowerCase())}</td><td class="muted">Destino</td><td class="strong">${esc(l.destino)}</td></tr>
-    </tbody></table>
-    <h4>Categoría y características</h4>
-    <table><tbody>${FORMS[c.form].filter(f => !(f[0] === 'toro' && l.cat !== 'vp')).map(f => `<tr><td class="muted" style="width:35%">${f[1]}</td><td class="strong">${esc(ch[f[0]] || 'sin dato')}</td></tr>`).join('')}</tbody></table>
-    <h4>Origen</h4>
-    <table><tbody><tr><td class="muted" style="width:35%">Establecimiento</td><td class="strong">${esc(p.est)}</td></tr><tr><td class="muted">Ubicación</td><td class="strong">${esc(p.paraje)}, ${esc(p.depto)}</td></tr><tr><td class="muted">DICOSE</td><td class="strong">${p.dicose}</td></tr><tr><td class="muted">Consultas</td><td class="strong">${esc(ag(l.ag).nom)} · ${esc(ag(l.ag).tel)}</td></tr></tbody></table>
-    <div class="foot">Comisión al comprador ${CFG.comComp}% + IVA. La hacienda viaja con guía de propiedad y tránsito. Ficha generada automáticamente por el sistema de Romualdo &amp; Cía. el ${fdateL(HOY)}.</div>
+    <div class="dh"><div><b>Romualdo &amp; Cía.</b><div class="muted">Negocios rurales desde 1964</div><div class="muted" style="font-size:11.5px">Av. Italia 6919, Montevideo · Herrera 484, Florida · 2605 2222</div></div><div style="text-align:right"><b>${r ? esc(r.nom) : 'Venta directa'}</b><div class="muted">${r ? fechaRem(r) : fdateL(HOY)}</div><div class="muted">Cat.: ${esc(c.nom)}</div></div></div>
+    <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${box('LOTE', l.nro || l.id.slice(3))}${box('CABEZAS', l.cab)}${box('KG', l.kg || '-')}${box('CLASE', ch.clase || '-')}${box('ESTADO', ch.estado || '-')}</div>
+      <div style="flex:1;min-width:200px"><div style="font-size:16px;font-weight:800;text-transform:uppercase">${esc(p.nom)}${p.est && p.est !== p.nom ? ' - ' + esc(p.est) : ''}</div><div class="muted">${esc(p.ubic || (p.paraje + ', ' + p.depto))}</div><div style="margin-top:4px"><span class="tag gold">${esc(p.depto.toUpperCase())}</span> ${l.hora ? `<span class="tag">Hora ${esc(l.hora)}</span>` : ''}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-top:14px">
+      <div>
+        ${row('Raza', l.raza)}${row('Edad', l.edad)}${row('T. Nut', ch.tnut)}${row('Ob. Nut', ch.obnut)}
+        <div style="margin-bottom:3px">${ch.miomio ? `<b>Mio mio:</b> ${esc(ch.miomio)} &nbsp; ` : ''}${ch.racion ? `<b>Sabe comer ración:</b> ${esc(ch.racion)} &nbsp; ` : ''}${ch.garrapata ? `<b>Zona garrapata:</b> ${esc(ch.garrapata)}` : ''}</div>
+        <div style="margin-bottom:3px"><b>Trazabilidad:</b> Consultar escritorio.${ch.pesada ? ` <b>Pesada:</b> ${esc(ch.pesada)}` : ''}${ch.sanidad ? ` <b>Sanidad:</b> ${esc(ch.sanidad)}` : ''}</div>
+        ${row('Estado reproductivo', ch.reproductivo)}${row('Dentición', ch.dent)}${row('Esquila', ch.esquila)}${row('Filmación', ch.filmacion)}
+        ${l.obs ? `<div style="margin-top:6px"><b>Obs:</b> ${esc(l.obs)}</div>` : ''}
+      </div>
+      <div>${l.conteo ? `<table><tbody>${[['Destetados', 'destetados'], ['Al pie', 'alpie'], ['Enteros', 'enteros'], ['Castrados', 'castrados'], ['Mochos', 'mochos'], ['Astados', 'astados'], ['Mochados', 'mochados'], ['Tocos', 'tocos']].map(([t, k]) => `<tr><td class="strong">${t}:</td><td class="num">${l.conteo[k]}</td></tr>`).join('')}</tbody></table>`
+        : `<table><tbody>${[['Destetados', ch.destete], ['Castrados', ch.castrados], ['Mochos / astados', ch.cuernos]].filter(x => x[1]).map(([t, v]) => `<tr><td class="strong">${t}:</td><td>${esc(v)}</td></tr>`).join('')}</tbody></table>`}</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:12px;padding-top:8px;font-size:12px">
+      <span>${l.insp ? '<b>Insp:</b> ' + esc(l.insp) : ''}</span><span><b>ROMUALDO &amp; CÍA.</b></span><span>${l.tipoInsp ? 'Inspección ' + esc(l.tipoInsp.toLowerCase()) + ' · ' : ''}<b>Plazo:</b> ${plazoTxt(l.plazo)}${l.precioBase ? ' · <b>Base:</b> ' + precioU(c, l.precioBase) : ''}</span>
+    </div>
+    <div class="foot">Consultas: ${esc(ag(l.ag).nom)} · ${esc(ag(l.ag).tel)}. La hacienda viaja con guía de propiedad y tránsito. Ficha generada por el sistema de Romualdo &amp; Cía. el ${fdateL(HOY)}.</div>
   </div>`;
 }
 function fichaPDF(id) {
@@ -1422,9 +1540,11 @@ function enviarLote(id, preSel) {
 function martillo(id) {
   const l = lote(id), c = cat(l.cat);
   const cps = COMPRADORES.map(x => Object.assign({ c: x }, match(l, x))).sort((a, b) => b.s - a.s);
-  const sug = +(l.precioBase || c.ref) + (c.u === 'kg' ? Math.round((Math.random() * 10 - 2)) / 100 : Math.round(Math.random() * 40 - 10));
+  const po = mejorPreoferta(l.id);
+  const sug = po ? po.precio : +precioSim(l) + (c.u === 'kg' ? Math.round((Math.random() * 10 - 2)) / 100 : Math.round(Math.random() * 40 - 10));
+  if (po) { const i = cps.findIndex(x => x.c.id === po.comp); if (i > 0) cps.unshift(cps.splice(i, 1)[0]); }
   modal(`${mHead((l.rem ? 'Bajar martillo · ' : 'Cerrar venta · ') + 'lote ' + l.id)}<div class="modal-b">
-    <div class="note g" style="margin-bottom:14px">${ic('i-rayo')}<span>Al confirmar, el lote queda vendido y el sistema arma solo la proforma con comisiones de vendedor y comprador, la parte de cada agente, y la manda por WhatsApp y mail.</span></div>
+    <div class="note g" style="margin-bottom:14px">${ic('i-rayo')}<span>Al confirmar, el lote queda vendido y el sistema arma solo la proforma con las comisiones del escritorio y la parte de cada agente, y la manda por WhatsApp y mail.</span></div>${po ? `<div class="note" style="margin-bottom:14px">${ic('i-tag')}<span>Preoferta de ${esc(comp(po.comp).nom)} por ${precioU(c, po.precio)}. Queda cargada como punto de partida.</span></div>` : ''}
     <div class="form">
       <div class="field full"><label for="mComp">Comprador</label><select class="sel" id="mComp">${cps.map(x => `<option value="${x.c.id}">${esc(x.c.nom)}${x.s >= 2 ? ' · le sirve' : ''}</option>`).join('')}</select></div>
       <div class="field"><label for="mPre">Precio (${c.u === 'kg' ? 'US$/kg' : 'US$/cab'})</label><input class="inp" id="mPre" type="number" step="${c.u === 'kg' ? '0.01' : '1'}" value="${c.u === 'kg' ? sug.toFixed(2) : Math.round(sug)}"></div>
@@ -1435,12 +1555,23 @@ function martillo(id) {
   const calc = () => {
     const pr = +$('#mPre').value || 0, k = +$('#mKg').value || 0;
     const bruto = c.u === 'kg' ? pr * k * l.cab : pr * l.cab;
-    const cv = bruto * CFG.comVend / 100, cc = bruto * CFG.comComp / 100;
-    $('#mRes').innerHTML = `<div class="facts f3"><div><span>Bruto</span><b>${usd(bruto)}</b></div><div><span>Com. vendedor ${CFG.comVend}%</span><b>${usd(cv)}</b></div><div><span>Com. comprador ${CFG.comComp}%</span><b>${usd(cc)}</b></div><div><span>Kg totales</span><b>${c.u === 'kg' ? kg(k * l.cab) : 'por cabeza'}</b></div><div><span>vs. referencia</span><b style="color:${pr >= c.ref ? 'var(--brand)' : 'var(--bad-ink)'}">${pr >= c.ref ? '+' : ''}${c.u === 'kg' ? nf2.format(pr - c.ref) : num(pr - c.ref)}</b></div><div><span>Comisión total</span><b>${usd(cv + cc)}</b></div></div>`;
+    const cv = CFG.comVend == null ? null : bruto * CFG.comVend / 100, cc = CFG.comComp == null || !CFG.cobraComp ? null : bruto * CFG.comComp / 100;
+    $('#mRes').innerHTML = `<div class="facts f3"><div><span>Bruto</span><b>${usd(bruto)}</b></div><div><span>Com. vendedor</span><b>${mc(cv)}</b></div><div><span>Com. comprador</span><b>${CFG.cobraComp ? mc(cc) : 'No aplica'}</b></div><div><span>Kg totales</span><b>${c.u === 'kg' ? kg(k * l.cab) : 'por cabeza'}</b></div><div><span>vs. promedio 327</span><b style="color:${!c.ref || pr >= c.ref ? 'var(--brand)' : 'var(--bad-ink)'}">${c.ref ? (pr >= c.ref ? '+' : '') + (c.u === 'kg' ? nf2.format(pr - c.ref) : num(pr - c.ref)) : 'sin referencia'}</b></div><div><span>Comisión total</span><b>${cv == null ? '<span class="muted">a cargar</span>' : usd(cv + (cc || 0))}</b></div></div>`;
   };
   $('#mPre').oninput = calc; $('#mKg').oninput = calc; calc();
   $('#mOk').onclick = () => { venderLote(l, $('#mComp').value, +$('#mPre').value, +$('#mKg').value); closeModal(); render(); };
 }
+// Precio para simular: base del lote o promedio del 327; para categorías sin dato en el 327 se usa un valor de muestra
+const PRECIO_MUESTRA = { ho: 2.9, co: 4.0, ov: 140 };
+const precioSim = l => l.precioBase || cat(l.cat).ref || PRECIO_MUESTRA[l.cat] || 3;
+// Preofertas (Art. 19): del comprador registrado y autorizado por el escritorio, hasta 10 minutos antes de que entre el lote
+const PREOF = [
+  { lote: 'RC-1061', comp: 'c3', precio: 4.46, h: H(95) },
+  { lote: 'RC-1061', comp: 'c8', precio: 4.41, h: H(260) },
+  { lote: 'RC-1060', comp: 'c1', precio: 4.52, h: H(180) },
+  { lote: 'RC-1059', comp: 'c4', precio: 4.58, h: H(40) }
+];
+const mejorPreoferta = lid => PREOF.filter(p => p.lote === lid).sort((a, b) => b.precio - a.precio)[0];
 function venderLote(l, cid, precio, kgR, quiet) {
   l.venta = { comp: cid, precio, fecha: ahora(), kgReal: kgR || l.kg };
   l.estado = 'Vendido';
@@ -1505,7 +1636,7 @@ VIEWS.remates = () => {
     <div class="grid g3">${rs.map(r => { const ls = LOTES.filter(l => l.rem === r.id); const cab = ls.reduce((a, l) => a + l.cab, 0); const vend = ls.filter(l => l.venta); const listos = ls.filter(l => ['En catálogo', 'Vendido', 'Sin vender'].includes(l.estado)).length; const fact = vend.reduce((a, l) => { const p = pfOf(l.id); return a + (p ? calcPF(p).bruto : 0); }, 0); const fut = r.fecha > HOY; return `<div class="card kpi" data-go="remate" data-arg="${r.id}">
       <div class="flex" style="margin-bottom:10px"><div class="bubble ${r.canal === 'Plaza Rural' ? 'g' : ''}">${ic(r.canal === 'Plaza Rural' ? 'i-tv' : 'i-martillo')}</div><span class="tag ${fut ? 'warn' : 'ok'}" style="margin-left:auto">${esc(r.estado)}</span></div>
       <div style="font-size:16px;font-weight:800">${esc(r.nom)}</div>
-      <div class="muted" style="font-size:12.5px;margin:2px 0 12px">${fdate(r.fecha)}${r.dias > 1 ? ' y ' + fdate(new Date(r.fecha.getTime() + DIA)) : ''} · ${esc(r.lugar)}</div>
+      <div class="muted" style="font-size:12.5px;margin:2px 0 12px">${fechaRem(r)} · ${esc(r.lugar)}</div>
       <div class="facts f3"><div><span>Lotes</span><b>${ls.length}</b></div><div><span>Cabezas</span><b>${num(cab)}</b></div><div><span>${fut ? 'Cierra' : 'Vendido'}</span><b>${fut ? (r.cierre ? rel(r.cierre) : 'sin fecha') : usd(fact)}</b></div></div>
       ${fut ? `<div style="margin-top:12px"><div class="flex" style="font-size:12px;margin-bottom:4px"><span class="muted">Lotes listos</span><b class="right">${listos} de ${ls.length}</b></div><div class="progress"><div style="width:${ls.length ? listos / ls.length * 100 : 0}%"></div></div></div>` : `<div style="margin-top:12px;font-size:12.5px" class="muted">Colocación ${ls.length ? Math.round(vend.length / ls.length * 100) : 0}% · ${vend.length} de ${ls.length} lotes vendidos</div>`}
     </div>`; }).join('')}</div>`
@@ -1514,30 +1645,47 @@ VIEWS.remates = () => {
 VIEWS.remate = (id) => {
   const r = rem(id);
   if (!r) return VIEWS.remates();
-  const ls = LOTES.filter(l => l.rem === r.id);
-  const fut = r.fecha > HOY;
+  const ls = LOTES.filter(l => l.rem === r.id).sort((a, b) => (a.nro || 999) - (b.nro || 999));
+  const fut = r.fecha > HOY, pr = r.canal === 'Plaza Rural';
   const vend = ls.filter(l => l.venta);
   const fact = vend.reduce((a, l) => { const p = pfOf(l.id); return a + (p ? calcPF(p).bruto : 0); }, 0);
-  const com = vend.reduce((a, l) => { const p = pfOf(l.id); if (!p) return a; const k = calcPF(p); return a + k.comV + k.comC; }, 0);
   const enCat = ls.filter(l => l.estado === 'En catálogo');
+  const conNro = ls.some(l => l.nro);
+  const est = ls.reduce((a, l) => { const c = cat(l.cat); return a + (c.u === 'kg' ? l.cab * (l.kg || 0) : l.cab) * precioSim(l); }, 0);
+  const pos = PREOF.filter(p => ls.some(l => l.id === p.lote));
   return {
-    t: r.nom, s: `${fdate(r.fecha)} · ${r.lugar}`,
-    a: `<button class="btn" data-act="csvRemate" data-id="${r.id}">${ic('i-bajar')}<span>Catálogo CSV</span></button><button class="btn" data-act="printCat" data-id="${r.id}">${ic('i-print')}<span>Imprimir catálogo</span></button>${fut ? `<button class="btn wa" data-act="enviarCat" data-id="${r.id}">${ic('i-enviar')}<span>Enviar catálogo</span></button>` : ''}${fut && enCat.length ? `<button class="btn pri" data-act="simRemate" data-id="${r.id}">${ic('i-play')}<span>Simular remate</span></button>` : ''}`,
+    t: r.nom, s: `${fechaRem(r)} · ${r.lugar}`,
+    a: `<button class="btn" data-act="csvRemate" data-id="${r.id}">${ic('i-bajar')}<span>Catálogo CSV</span></button><button class="btn" data-act="printCat" data-id="${r.id}">${ic('i-print')}<span>Imprimir</span></button>${fut && r.estado !== 'Catálogo cerrado' ? `<button class="btn wa" data-act="enviarCat" data-id="${r.id}">${ic('i-enviar')}<span>Enviar catálogo</span></button>` : ''}${fut && pr && enCat.length ? `<button class="btn" data-act="preoferta" data-id="${r.id}">${ic('i-tag')}<span>Registrar preoferta</span></button>` : ''}${fut && enCat.length ? `<button class="btn pri" data-act="simRemate" data-id="${r.id}">${ic('i-play')}<span>Simular remate</span></button>` : ''}`,
     h: `<button class="back" data-act="back">${ic('i-atras')} Volver</button>
     <div class="grid g4 mb">
-      <div class="card kpi"><div class="lbl">Lotes</div><div class="val">${ls.length}</div><div class="foot">${enCat.length} en catálogo</div></div>
-      <div class="card kpi"><div class="lbl">Cabezas</div><div class="val">${num(ls.reduce((a, l) => a + l.cab, 0))}</div><div class="foot">${[...new Set(ls.map(l => cat(l.cat).grupo))].join(', ')}</div></div>
-      <div class="card kpi"><div class="lbl">${fut ? 'Valor estimado' : 'Negociado'}</div><div class="val">${usd(fut ? ls.reduce((a, l) => { const c = cat(l.cat); return a + (c.u === 'kg' ? l.cab * (l.kg || 0) : l.cab) * (l.precioBase || c.ref); }, 0) : fact)}</div><div class="foot">${fut ? 'con precios base' : vend.length + ' lotes vendidos'}</div></div>
-      <div class="card kpi"><div class="lbl">${fut ? 'Cierre de inscripción' : 'Comisiones'}</div><div class="val">${fut ? (r.cierre ? fdate(r.cierre) : 'A definir') : usd(com)}</div><div class="foot">${fut ? (r.cierre ? rel(r.cierre) : '') : 'vendedor + comprador'}</div></div>
+      <div class="card kpi"><div class="lbl">Lotes nuestros</div><div class="val">${ls.length}</div><div class="foot">${enCat.length} en catálogo · ${vend.length} vendidos</div></div>
+      <div class="card kpi"><div class="lbl">Cabezas</div><div class="val">${num(ls.reduce((a, l) => a + l.cab, 0))}</div><div class="foot">${[...new Set(ls.map(l => cat(l.cat).grupo))].join(', ') || 'sin lotes'}</div></div>
+      <div class="card kpi"><div class="lbl">${vend.length ? 'Negociado' : 'Valor estimado'}</div><div class="val">${usd(vend.length ? fact : est)}</div><div class="foot">${vend.length ? vend.length + ' lotes vendidos' : 'con base o promedio del 327'}</div></div>
+      <div class="card kpi"><div class="lbl">${conNro && fut ? 'Primer lote nuestro' : fut ? 'Cierre de inscripción' : 'Colocación'}</div><div class="val">${conNro && fut ? esc(ls[0].hora) : fut ? (r.cierre ? fdate(r.cierre) : 'A definir') : (ls.length ? Math.round(vend.length / ls.length * 100) : 0) + '%'}</div><div class="foot">${conNro && fut ? 'Lote Nº ' + ls[0].nro + ' · ' + rel(r.fecha) : fut && r.cierre ? rel(r.cierre) : ''}</div></div>
     </div>
-    <div class="card"><h3>${ic('i-lote')} Catálogo<span class="grow"></span>${fut ? '<small>Apretá el martillo en cada lote a medida que se vende</small>' : ''}</h3>
-      <div class="tbl-wrap"><table><thead><tr><th class="num">Nº</th><th>Lote</th><th>Productor</th><th>Categoría</th><th class="num">Cab.</th><th class="num">Kg</th><th class="num">Base</th><th>Resultado</th><th></th></tr></thead><tbody>
-      ${ls.map((l, i) => { const p = prod(l.prod), c = cat(l.cat); return `<tr class="click" data-go="lote" data-arg="${l.id}"><td class="num muted">${i + 1}</td><td class="strong">${l.id}</td><td>${esc(p.nom)}<div class="muted" style="font-size:12px">${esc(p.depto)}</div></td><td>${esc(c.nom)}<div class="muted" style="font-size:12px">${esc(l.raza)}</div></td><td class="num">${num(l.cab)}</td><td class="num">${kgTxt(l)}</td><td class="num">${l.precioBase ? precioU(c, l.precioBase) : '<span class="muted">sin dato</span>'}</td>
+    ${pr && fut ? `<div class="note i mb">${ic('i-escudo')}<span>Condiciones del reglamento: la operación la administra el BROU. Contado a 7 días hábiles, 90 y 120 días para clientes con línea, y hasta 180 días con crédito aprobado. Las preofertas se reciben hasta 10 minutos antes de la entrada del lote.</span></div>` : ''}
+    <div class="card mb"><h3>${ic('i-lote')} ${conNro ? 'Nuestros lotes en el orden de venta' : 'Catálogo'}<span class="grow"></span>${fut && enCat.length ? '<small>Apretá el martillo a medida que se vende cada lote</small>' : ''}</h3>
+      <div class="tbl-wrap"><table><thead><tr><th class="num">Nº</th>${conNro ? '<th>Hora</th>' : ''}<th>Establecimiento</th><th>Categoría</th><th class="num">Cab.</th><th class="num">Kg</th>${conNro ? '<th>Clase / estado</th><th>Inspector</th><th class="num">Preoferta</th>' : '<th class="num">Base</th>'}<th>Resultado</th><th></th></tr></thead><tbody>
+      ${ls.map((l, i) => { const p = prod(l.prod), c = cat(l.cat), po = mejorPreoferta(l.id); return `<tr class="click" data-go="lote" data-arg="${l.id}"><td class="num strong">${l.nro || i + 1}</td>${conNro ? `<td class="mono">${esc(l.hora || '')}</td>` : ''}<td><b>${esc(p.nom)}</b><div class="muted" style="font-size:12px">${esc(p.depto)}</div></td><td>${esc(c.nom)}${conNro ? '' : `<div class="muted" style="font-size:12px">${esc(l.raza || '')}</div>`}</td><td class="num">${num(l.cab)}</td><td class="num">${kgTxt(l)}</td>
+        ${conNro ? `<td>${l.ch && l.ch.clase ? `<span class="tag">${l.ch.clase}</span> <span class="tag">${l.ch.estado}</span>` : '<span class="muted">ver catálogo</span>'}</td><td>${l.insp ? esc(l.insp) : '<span class="muted">Nº ' + (l.ninsp || '') + '</span>'}</td><td class="num">${po ? `<b>${precioU(c, po.precio)}</b><div class="muted" style="font-size:12px">${esc(comp(po.comp).nom)}</div>` : '<span class="muted">sin preoferta</span>'}</td>` : `<td class="num">${l.precioBase ? precioU(c, l.precioBase) : '<span class="muted">sin base</span>'}</td>`}
         <td>${l.venta ? `<b class="mono">${precioU(c, l.venta.precio)}</b><div class="muted" style="font-size:12px">${esc(comp(l.venta.comp).nom)}</div>` : estTag(l.estado)}</td>
         <td class="num">${l.estado === 'En catálogo' ? `<button class="btn sm pri" data-act="martillo" data-id="${l.id}">${ic('i-martillo')} Martillo</button>` : pfOf(l.id) ? `<button class="btn sm" data-act="verPF" data-id="${pfOf(l.id).id}">${ic('i-doc')} ${pfOf(l.id).id}</button>` : ['Borrador', 'Revisado'].includes(l.estado) ? `<button class="btn sm" data-act="aCatalogo" data-id="${l.id}">A catálogo</button>` : ''}</td></tr>`; }).join('')}
-      </tbody></table>${ls.length ? '' : empty('i-lote', 'Este remate todavía no tiene lotes.', `<button class="btn pri" data-act="nuevoLote" data-rem="${r.id}">${ic('i-mas')} Cargar el primero</button>`)}</div></div>`
+      </tbody></table>${ls.length ? '' : empty('i-lote', 'Este remate todavía no tiene lotes.', `<button class="btn pri" data-act="nuevoLote" data-rem="${r.id}">${ic('i-mas')} Cargar el primero</button>`)}</div></div>
+    ${pos.length ? `<div class="card"><h3>${ic('i-tag')} Preofertas recibidas</h3><div class="list">${pos.sort((a, b) => b.h - a.h).map(p => { const l = lote(p.lote); return `<div class="li"><div class="bubble i">${ic('i-comprador')}</div><div class="grow"><div class="t">${esc(comp(p.comp).nom)} · ${precioU(cat(l.cat), p.precio)}</div><div class="s">Lote Nº ${l.nro || l.id} · ${esc(prod(l.prod).nom)} · ${relMin(p.h)}</div></div><span class="tag ok">Autorizado</span></div>`; }).join('')}</div></div>` : ''}`
   };
 };
+function preofertaModal(rid) {
+  const ls = LOTES.filter(l => l.rem === rid && l.estado === 'En catálogo').sort((a, b) => (a.nro || 999) - (b.nro || 999));
+  modal(`${mHead('Registrar preoferta')}<div class="modal-b">
+    <div class="note i" style="margin-bottom:14px">${ic('i-escudo')}<span>Art. 19: el comprador tiene que estar registrado y autorizado por el escritorio. Una preoferta aceptada es una oferta de compra por el lote.</span></div>
+    <div class="form"><div class="field full"><label for="poL">Lote</label><select class="sel" id="poL">${ls.map(l => `<option value="${l.id}">Nº ${l.nro || l.id} · ${l.cab} ${esc(cat(l.cat).nom.toLowerCase())} · ${esc(prod(l.prod).nom)}</option>`).join('')}</select></div>
+    <div class="field"><label for="poC">Comprador</label><select class="sel" id="poC">${COMPRADORES.map(c => `<option value="${c.id}" ${c.autorizado ? '' : 'disabled'}>${esc(c.nom)}${c.autorizado ? '' : ' (no autorizado)'}</option>`).join('')}</select></div>
+    <div class="field"><label for="poP">Precio</label><input class="inp" id="poP" type="number" step="0.01"></div></div>
+  </div><div class="modal-f"><button class="btn" data-act="close">Cancelar</button><button class="btn pri" id="poOk">${ic('i-ok')} Registrar</button></div>`);
+  const sug = () => { const l = lote($('#poL').value); $('#poP').value = (precioSim(l) + (cat(l.cat).u === 'kg' ? .05 : 20)).toFixed(cat(l.cat).u === 'kg' ? 2 : 0); };
+  $('#poL').onchange = sug; sug();
+  $('#poOk').onclick = () => { const d = { lote: $('#poL').value, comp: $('#poC').value, precio: +$('#poP').value, h: ahora() }; if (!d.precio) { $('#poP').style.borderColor = 'var(--bad)'; return; } PREOF.push(d); closeModal(); render(); toast(`Preoferta de ${comp(d.comp).nom} registrada: ${precioU(cat(lote(d.lote).cat), d.precio)}.`); };
+}
 function simRemate(id) {
   const r = rem(id);
   const ls = LOTES.filter(l => l.rem === id && l.estado === 'En catálogo');
@@ -1547,9 +1695,9 @@ function simRemate(id) {
       const l = ls[i++];
       if (!l) { clearInterval(t); toast(`Remate terminado: ${ls.length} lotes vendidos y ${ls.length} proformas enviadas.`, { act: 'Ver proformas', fn: () => go('proformas'), ms: 7000 }); return; }
       const c = cat(l.cat), cps = compradoresPara(l);
-      const cid = (cps[Math.floor(Math.random() * Math.min(3, cps.length))] || { c: COMPRADORES[5] }).c.id;
-      const base = l.precioBase || c.ref;
-      const pr = c.u === 'kg' ? Math.round((base + (Math.random() * .16 - .03)) * 100) / 100 : Math.round(base + Math.random() * 60 - 10);
+      const po = mejorPreoferta(l.id), base = precioSim(l);
+      const cid = po && Math.random() < .7 ? po.comp : (cps[Math.floor(Math.random() * Math.min(3, cps.length))] || { c: COMPRADORES[5] }).c.id;
+      const pr = po && cid === po.comp ? po.precio : c.u === 'kg' ? Math.round((base + (Math.random() * .16 - .03)) * 100) / 100 : Math.round(base + Math.random() * 60 - 10);
       venderLote(l, cid, pr, l.kg, true);
       toast(`${l.id}: ${l.cab} ${c.nom.toLowerCase()} a ${comp(cid).nom}, ${precioU(c, pr)}`, { ico: 'i-martillo', ms: 2600 });
       if (S.view === 'remate') render();
@@ -1558,45 +1706,48 @@ function simRemate(id) {
 }
 function docCatalogo(r) {
   const ls = LOTES.filter(l => l.rem === r.id);
-  return `<div class="doc"><div class="dh"><div><b>Romualdo &amp; Cía.</b><div class="muted">Catálogo de lotes</div></div><div style="text-align:right"><b>${esc(r.nom)}</b><div class="muted">${fdateL(r.fecha)} · ${esc(r.lugar)}</div></div></div>
-  <table><thead><tr><th>Nº</th><th>Lote</th><th>Categoría</th><th class="num">Cab.</th><th class="num">Kg prom.</th><th>Raza</th><th>Origen</th><th class="num">Base</th></tr></thead><tbody>${ls.map((l, i) => `<tr><td>${i + 1}</td><td>${l.id}</td><td>${esc(cat(l.cat).nom)}</td><td class="num">${l.cab}</td><td class="num">${l.kg || ''}</td><td>${esc(l.raza)}</td><td>${esc(prod(l.prod).depto)}</td><td class="num">${l.precioBase ? precioU(cat(l.cat), l.precioBase) : ''}</td></tr>`).join('')}</tbody></table>
-  <div class="foot">Comisión comprador ${CFG.comComp}% + IVA. Plazo ${CFG.plazo} días salvo indicación en el lote.</div></div>`;
+  return `<div class="doc"><div class="dh"><div><b>Romualdo &amp; Cía.</b><div class="muted">Catálogo de lotes</div></div><div style="text-align:right"><b>${esc(r.nom)}</b><div class="muted">${fechaRem(r)} · ${esc(r.lugar)}</div></div></div>
+  <table><thead><tr><th>Nº</th><th>Lote</th><th>Categoría</th><th class="num">Cab.</th><th class="num">Kg prom.</th><th>Raza</th><th>Origen</th><th class="num">Base</th></tr></thead><tbody>${ls.sort((a, b) => (a.nro || 999) - (b.nro || 999)).map((l, i) => `<tr><td>${l.nro || i + 1}</td><td>${l.id}${l.hora ? ' · ' + l.hora : ''}</td><td>${esc(cat(l.cat).nom)}</td><td class="num">${l.cab}</td><td class="num">${l.kg || ''}</td><td>${esc(l.raza)}</td><td>${esc(prod(l.prod).depto)}</td><td class="num">${l.precioBase ? precioU(cat(l.cat), l.precioBase) : ''}</td></tr>`).join('')}</tbody></table>
+  <div class="foot">Condiciones de venta según el reglamento de cada remate. Plazo según cada lote.</div></div>`;
 }
 
 /* ---------- Proformas ---------- */
 VIEWS.proformas = () => {
   const ks = PROFORMAS.map(p => ({ p, k: calcPF(p) }));
-  const tot = ks.reduce((a, x) => ({ b: a.b + x.k.bruto, c: a.c + x.k.comV + x.k.comC, i: a.i + x.k.ivaV + x.k.ivaC, cab: a.cab + x.k.l.cab }), { b: 0, c: 0, i: 0, cab: 0 });
+  const tot = ks.reduce((a, x) => ({ b: a.b + x.k.bruto, c: a.c + (x.k.comV || 0) + (x.k.comC || 0), cab: a.cab + x.k.l.cab }), { b: 0, c: 0, cab: 0 });
   return {
-    t: 'Proformas', s: 'Se generan solas al bajar el martillo, con las dos comisiones y la parte de cada agente',
+    t: 'Proformas', s: 'Se generan solas al bajar el martillo: kg, precio, condiciones y comisiones de cada agente',
     a: `<button class="btn" data-act="csvPF">${ic('i-bajar')}<span>Exportar</span></button>`,
-    h: `<div class="grid g4 mb">
+    h: `${comCargada() ? '' : `<div class="note mb">${ic('i-pct')}<span>Las comisiones todavía no tienen porcentajes cargados, por eso figuran como <b>a cargar</b>. En Configuración se cargan los del escritorio y todas las proformas se recalculan solas.</span><button class="btn sm right" data-go="config">Cargar comisiones</button></div>`}
+    <div class="grid g4 mb">
       <div class="card kpi"><div class="ico">${ic('i-doc')}</div><div class="lbl">Proformas</div><div class="val">${PROFORMAS.length}</div><div class="foot">${num(tot.cab)} cabezas</div></div>
-      <div class="card kpi"><div class="ico g">${ic('i-plata')}</div><div class="lbl">Negociado</div><div class="val">${usd(tot.b)}</div><div class="foot">bruto de hacienda</div></div>
-      <div class="card kpi" data-go="comisiones"><div class="ico">${ic('i-pct')}</div><div class="lbl">Comisiones</div><div class="val">${usd(tot.c)}</div><div class="foot">${CFG.comVend}% vendedor + ${CFG.comComp}% comprador</div></div>
-      <div class="card kpi"><div class="ico">${ic('i-escudo')}</div><div class="lbl">IVA sobre comisiones</div><div class="val">${usd(tot.i)}</div><div class="foot">${CFG.iva}%</div></div>
+      <div class="card kpi"><div class="ico g">${ic('i-plata')}</div><div class="lbl">Negociado</div><div class="val">${usd(tot.b)}</div><div class="foot">importe de hacienda</div></div>
+      <div class="card kpi" data-go="comisiones"><div class="ico">${ic('i-pct')}</div><div class="lbl">Comisiones</div><div class="val" ${comCargada() ? '' : 'style="font-size:18px;margin-top:12px"'}>${comCargada() ? usd(tot.c) : 'A cargar'}</div><div class="foot">${comCargada() ? 'con la tabla del escritorio' : 'según tabla del escritorio'}</div></div>
+      <div class="card kpi"><div class="ico">${ic('i-wa')}</div><div class="lbl">Enviadas</div><div class="val">${PROFORMAS.filter(p => p.estado === 'Enviada').length}</div><div class="foot">a vendedor y comprador</div></div>
     </div>
-    <div class="card"><div class="tbl-wrap" style="border-top:0;margin-top:-17px"><table><thead><tr><th>Proforma</th><th>Fecha</th><th>Lote</th><th>Vendedor</th><th>Comprador</th><th class="num">Kg totales</th><th class="num">Precio</th><th class="num">Bruto</th><th class="num">Com. vend.</th><th class="num">Com. comp.</th><th>Envío</th></tr></thead><tbody>
-    ${ks.map(({ p, k }) => `<tr class="click" data-act="verPF" data-id="${p.id}"><td class="strong">${p.id}</td><td>${fdate(p.fecha)}</td><td>${k.l.id}<div class="muted" style="font-size:12px">${k.l.cab} ${esc(k.c.nom.toLowerCase())}</div></td><td>${esc(prod(k.l.prod).nom)}</td><td>${esc(k.cp.nom)}</td><td class="num">${k.c.u === 'kg' ? kg(k.kgTot) : '<span class="muted">por cabeza</span>'}</td><td class="num">${precioU(k.c, k.v.precio)}</td><td class="num strong">${usd(k.bruto)}</td><td class="num">${usd(k.comV)}</td><td class="num">${usd(k.comC)}</td><td><span class="tag ${p.estado === 'Enviada' ? 'ok' : ''}">${p.estado === 'Enviada' ? ic('i-wa') + ' Enviada' : 'Emitida'}</span></td></tr>`).join('')}
+    <div class="card"><div class="tbl-wrap" style="border-top:0;margin-top:-17px"><table><thead><tr><th>Proforma</th><th>Fecha</th><th>Lote</th><th>Vendedor</th><th>Comprador</th><th class="num">Kg totales</th><th class="num">Precio</th><th class="num">Importe</th><th class="num">Com. vendedor</th>${CFG.cobraComp ? '<th class="num">Com. comprador</th>' : ''}<th>Envío</th></tr></thead><tbody>
+    ${ks.map(({ p, k }) => `<tr class="click" data-act="verPF" data-id="${p.id}"><td class="strong">${p.id}</td><td>${fdate(p.fecha)}</td><td>${k.l.id}<div class="muted" style="font-size:12px">${k.l.cab} ${esc(k.c.nom.toLowerCase())}</div></td><td>${esc(prod(k.l.prod).nom)}</td><td>${esc(k.cp.nom)}</td><td class="num">${k.c.u === 'kg' ? kg(k.kgTot) : '<span class="muted">por unidad</span>'}</td><td class="num">${precioU(k.c, k.v.precio)}</td><td class="num strong">${usd(k.bruto)}</td><td class="num">${mc(k.comV)}</td>${CFG.cobraComp ? `<td class="num">${mc(k.comC)}</td>` : ''}<td><span class="tag ${p.estado === 'Enviada' ? 'ok' : ''}">${p.estado === 'Enviada' ? ic('i-wa') + ' Enviada' : 'Emitida'}</span></td></tr>`).join('')}
     </tbody></table>${ks.length ? '' : empty('i-doc', 'Todavía no hay proformas. Se crean al vender un lote.')}</div></div>`
   };
 };
 function docPF(p, lado) {
-  const k = calcPF(p), pr = prod(k.l.prod);
-  const cab = `<div class="dh"><div><b>Romualdo &amp; Cía.</b><div class="muted">Negocios rurales desde 1964</div><div class="muted" style="font-size:11.5px">Av. Italia 6919, Montevideo · 2605 2222 · secretaria@romualdo.com.uy</div></div><div style="text-align:right"><b>Proforma ${p.id}</b><div class="muted">${fdateL(p.fecha)}</div><div class="muted">${k.l.rem ? esc(rem(k.l.rem).nom) : 'Venta directa'}</div></div></div>`;
-  const neg = `<table><thead><tr><th>Lote</th><th>Categoría</th><th class="num">Cab.</th><th class="num">Kg prom.</th><th class="num">Kg totales</th><th class="num">Precio</th><th class="num">Importe</th></tr></thead><tbody><tr><td>${k.l.id}</td><td>${esc(k.c.nom)} ${esc(k.l.raza)}</td><td class="num">${k.l.cab}</td><td class="num">${k.kgR}</td><td class="num">${num(k.kgTot)}</td><td class="num">${precioU(k.c, k.v.precio)}</td><td class="num">${usd2(k.bruto)}</td></tr></tbody></table>`;
-  if (lado === 'vend') return `<div class="doc">${cab}<h4>Liquidación al vendedor</h4><div class="facts" style="margin-bottom:10px"><div><span>Vendedor</span><b>${esc(pr.nom)}</b></div><div><span>Establecimiento</span><b>${esc(pr.est)} · DICOSE ${pr.dicose}</b></div><div><span>Comprador</span><b>${esc(k.cp.nom)}</b></div><div><span>Plazo</span><b>${p.plazo ? p.plazo + ' días' : 'Contado'} · vence ${fdateL(k.vence)}</b></div></div>${neg}
-    <table style="margin-top:10px"><tbody><tr><td>Importe bruto</td><td class="num">${usd2(k.bruto)}</td></tr><tr><td>Comisión ${nf1.format(p.pv)}%</td><td class="num">- ${usd2(k.comV)}</td></tr><tr><td>IVA ${p.iva}% sobre comisión</td><td class="num">- ${usd2(k.ivaV)}</td></tr><tr><td>IMEBA y adicionales ${nf1.format(p.reten)}%</td><td class="num">- ${usd2(k.ret)}</td></tr>${k.flete ? `<tr><td>Flete a cargo del vendedor</td><td class="num">- ${usd2(k.flete)}</td></tr>` : ''}<tr class="tot"><td>Líquido a cobrar</td><td class="num">${usd2(k.netoProd)}</td></tr></tbody></table>
-    <div class="foot">Balanza: ${esc(k.l.balanza)}. Guía de propiedad y tránsito a nombre del comprador. Documento generado automáticamente al cierre de la venta.</div></div>`;
-  if (lado === 'comp') return `<div class="doc">${cab}<h4>Cuenta al comprador</h4><div class="facts" style="margin-bottom:10px"><div><span>Comprador</span><b>${esc(k.cp.nom)}</b></div><div><span>Tipo</span><b>${esc(k.cp.tipo)} · ${esc(k.cp.depto)}</b></div><div><span>Vendedor</span><b>${esc(pr.nom)}</b></div><div><span>Vencimiento</span><b>${fdateL(k.vence)}</b></div></div>${neg}
-    <table style="margin-top:10px"><tbody><tr><td>Importe hacienda</td><td class="num">${usd2(k.bruto)}</td></tr><tr><td>Comisión ${nf1.format(p.pc)}%</td><td class="num">${usd2(k.comC)}</td></tr><tr><td>IVA ${p.iva}% sobre comisión</td><td class="num">${usd2(k.ivaC)}</td></tr><tr class="tot"><td>Total a pagar</td><td class="num">${usd2(k.totComp)}</td></tr></tbody></table>
-    <div class="foot">Transferencia a la cuenta de Romualdo &amp; Cía. indicando ${p.id}. Retiro de la hacienda coordinado con ${esc(k.agV.nom)}.</div></div>`;
+  const k = calcPF(p), pr = prod(k.l.prod), brou = esBROU(k.l);
+  const cab = `<div class="dh"><div><b>Romualdo &amp; Cía.</b><div class="muted">Negocios rurales desde 1964</div><div class="muted" style="font-size:11.5px">Av. Italia 6919, Montevideo · 2605 2222 · secretaria@romualdo.com.uy</div></div><div style="text-align:right"><b>Proforma ${p.id}</b><div class="muted">${fdateL(p.fecha)}</div><div class="muted">${k.l.rem ? esc(rem(k.l.rem).nom) : 'Venta directa'}${k.l.nro ? ' · Lote Nº ' + k.l.nro : ''}</div></div></div>`;
+  const neg = `<table><thead><tr><th>Lote</th><th>Categoría</th><th class="num">Cab.</th><th class="num">Kg prom.</th><th class="num">Kg totales</th><th class="num">Precio</th><th class="num">Importe</th></tr></thead><tbody><tr><td>${k.l.nro || k.l.id}</td><td>${esc(k.c.nom)}</td><td class="num">${k.l.cab}</td><td class="num">${k.c.u === 'kg' ? k.kgR : ''}</td><td class="num">${k.c.u === 'kg' ? num(k.kgTot) : ''}</td><td class="num">${precioU(k.c, k.v.precio)}</td><td class="num">${usd2(k.bruto)}</td></tr></tbody></table>`;
+  const linea = (t, pctv, v, signo) => `<tr><td>${t}${pctv != null ? ' ' + nf1.format(pctv) + '%' : ''}</td><td class="num">${v == null ? '<span class="muted">a cargar</span>' : (signo || '') + usd2(v)}</td></tr>`;
+  if (lado === 'vend') return `<div class="doc">${cab}<h4>Liquidación al vendedor</h4><div class="facts" style="margin-bottom:10px"><div><span>Vendedor</span><b>${esc(pr.nom)}</b></div><div><span>Establecimiento</span><b>${esc(pr.est)}${pr.dicose ? ' · DICOSE ' + pr.dicose : ''}</b></div><div><span>Comprador</span><b>${esc(k.cp.nom)}</b></div><div><span>Plazo</span><b>${plazoTxt(p.plazo)}${brou ? ' · administra BROU' : ' · vence ' + fdateL(k.vence)}</b></div></div>${neg}
+    <table style="margin-top:10px"><tbody><tr><td>Importe de la hacienda</td><td class="num">${usd2(k.bruto)}</td></tr>${linea('Comisión del escritorio', k.pv, k.comV, '- ')}${linea('IVA ' + p.iva + '% sobre comisión', null, k.ivaV, '- ')}${k.l.flete === 'Vendedor' ? '<tr><td>Flete a cargo del vendedor</td><td class="num"><span class="muted">según factura</span></td></tr>' : ''}<tr class="tot"><td>Líquido a cobrar${k.comV == null ? ' (sin comisión cargada)' : ''}</td><td class="num">${usd2(k.netoProd)}</td></tr></tbody></table>
+    <div class="foot">${brou ? 'Precio de martillo libre de IMEBA y adicionales para el vendedor (Art. 18 del reglamento de Plaza Rural). ' : ''}Guía de propiedad y tránsito a nombre del comprador. Documento generado automáticamente al cierre de la venta.</div></div>`;
+  if (lado === 'comp') return `<div class="doc">${cab}<h4>Cuenta al comprador</h4><div class="facts" style="margin-bottom:10px"><div><span>Comprador</span><b>${esc(k.cp.nom)}</b></div><div><span>Tipo</span><b>${esc(k.cp.tipo)} · ${esc(k.cp.depto)}</b></div><div><span>Vendedor</span><b>${esc(pr.nom)}</b></div><div><span>Pago</span><b>${brou ? 'A través del BROU · ' + plazoTxt(p.plazo) : 'Vence ' + fdateL(k.vence)}</b></div></div>${neg}
+    <table style="margin-top:10px"><tbody><tr><td>Importe hacienda</td><td class="num">${usd2(k.bruto)}</td></tr>${CFG.cobraComp ? linea('Comisión', k.pc, k.comC) + linea('IVA ' + p.iva + '% sobre comisión', null, k.ivaC) : '<tr><td>Comisión al comprador</td><td class="num">No aplica</td></tr>'}<tr class="tot"><td>Total a pagar</td><td class="num">${usd2(k.totComp)}</td></tr></tbody></table>
+    <div class="foot">${brou ? 'Operación administrada por el Banco de la República (Art. 16). Retiro del lote dentro de los 15 días (Art. 13). ' : ''}Retiro de la hacienda coordinado con ${esc(k.agV.nom)}.</div></div>`;
+  const pa = (a, v) => a.casa ? '<span class="muted">socio, queda en la casa</span>' : v == null ? `<span class="muted">${a.pct == null ? 'parte a definir' : 'a cargar'}</span>` : usd2(v) + ` <span class="muted">(${nf1.format(a.pct)}%)</span>`;
   return `<div class="doc">${cab}<h4>Reparto de comisiones</h4>
-    <table><thead><tr><th>Concepto</th><th class="num">Base</th><th class="num">%</th><th class="num">Comisión</th><th>Agente</th><th class="num">Parte agente</th></tr></thead><tbody>
-    <tr><td>Comisión vendedor</td><td class="num">${usd(k.bruto)}</td><td class="num">${nf1.format(p.pv)}%</td><td class="num">${usd2(k.comV)}</td><td>${esc(k.agV.nom)}${k.agV.casa ? ' (socio)' : ''}</td><td class="num">${usd2(k.agVm)}${k.agV.pct ? ` <span class="muted">(${k.agV.pct}%)</span>` : ''}</td></tr>
-    <tr><td>Comisión comprador</td><td class="num">${usd(k.bruto)}</td><td class="num">${nf1.format(p.pc)}%</td><td class="num">${usd2(k.comC)}</td><td>${esc(k.agC.nom)}${k.agC.casa ? ' (socio)' : ''}</td><td class="num">${usd2(k.agCm)}${k.agC.pct ? ` <span class="muted">(${k.agC.pct}%)</span>` : ''}</td></tr>
-    <tr class="tot"><td>Queda para el escritorio</td><td></td><td></td><td class="num">${usd2(k.comV + k.comC)}</td><td></td><td class="num">${usd2(k.casa)}</td></tr></tbody></table>
-    <div class="foot">Se calcula con kg, precio y los porcentajes vigentes al momento de la venta. Cambiar la configuración no altera proformas ya emitidas.</div></div>`;
+    <table><thead><tr><th>Concepto</th><th class="num">Base</th><th class="num">%</th><th class="num">Comisión</th><th>Agente</th><th class="num">Parte del agente</th></tr></thead><tbody>
+    <tr><td>Comisión vendedor</td><td class="num">${usd(k.bruto)}</td><td class="num">${pct(k.pv)}</td><td class="num">${mc2(k.comV)}</td><td>${esc(k.agV.nom)}</td><td class="num">${pa(k.agV, k.agVm)}</td></tr>
+    ${CFG.cobraComp ? `<tr><td>Comisión comprador</td><td class="num">${usd(k.bruto)}</td><td class="num">${pct(k.pc)}</td><td class="num">${mc2(k.comC)}</td><td>${esc(k.agC.nom)}</td><td class="num">${pa(k.agC, k.agCm)}</td></tr>` : ''}
+    <tr class="tot"><td>Queda para el escritorio</td><td></td><td></td><td class="num">${k.comV == null ? '<span class="muted">a cargar</span>' : usd2(k.comV + (k.comC || 0))}</td><td></td><td class="num">${k.casa == null ? '<span class="muted">a cargar</span>' : usd2(k.casa)}</td></tr></tbody></table>
+    <div class="foot">Se calcula con kg, precio y la tabla de comisiones del escritorio. Cada agente cobra su parte del lado que trajo: vendedor o comprador.</div></div>`;
 }
 function verPF(id, lado = 'vend') {
   const p = PROFORMAS.find(x => x.id === id);
@@ -1614,35 +1765,37 @@ function verPF(id, lado = 'vend') {
 VIEWS.comisiones = () => {
   const rows = comisionesPorAgente();
   const tot = rows.reduce((a, r) => ({ g: a.g + r.gen, p: a.p + r.parte }), { g: 0, p: 0 });
-  const ej = PROFORMAS.find(p => { const k = calcPF(p); return k.agV.pct && k.agC.pct; }) || PROFORMAS[0];
+  const ok = comCargada();
+  const ej = PROFORMAS.find(p => { const k = calcPF(p); return !k.agV.casa && !k.agC.casa && k.agV.id !== k.agC.id; }) || PROFORMAS[0];
   const k = ej ? calcPF(ej) : null;
+  const lado = (t, bg, com, pctv, quien, a, parte) => `<div class="card" style="background:${bg};border-color:transparent"><div class="lbl muted" style="font-size:12px;font-weight:700">${t}</div><div style="font-size:22px;font-weight:800">${com == null ? 'A cargar' : usd(com)}</div><div class="muted" style="font-size:12.5px">${esc(quien)}${pctv != null ? ' · ' + nf1.format(pctv) + '%' : ''}</div><div class="sep" style="margin:8px 0"></div><div class="flex">${avatar(a)}<div><b>${esc(a.nom)}</b><div class="muted" style="font-size:12px">${a.casa ? 'socio, queda en la casa' : parte == null ? (a.pct == null ? 'su parte: a definir' : 'su parte: ' + nf1.format(a.pct) + '%') : 'su parte: ' + usd(parte)}</div></div></div></div>`;
   return {
-    t: 'Comisiones', s: 'Comisión vendedor y comisión comprador, cada una con su agente',
+    t: 'Comisiones', s: CFG.cobraComp ? 'Comisión vendedor y comisión comprador, cada una con su agente' : 'Comisión vendedor, con la parte de cada agente',
     a: `<button class="btn" data-act="csvCom">${ic('i-bajar')}<span>Exportar</span></button>`,
-    h: `<div class="grid g4 mb">
-      <div class="card kpi"><div class="lbl">Comisiones generadas</div><div class="val">${usd(tot.g)}</div><div class="foot">sin IVA</div></div>
-      <div class="card kpi"><div class="lbl">Parte de representantes</div><div class="val">${usd(tot.p)}</div><div class="foot">${Math.round(tot.p / (tot.g || 1) * 100)}% del total</div></div>
-      <div class="card kpi"><div class="lbl">Queda en el escritorio</div><div class="val">${usd(tot.g - tot.p)}</div><div class="foot">después de agentes</div></div>
-      <div class="card kpi"><div class="lbl">Por liquidar</div><div class="val">${usd(rows.filter(r => !S.liq[r.a.id]).reduce((a, r) => a + r.parte, 0))}</div><div class="foot">${rows.filter(r => r.parte && !S.liq[r.a.id]).length} agentes pendientes</div></div>
+    h: `<div class="card mb"><h3>${ic('i-pct')} Tabla de comisiones del escritorio<span class="grow"></span>${ok ? '<span class="tag ok">Cargada</span>' : '<span class="tag warn">A cargar</span>'}</h3>
+      <p class="muted" style="margin:0 0 12px">El sistema no trae porcentajes: se cargan los del escritorio y se recalculan todas las proformas, el reparto por agente y la cobranza. Se puede tener una tabla distinta para Plaza Rural y para los remates particulares.</p>
+      <div class="form form3">
+        <div class="field"><label for="cmV">Comisión vendedor (%)</label><input class="inp" id="cmV" type="number" step="0.01" min="0" value="${CFG.comVend ?? ''}" placeholder="a cargar" data-cfg="comVend"></div>
+        <div class="field"><label for="cmC">Comisión comprador (%)</label><input class="inp" id="cmC" type="number" step="0.01" min="0" value="${CFG.comComp ?? ''}" placeholder="a cargar" data-cfg="comComp" ${CFG.cobraComp ? '' : 'disabled'}></div>
+        <div class="field"><label>¿Se cobra comisión al comprador?</label><div class="flex" style="height:36px"><button class="sw ${CFG.cobraComp ? 'on' : ''}" data-act="sw" data-k="cobraComp" role="switch" aria-checked="${CFG.cobraComp}" aria-label="Cobrar comisión al comprador"></button><span class="muted" style="font-size:12.5px">${CFG.cobraComp ? 'Sí, con su agente' : 'No, sólo al vendedor'}</span></div></div>
+      </div>
     </div>
-    ${k ? `<div class="card mb"><h3>${ic('i-balanza')} Cómo se arma, con un caso real: proforma ${ej.id}</h3>
-      <div class="grid g3" style="align-items:center">
-        <div class="card" style="background:var(--gold-soft);border-color:transparent"><div class="lbl muted" style="font-size:12px;font-weight:700">COMISIÓN VENDEDOR · ${nf1.format(ej.pv)}%</div><div style="font-size:22px;font-weight:800">${usd(k.comV)}</div><div class="muted" style="font-size:12.5px">${esc(prod(k.l.prod).nom)}</div><div class="sep" style="margin:8px 0"></div><div class="flex">${avatar(k.agV)}<div><b>${esc(k.agV.nom)}</b><div class="muted" style="font-size:12px">${k.agV.pct ? k.agV.pct + '% = ' + usd(k.agVm) : 'socio, queda en la casa'}</div></div></div></div>
-        <div style="text-align:center"><div class="muted" style="font-size:12px;font-weight:700">LOTE ${k.l.id}</div><div style="font-size:15px;font-weight:800;margin:4px 0">${num(k.kgTot)} kg x ${precioU(k.c, k.v.precio)}</div><div style="font-size:26px;font-weight:800;color:var(--brand)">${usd(k.bruto)}</div><div class="muted" style="font-size:12px">kg, precio y condiciones del lote</div></div>
-        <div class="card" style="background:var(--info-soft);border-color:transparent"><div class="lbl muted" style="font-size:12px;font-weight:700">COMISIÓN COMPRADOR · ${nf1.format(ej.pc)}%</div><div style="font-size:22px;font-weight:800">${usd(k.comC)}</div><div class="muted" style="font-size:12.5px">${esc(k.cp.nom)}</div><div class="sep" style="margin:8px 0"></div><div class="flex">${avatar(k.agC)}<div><b>${esc(k.agC.nom)}</b><div class="muted" style="font-size:12px">${k.agC.pct ? k.agC.pct + '% = ' + usd(k.agCm) : 'socio, queda en la casa'}</div></div></div></div>
+    ${k ? `<div class="card mb"><h3>${ic('i-balanza')} Cómo se arma, con la proforma ${ej.id}</h3>
+      <div class="grid ${CFG.cobraComp ? 'g3' : 'g2'}" style="align-items:center">
+        ${lado('COMISIÓN VENDEDOR', 'var(--gold-soft)', k.comV, k.pv, prod(k.l.prod).nom, k.agV, k.agVm)}
+        <div style="text-align:center"><div class="muted" style="font-size:12px;font-weight:700">LOTE ${k.l.id}</div><div style="font-size:15px;font-weight:800;margin:4px 0">${k.c.u === 'kg' ? num(k.kgTot) + ' kg x ' : k.l.cab + ' cab. x '}${precioU(k.c, k.v.precio)}</div><div style="font-size:26px;font-weight:800;color:var(--brand)">${usd(k.bruto)}</div><div class="muted" style="font-size:12px">kg, precio y condiciones del lote</div></div>
+        ${CFG.cobraComp ? lado('COMISIÓN COMPRADOR', 'var(--info-soft)', k.comC, k.pc, k.cp.nom, k.agC, k.agCm) : ''}
       </div></div>` : ''}
-    <div class="grid" style="grid-template-columns:minmax(0,1fr)">
-      <div class="card"><h3>${ic('i-users')} Por agente</h3><div class="tbl-wrap"><table><thead><tr><th>Agente</th><th class="num">Lotes vend.</th><th class="num">Lotes comp.</th><th class="num">Generado</th><th class="num">% agente</th><th class="num">A pagar</th><th></th></tr></thead><tbody>
-      ${rows.map(r => `<tr class="click" data-act="comDet" data-id="${r.a.id}"><td><div class="flex">${avatar(r.a)}<div><b>${esc(r.a.nom)}</b><div class="muted" style="font-size:12px">${esc(r.a.rol)} · ${esc(r.a.zona.slice(0, 3).join(', '))}${r.a.zona.length > 3 ? ' y más' : ''}</div></div></div></td><td class="num">${r.lv}</td><td class="num">${r.lc}</td><td class="num strong">${usd(r.gen)}</td><td class="num">${r.a.casa ? '<span class="muted">socio</span>' : r.a.pct + '%'}</td><td class="num strong">${r.a.casa ? '<span class="muted">no aplica</span>' : usd(r.parte)}</td><td class="num">${!r.a.casa && r.parte ? (S.liq[r.a.id] ? '<span class="tag ok">Liquidado</span>' : `<button class="btn sm" data-act="liquidar" data-id="${r.a.id}">Liquidar</button>`) : ''}</td></tr>`).join('')}
-      </tbody></table></div></div>
-      <div class="card"><h3>${ic('i-chart')} Generado por agente</h3>${hbars(rows.filter(r => r.gen).map(r => [r.a.nom, r.gen]), usd)}</div>
-    </div>`
+    <div class="card"><h3>${ic('i-users')} Por agente</h3><div class="tbl-wrap"><table><thead><tr><th>Agente</th><th class="num">Lotes vend.</th>${CFG.cobraComp ? '<th class="num">Lotes comp.</th>' : ''}<th class="num">Comisión generada</th><th class="num">Parte del agente</th><th class="num">A pagar</th><th></th></tr></thead><tbody>
+      ${rows.map(r => `<tr class="click" data-act="comDet" data-id="${r.a.id}"><td><div class="flex">${avatar(r.a)}<div><b>${esc(r.a.nom)}</b><div class="muted" style="font-size:12px">${esc(r.a.rol)} · ${esc(r.a.zona.slice(0, 3).join(', '))}${r.a.zona.length > 3 ? ' y más' : ''}</div></div></div></td><td class="num">${r.lv}</td>${CFG.cobraComp ? `<td class="num">${r.lc}</td>` : ''}<td class="num strong">${ok ? usd(r.gen) : '<span class="muted">a cargar</span>'}</td><td class="num">${r.a.casa ? '<span class="muted">socio</span>' : r.a.pct == null ? '<span class="muted">a definir</span>' : nf1.format(r.a.pct) + '%'}</td><td class="num strong">${r.a.casa ? '<span class="muted">no aplica</span>' : ok && r.a.pct != null ? usd(r.parte) : '<span class="muted">a cargar</span>'}</td><td class="num">${!r.a.casa && ok && r.a.pct != null && r.parte ? (S.liq[r.a.id] ? '<span class="tag ok">Liquidado</span>' : `<button class="btn sm" data-act="liquidar" data-id="${r.a.id}">Liquidar</button>`) : ''}</td></tr>`).join('')}
+      </tbody></table></div>
+      <p class="muted" style="font-size:12.5px;margin:12px 0 0">La parte de cada representante se define en Configuración, agente por agente.</p></div>`
   };
 };
 function comDet(id) {
   const r = comisionesPorAgente().find(x => x.a.id === id);
-  modal(`${mHead('Comisiones de ' + esc(r.a.nom))}<div class="modal-b" style="padding:0 18px 18px"><div class="tbl-wrap" style="margin:0 -18px"><table><thead><tr><th>Proforma</th><th>Lado</th><th>Contraparte</th><th class="num">Comisión</th><th class="num">Parte agente</th></tr></thead><tbody>
-  ${r.lineas.map(x => `<tr class="click" data-act="verPF" data-id="${x.p.id}"><td class="strong">${x.p.id}</td><td><span class="tag ${x.lado === 'Vendedor' ? 'gold' : 'info'}">${x.lado}</span></td><td>${esc(x.lado === 'Vendedor' ? prod(x.k.l.prod).nom : x.k.cp.nom)}</td><td class="num">${usd(x.base)}</td><td class="num strong">${usd(x.parte)}</td></tr>`).join('') || `<tr><td colspan="5">${empty('i-pct', 'Sin comisiones en el período.')}</td></tr>`}
+  modal(`${mHead('Operaciones de ' + esc(r.a.nom))}<div class="modal-b" style="padding:0 18px 18px"><div class="tbl-wrap" style="margin:0 -18px"><table><thead><tr><th>Proforma</th><th>Lado</th><th>Contraparte</th><th class="num">Comisión</th><th class="num">Parte agente</th></tr></thead><tbody>
+  ${r.lineas.map(x => `<tr class="click" data-act="verPF" data-id="${x.p.id}"><td class="strong">${x.p.id}</td><td><span class="tag ${x.lado === 'Vendedor' ? 'gold' : 'info'}">${x.lado}</span></td><td>${esc(x.lado === 'Vendedor' ? prod(x.k.l.prod).nom : x.k.cp.nom)}</td><td class="num">${mc(x.base)}</td><td class="num strong">${r.a.casa ? '<span class="muted">socio</span>' : mc(x.parte)}</td></tr>`).join('') || `<tr><td colspan="5">${empty('i-pct', 'Sin operaciones en el período.')}</td></tr>`}
   </tbody></table></div></div><div class="modal-f"><button class="btn" data-act="close">Cerrar</button></div>`, 'lg');
 }
 
@@ -1656,7 +1809,7 @@ VIEWS.cobranza = () => {
   const cobrado = ks.filter(x => x.ec.t === 'Cobrado').reduce((a, x) => a + x.k.totComp, 0);
   const rows = tab === 'comp' ? ks.sort((a, b) => a.k.vence - b.k.vence) : ks.filter(x => x.ec.t === 'Cobrado' || x.ep.t !== 'Pagado').sort((a, b) => (b.ep.apagar ? 1 : 0) - (a.ep.apagar ? 1 : 0));
   return {
-    t: 'Cobranza', s: 'Lo que deben los compradores y lo que hay que pagarle a cada productor',
+    t: 'Cobranza', s: 'Lo que falta cobrar, quién lo administra y lo que hay que pagarle a cada productor',
     a: `<button class="btn" data-act="csvCob">${ic('i-bajar')}<span>Exportar</span></button>`,
     h: `<div class="grid g4 mb">
       <div class="card kpi" data-act="fset" data-k="cTab" data-v="comp"><div class="ico">${ic('i-plata')}</div><div class="lbl">A cobrar</div><div class="val">${usd(aCobrar)}</div><div class="foot">${ks.filter(x => x.ec.t !== 'Cobrado').length} proformas abiertas</div></div>
@@ -1667,10 +1820,10 @@ VIEWS.cobranza = () => {
     <div class="tabs"><button class="${tab === 'comp' ? 'on' : ''}" data-act="fset" data-k="cTab" data-v="comp">Cobrar a compradores</button><button class="${tab === 'prod' ? 'on' : ''}" data-act="fset" data-k="cTab" data-v="prod">Pagar a productores</button></div>
     <div class="card"><div class="tbl-wrap" style="border-top:0;margin-top:-17px"><table><thead><tr><th>Proforma</th><th>${tab === 'comp' ? 'Comprador' : 'Productor'}</th><th>Lote</th><th>${tab === 'comp' ? 'Vence' : 'Cobrado al comprador'}</th><th class="num">${tab === 'comp' ? 'Total a cobrar' : 'Líquido a pagar'}</th><th>Estado</th><th></th></tr></thead><tbody>
     ${rows.map(({ p, k, ec, ep }) => tab === 'comp'
-      ? `<tr><td class="strong"><a href="#" data-act="verPF" data-id="${p.id}" data-l="comp">${p.id}</a></td><td>${esc(k.cp.nom)}<div class="muted" style="font-size:12px">${esc(k.cp.tel)}</div></td><td>${k.l.id}</td><td>${fdate(k.vence)}<div class="muted" style="font-size:12px">${rel(k.vence)}</div></td><td class="num strong">${usd(k.totComp)}</td><td><span class="tag ${ec.c}">${ec.t}</span></td><td class="num"><div class="flex" style="justify-content:flex-end">${ec.venc || ec.pronto ? `<button class="btn sm wa" data-act="recordar" data-id="${p.id}">${ic('i-wa')} Recordar</button>` : ''}${ec.t !== 'Cobrado' ? `<button class="btn sm" data-act="cobrar" data-id="${p.id}">Registrar cobro</button>` : `<span class="muted" style="font-size:12px">${fdate(COBROS[p.id].comp)}</span>`}</div></td></tr>`
+      ? `<tr><td class="strong"><a href="#" data-act="verPF" data-id="${p.id}" data-l="comp">${p.id}</a></td><td>${esc(k.cp.nom)}<div class="muted" style="font-size:12px">${esc(k.cp.tel)}</div></td><td>${k.l.id}${esBROU(k.l) ? ' <span class="tag gold">BROU</span>' : ''}</td><td>${fdate(k.vence)}<div class="muted" style="font-size:12px">${rel(k.vence)}</div></td><td class="num strong">${usd(k.totComp)}</td><td><span class="tag ${ec.c}">${ec.t}</span></td><td class="num"><div class="flex" style="justify-content:flex-end">${ec.venc || ec.pronto ? `<button class="btn sm wa" data-act="recordar" data-id="${p.id}">${ic('i-wa')} Recordar</button>` : ''}${ec.t !== 'Cobrado' ? `<button class="btn sm" data-act="cobrar" data-id="${p.id}">Registrar cobro</button>` : `<span class="muted" style="font-size:12px">${fdate(COBROS[p.id].comp)}</span>`}</div></td></tr>`
       : `<tr><td class="strong"><a href="#" data-act="verPF" data-id="${p.id}" data-l="vend">${p.id}</a></td><td>${esc(prod(k.l.prod).nom)}<div class="muted" style="font-size:12px">${esc(prod(k.l.prod).est)}</div></td><td>${k.l.id}</td><td>${COBROS[p.id] && COBROS[p.id].comp ? fdate(COBROS[p.id].comp) : '<span class="muted">todavía no</span>'}</td><td class="num strong">${usd(k.netoProd)}</td><td><span class="tag ${ep.c}">${ep.t}</span></td><td class="num">${ep.apagar ? `<button class="btn sm pri" data-act="pagar" data-id="${p.id}">Pagar</button>` : ''}</td></tr>`).join('')}
     </tbody></table>${rows.length ? '' : empty('i-plata', 'No hay movimientos pendientes.')}</div></div>
-    <div class="note i" style="margin-top:14px">${ic('i-rayo')}<span>El productor cobra cuando cobra el escritorio. Al registrar el cobro del comprador, la liquidación del productor pasa sola a <b>A pagar</b>.</span></div>`
+    <div class="note i" style="margin-top:14px">${ic('i-rayo')}<span>En Plaza Rural la operación la administra el BROU: se registra cuando acredita. En los remates particulares y las ventas directas cobra el escritorio. En los dos casos, al registrar el cobro la liquidación del productor pasa sola a <b>A pagar</b>.</span></div>`
   };
 };
 function cobrar(id) {
@@ -1692,7 +1845,7 @@ VIEWS.productores = () => {
       <select class="sel" data-act-change="fsel" data-k="pDep" aria-label="Departamento"><option value="">Todos los departamentos</option>${[...new Set(PRODUCTORES.map(p => p.depto))].sort().map(d => `<option ${dep === d ? 'selected' : ''}>${d}</option>`).join('')}</select>
       ${[['', 'Todos'], ['caliente', 'Calientes'], ['frío', 'En frío']].map(([k, t]) => `<button class="chip ${tmp === k ? 'on' : ''}" data-act="fset" data-k="pTemp" data-v="${k}">${t}</button>`).join('')}</div>
     <div class="card"><div class="tbl-wrap" style="border-top:0;margin-top:-17px"><table><thead><tr><th>Productor</th><th>Zona</th><th>DICOSE</th><th class="num">Hectáreas</th><th>Agente</th><th class="num">Lotes activos</th><th class="num">Vendido</th><th>Estado</th></tr></thead><tbody>
-    ${ps.map(p => { const ls = LOTES.filter(l => l.prod === p.id); const act = ls.filter(l => !['Vendido', 'Sin vender'].includes(l.estado)).length; const v = PROFORMAS.filter(x => lote(x.lote).prod === p.id).reduce((a, x) => a + calcPF(x).bruto, 0); return `<tr class="click" data-act="fichaProd" data-id="${p.id}"><td><b>${esc(p.nom)}</b><div class="muted" style="font-size:12px">${esc(p.est)} · cliente desde ${p.desde}</div></td><td>${esc(p.paraje)}<div class="muted" style="font-size:12px">${esc(p.depto)}</div></td><td class="mono">${p.dicose}</td><td class="num">${num(p.has)}</td><td>${esc(ag(p.ag).nom)}</td><td class="num">${act || '<span class="muted">0</span>'}</td><td class="num">${v ? usd(v) : '<span class="muted">sin ventas</span>'}</td><td>${tempTag(p.temp)}</td></tr>`; }).join('')}
+    ${ps.map(p => { const ls = LOTES.filter(l => l.prod === p.id); const act = ls.filter(l => !['Vendido', 'Sin vender'].includes(l.estado)).length; const v = PROFORMAS.filter(x => lote(x.lote).prod === p.id).reduce((a, x) => a + calcPF(x).bruto, 0); return `<tr class="click" data-act="fichaProd" data-id="${p.id}"><td><b>${esc(p.nom)}</b><div class="muted" style="font-size:12px">${esc(p.est)}${p.desde ? ' · cliente desde ' + p.desde : p.real ? ' · lote en el Remate 328' : ''}</div></td><td>${esc(p.paraje)}<div class="muted" style="font-size:12px">${esc(p.depto)}</div></td><td class="mono">${p.dicose || '<span class="muted">consultar</span>'}</td><td class="num">${p.has ? num(p.has) : '<span class="muted">sin dato</span>'}</td><td>${esc(ag(p.ag).nom)}</td><td class="num">${act || '<span class="muted">0</span>'}</td><td class="num">${v ? usd(v) : '<span class="muted">sin ventas</span>'}</td><td>${tempTag(p.temp)}</td></tr>`; }).join('')}
     </tbody></table>${ps.length ? '' : empty('i-user', 'Ningún productor coincide.', '<button class="btn" data-act="fclear">Limpiar filtros</button>')}</div></div>`
   };
 };
@@ -1700,8 +1853,8 @@ function fichaProd(id) {
   const p = prod(id), ls = LOTES.filter(l => l.prod === id), pfs = PROFORMAS.filter(x => lote(x.lote).prod === id);
   const th = LEADS.find(x => x.prod === id);
   modal(`${mHead(esc(p.nom))}<div class="modal-b">
-    <div class="flex wrap" style="margin-bottom:14px">${tempTag(p.temp)}<span class="tag">${esc(p.est)}</span><span class="tag">${num(p.has)} ha</span><span class="tag">Cliente desde ${p.desde}</span></div>
-    <div class="facts f3 mb"><div><span>Ubicación</span><b>${esc(p.paraje)}, ${esc(p.depto)}</b></div><div><span>DICOSE</span><b>${p.dicose}</b></div><div><span>Teléfono</span><b>${esc(p.tel)}</b></div><div><span>Agente</span><b>${esc(ag(p.ag).nom)}</b></div><div><span>Lotes</span><b>${ls.length}</b></div><div><span>Vendido</span><b>${usd(pfs.reduce((a, x) => a + calcPF(x).bruto, 0))}</b></div></div>
+    <div class="flex wrap" style="margin-bottom:14px">${tempTag(p.temp)}<span class="tag">${esc(p.est)}</span>${p.has ? `<span class="tag">${num(p.has)} ha</span>` : ''}${p.desde ? `<span class="tag">Cliente desde ${p.desde}</span>` : ''}${p.real ? '<span class="tag gold">Lote en el Remate 328</span>' : ''}</div>
+    <div class="facts f3 mb"><div><span>Ubicación</span><b>${esc(p.ubic || p.paraje + ', ' + p.depto)}</b></div><div><span>DICOSE</span><b>${p.dicose || 'Consultar escritorio'}</b></div><div><span>Teléfono</span><b>${esc(p.tel || 'sin cargar')}</b></div><div><span>Agente</span><b>${esc(ag(p.ag).nom)}</b></div><div><span>Lotes</span><b>${ls.length}</b></div><div><span>Vendido</span><b>${usd(pfs.reduce((a, x) => a + calcPF(x).bruto, 0))}</b></div></div>
     <b>Lotes</b>
     <div class="tbl-wrap" style="margin:8px -18px 0"><table><tbody>${ls.map(l => `<tr class="click" data-act="close" data-go="lote" data-arg="${l.id}"><td class="strong">${l.id}</td><td>${l.cab} ${esc(cat(l.cat).nom.toLowerCase())}</td><td>${l.rem ? esc(rem(l.rem).nom) : 'Venta directa'}</td><td class="num">${precioLote(l)}</td><td>${estTag(l.estado)}</td></tr>`).join('') || `<tr><td>${empty('i-lote', 'Todavía no tiene lotes.')}</td></tr>`}</tbody></table></div>
   </div><div class="modal-f"><button class="btn" data-act="tempProd" data-id="${p.id}">${p.temp === 'frío' ? 'Marcar caliente' : 'Marcar en frío'}</button><span class="grow"></span>${th ? `<button class="btn wa" data-act="close" data-go="bandeja" data-arg="${th.id}">${ic('i-wa')} Conversación</button>` : `<button class="btn wa" data-act="waProd" data-id="${p.id}">${ic('i-wa')} Escribirle</button>`}<button class="btn pri" data-act="nuevoLote" data-prod="${p.id}">${ic('i-mas')} Cargar lote</button></div>`, 'lg');
@@ -1714,8 +1867,8 @@ VIEWS.compradores = () => {
     a: `<button class="btn" data-act="csvComp">${ic('i-bajar')}<span>Exportar</span></button><button class="btn pri" data-act="nuevoComp">${ic('i-mas')}<span>Nuevo comprador</span></button>`,
     h: `<div class="bar"><input class="inp" style="min-width:220px" placeholder="Buscar comprador..." value="${esc(S.f.cQ || '')}" data-act-input="fQ" data-k="cQ" aria-label="Buscar compradores">
       ${['', 'Invernador', 'Feedlot', 'Frigorífico', 'Exportador en pie', 'Criador'].map(k => `<button class="chip ${tipo === k ? 'on' : ''}" data-act="fset" data-k="cTipo" data-v="${k}">${k || 'Todos'}</button>`).join('')}</div>
-    <div class="card"><div class="tbl-wrap" style="border-top:0;margin-top:-17px"><table><thead><tr><th>Comprador</th><th>Tipo</th><th>Busca</th><th>Agente</th><th class="num">Lotes que le sirven</th><th class="num">Compras</th><th class="num">Saldo</th><th>Crédito</th></tr></thead><tbody>
-    ${cs.map(c => { const sirven = LOTES.filter(l => ['En catálogo', 'Ofrecido', 'Revisado'].includes(l.estado) && match(l, c).s >= 2).length; const pf = PROFORMAS.filter(x => lote(x.lote).venta.comp === c.id); const compras = pf.reduce((a, x) => a + calcPF(x).totComp, 0); const saldo = pf.filter(x => estadoCobro(x).t !== 'Cobrado').reduce((a, x) => a + calcPF(x).totComp, 0); const uso = saldo / c.cred; return `<tr class="click" data-act="fichaComp" data-id="${c.id}"><td><b>${esc(c.nom)}</b><div class="muted" style="font-size:12px">${esc(c.depto)} · ${esc(c.tel)}</div></td><td><span class="tag">${esc(c.tipo)}</span></td><td style="max-width:220px">${c.cats.map(k => cat(k).nom).slice(0, 3).join(', ')}</td><td>${esc(ag(c.ag).nom)}</td><td class="num"><span class="tag info">${sirven}</span></td><td class="num">${compras ? usd(compras) : '<span class="muted">sin compras</span>'}</td><td class="num ${pf.some(x => estadoCobro(x).venc) ? 'strong' : ''}" style="${pf.some(x => estadoCobro(x).venc) ? 'color:var(--bad-ink)' : ''}">${saldo ? usd(saldo) : '<span class="muted">al día</span>'}</td><td><div class="progress" style="width:70px" data-tip="${esc('Usa ' + Math.round(uso * 100) + '% de ' + usd(c.cred))}"><div style="width:${Math.min(100, uso * 100)}%;${uso > .8 ? 'background:var(--bad)' : uso > .5 ? 'background:var(--warn)' : ''}"></div></div></td></tr>`; }).join('')}
+    <div class="card"><div class="tbl-wrap" style="border-top:0;margin-top:-17px"><table><thead><tr><th>Comprador</th><th>Tipo</th><th>Busca</th><th>Agente</th><th class="num">Lotes que le sirven</th><th class="num">Compras del año</th><th class="num">Saldo</th><th>Control</th></tr></thead><tbody>
+    ${cs.map(c => { const sirven = LOTES.filter(l => ['En catálogo', 'Ofrecido', 'Revisado'].includes(l.estado) && match(l, c).s >= 2).length; const pf = PROFORMAS.filter(x => lote(x.lote).venta.comp === c.id); const compras = comprasAnio(c); const saldo = pf.filter(x => estadoCobro(x).t !== 'Cobrado').reduce((a, x) => a + calcPF(x).totComp, 0); const uso = saldo / c.cred; return `<tr class="click" data-act="fichaComp" data-id="${c.id}"><td><b>${esc(c.nom)}</b><div class="muted" style="font-size:12px">${esc(c.depto)} · ${esc(c.tel)}</div></td><td><span class="tag">${esc(c.tipo)}</span></td><td style="max-width:220px">${c.cats.map(k => cat(k).nom).slice(0, 3).join(', ')}</td><td>${esc(ag(c.ag).nom)}</td><td class="num"><span class="tag info">${sirven}</span></td><td class="num">${compras ? usd(compras) : '<span class="muted">sin compras</span>'}</td><td class="num ${pf.some(x => estadoCobro(x).venc) ? 'strong' : ''}" style="${pf.some(x => estadoCobro(x).venc) ? 'color:var(--bad-ink)' : ''}">${saldo ? usd(saldo) : '<span class="muted">al día</span>'}</td><td><div class="pill-row">${pideDD(c) ? '<span class="tag info" data-tip="Pasó los US$ 150.000 en el año: debida diligencia (Art. 23, Ley 19.574)">Debida diligencia</span>' : ''}${c.autorizado ? '<span class="tag ok">Preoferta</span>' : '<span class="tag">Sin autorizar</span>'}</div></td></tr>`; }).join('')}
     </tbody></table>${cs.length ? '' : empty('i-comprador', 'Ningún comprador coincide.', '<button class="btn" data-act="fclear">Limpiar filtros</button>')}</div></div>`
   };
 };
@@ -1723,7 +1876,8 @@ function fichaComp(id) {
   const c = comp(id);
   const sirven = LOTES.filter(l => ['En catálogo', 'Ofrecido', 'Revisado'].includes(l.estado) && match(l, c).s >= 2);
   modal(`${mHead(esc(c.nom))}<div class="modal-b">
-    <div class="facts f3 mb"><div><span>Tipo</span><b>${esc(c.tipo)}</b></div><div><span>Zona</span><b>${esc(c.depto)}</b></div><div><span>Teléfono</span><b>${esc(c.tel)}</b></div><div><span>Agente</span><b>${esc(ag(c.ag).nom)}</b></div><div><span>Crédito</span><b>${usd(c.cred)}</b></div><div><span>Cliente desde</span><b>${c.desde}</b></div></div>
+    <div class="facts f3 mb"><div><span>Tipo</span><b>${esc(c.tipo)}</b></div><div><span>Zona</span><b>${esc(c.depto)}</b></div><div><span>Teléfono</span><b>${esc(c.tel)}</b></div><div><span>Agente</span><b>${esc(ag(c.ag).nom)}</b></div><div><span>Compras del año</span><b>${usd(comprasAnio(c))}</b></div><div><span>Preofertas</span><b>${c.autorizado ? 'Autorizado por el escritorio' : 'Sin autorizar'}</b></div></div>
+    ${pideDD(c) ? `<div class="note i mb">${ic('i-escudo')}<span>Pasó los US$ 150.000 en compras en el año. Por el Art. 23 del reglamento (Ley 19.574) hay que completar la debida diligencia dentro de los 20 días posteriores al remate.</span></div>` : ''}
     <b>Qué busca</b> <span class="muted" style="font-size:12px">tocá para cambiarlo, los envíos automáticos se ajustan solos</span>
     <div class="pill-row" style="margin:8px 0 14px">${CATS.map(k => `<button class="chip ${c.cats.includes(k.id) ? 'on' : ''}" data-act="togCat" data-id="${c.id}" data-c="${k.id}">${k.nom}</button>`).join('')}</div>
     <b>Lotes disponibles que le sirven (${sirven.length})</b>
@@ -1732,39 +1886,63 @@ function fichaComp(id) {
 }
 
 /* ---------- Precios de referencia ---------- */
-VIEWS.precios = () => ({
-  t: 'Precios de referencia', s: 'Promedios de Plaza Rural para sugerir precios base y estimar comisiones',
-  a: `<button class="btn" data-act="csvPrecios">${ic('i-bajar')}<span>Exportar</span></button>`,
-  h: `<div class="grid g2 mb">
-    <div class="card"><h3>${ic('i-trend')} Ternero, US$/kg por remate de Plaza Rural</h3>${lineChart(HIST_TERNERO, { pre: 'Remate ', aria: 'Precio del ternero por remate' })}</div>
-    <div class="card"><h3>${ic('i-trend')} Vaca de invernada, US$/kg por remate</h3>${lineChart(HIST_VACA, { pre: 'Remate ', aria: 'Precio de la vaca de invernada por remate' })}</div>
-  </div>
-  <div class="grid g21">
-    <div class="card"><h3>${ic('i-tag')} Tabla de referencia<span class="grow"></span><small>tocá una fila para actualizarla</small></h3><div class="tbl-wrap"><table><thead><tr><th>Categoría</th><th>Grupo</th><th class="num">Remate 326</th><th class="num">Remate 327</th><th class="num">Variación</th><th class="num">Lotes activos</th></tr></thead><tbody>
-    ${CATS.map(c => { const d = c.ref - c.ant, pc = d / c.ant * 100; return `<tr class="click" data-act="editPrecio" data-id="${c.id}"><td class="strong">${c.nom}</td><td>${c.grupo}</td><td class="num">${precioU(c, c.ant)}</td><td class="num strong">${precioU(c, c.ref)}</td><td class="num" style="color:${d >= 0 ? 'var(--brand)' : 'var(--bad-ink)'};font-weight:700">${d >= 0 ? '+' : ''}${nf1.format(pc)}%</td><td class="num">${LOTES.filter(l => l.cat === c.id && !l.venta).length}</td></tr>`; }).join('')}
-    </tbody></table></div></div>
-    <div class="card"><h3>${ic('i-balanza')} Calculadora rápida</h3>
-      <div class="form" style="grid-template-columns:1fr 1fr">
-        <div class="field full"><label for="qCat">Categoría</label><select class="sel" id="qCat">${CATS.map(c => `<option value="${c.id}">${c.nom}</option>`).join('')}</select></div>
-        <div class="field"><label for="qCab">Cabezas</label><input class="inp" id="qCab" type="number" value="100"></div>
-        <div class="field"><label for="qKg">Kg promedio</label><input class="inp" id="qKg" type="number" value="175"></div>
-        <div class="field full"><label for="qPre">Precio</label><input class="inp" id="qPre" type="number" step="0.01" value="4.39"></div>
+VIEWS.precios = () => {
+  const kgC = CATS.filter(c => c.ref && c.u === 'kg');
+  const cabC = CATS.filter(c => c.ref && c.u === 'cab');
+  return {
+    t: 'Precios y reglamento', s: `Resultados reales del Remate 327 de Plaza Rural: ${num(R327.cab)} cabezas, ${R327.lotes} lotes, ${nf2.format(R327.col)}% de colocación`,
+    a: `<button class="btn" data-act="csvPrecios">${ic('i-bajar')}<span>Exportar</span></button>`,
+    h: `<div class="grid g21 mb">
+      <div class="card"><h3>${ic('i-chart')} Promedio por categoría, US$ por kilo<span class="grow"></span><small>Remate 327</small></h3>${barChart(kgC.map(c => ({ l: c.nom.replace('Novillos ', 'Nov. ').replace('Vaquillonas ', 'Vaq. ').replace(' años', '').replace('Terneros/terneras', 'Tern./as').replace('Vacas de invernada', 'Vaca inv.').replace('más de ', '+'), v: c.ref })), { fmt: v => nf2.format(v), labels: 'all', aria: 'Promedio por categoría en el remate 327' })}</div>
+      <div class="card"><h3>${ic('i-vaca')} Por unidad<span class="grow"></span><small>US$ por cabeza</small></h3>
+        <div class="list">${cabC.map(c => `<div class="li"><div class="grow"><div class="t">${c.nom}</div><div class="s">${num(c.cab)} cabezas · ${c.lotes} lotes · máx. ${num(c.max)} · mín. ${num(c.min)}</div></div><b class="mono">${usd(c.ref)}</b></div>`).join('')}</div>
       </div>
-      <div id="qRes" style="margin-top:14px"></div>
-      <p class="muted" style="font-size:12px;margin:10px 0 0">Para contestarle a un productor por WhatsApp cuánto le queda en mano.</p>
     </div>
-  </div>`,
-  after: () => {
-    const calc = () => {
-      const c = cat($('#qCat').value), cab = +$('#qCab').value || 0, k = +$('#qKg').value || 0, pr = +$('#qPre').value || 0;
-      const b = c.u === 'kg' ? cab * k * pr : cab * pr, cv = b * CFG.comVend / 100, iv = cv * CFG.iva / 100, rt = b * CFG.reten / 100;
-      $('#qRes').innerHTML = `<div class="list"><div class="li"><span class="grow">Bruto</span><b class="mono">${usd(b)}</b></div><div class="li"><span class="grow">Comisión ${CFG.comVend}% + IVA</span><b class="mono">- ${usd(cv + iv)}</b></div><div class="li"><span class="grow">IMEBA y adicionales ${nf1.format(CFG.reten)}%</span><b class="mono">- ${usd(rt)}</b></div><div class="li"><span class="grow strong">Le queda al productor</span><b class="mono" style="font-size:17px;color:var(--brand)">${usd(b - cv - iv - rt)}</b></div><div class="li"><span class="grow muted">Por cabeza</span><b class="mono muted">${usd(cab ? (b - cv - iv - rt) / cab : 0)}</b></div></div>`;
-    };
-    $('#qCat').onchange = () => { const c = cat($('#qCat').value); $('#qPre').value = c.u === 'kg' ? c.ref.toFixed(2) : c.ref; $('#qKg').disabled = c.u !== 'kg'; calc(); };
-    ['#qCab', '#qKg', '#qPre'].forEach(s => $(s).oninput = calc);
-    calc();
-  }
-});
+    <div class="card mb"><h3>${ic('i-tag')} Resultados del Remate 327</h3><div class="tbl-wrap"><table><thead><tr><th>Categoría</th><th class="num">Cabezas</th><th class="num">Lotes</th><th class="num">Máx.</th><th class="num">Mín.</th><th class="num">Promedio</th><th class="num">Al bulto</th><th class="num">Colocación</th><th class="num">Lotes nuestros hoy</th></tr></thead><tbody>
+      ${CATS.filter(c => c.ref).map(c => `<tr><td class="strong">${c.nom}</td><td class="num">${num(c.cab)}</td><td class="num">${c.lotes}</td><td class="num">${nf2.format(c.max)}</td><td class="num">${nf2.format(c.min)}</td><td class="num strong">${nf2.format(c.ref)}</td><td class="num">${num(c.bulto)}</td><td class="num">${nf2.format(c.col)}%</td><td class="num">${LOTES.filter(l => l.cat === c.id && !l.venta).length}</td></tr>`).join('')}
+      <tr><td class="strong">Total vacunos</td><td class="num strong">${num(R327.cab)}</td><td class="num strong">${R327.lotes}</td><td colspan="4"></td><td class="num strong">${nf2.format(R327.col)}%</td><td></td></tr>
+    </tbody></table></div><p class="muted" style="font-size:12px;margin:10px 0 0">Fuente: catálogo del Remate 328 de Plaza Rural. Cuando salga el 328, se cargan sus resultados y quedan como nueva referencia.</p></div>
+    <div class="grid g2">
+      <div class="card"><h3>${ic('i-camion')} Destare, tolerancia y carga</h3>
+        <div class="form form3">
+          <div class="field"><label for="dCab">Cabezas</label><input class="inp" id="dCab" type="number" value="60"></div>
+          <div class="field"><label for="dKg">Kg promedio</label><input class="inp" id="dKg" type="number" value="245"></div>
+          <div class="field"><label for="dKm">Km hasta el destino</label><input class="inp" id="dKm" type="number" value="120"></div>
+        </div>
+        <div id="dRes" style="margin-top:14px"></div>
+        <p class="muted" style="font-size:12px;margin:10px 0 0">Destare por distancia (Art. 11), tolerancia de kilos (Art. 15) y la tabla de carga de vacunos de Plaza Rural.</p>
+      </div>
+      <div class="card"><h3>${ic('i-balanza')} Cuánto le queda al productor</h3>
+        <div class="form" style="grid-template-columns:1fr 1fr">
+          <div class="field full"><label for="qCat">Categoría</label><select class="sel" id="qCat">${CATS.filter(c => c.ref).map(c => `<option value="${c.id}">${c.nom}</option>`).join('')}</select></div>
+          <div class="field"><label for="qCab">Cabezas</label><input class="inp" id="qCab" type="number" value="60"></div>
+          <div class="field"><label for="qKg">Kg promedio</label><input class="inp" id="qKg" type="number" value="220"></div>
+          <div class="field full"><label for="qPre">Precio</label><input class="inp" id="qPre" type="number" step="0.01" value="4.39"></div>
+        </div>
+        <div id="qRes" style="margin-top:14px"></div>
+      </div>
+    </div>`,
+    after: () => {
+      const calc = () => {
+        const c = cat($('#qCat').value), cab = +$('#qCab').value || 0, k = +$('#qKg').value || 0, pr = +$('#qPre').value || 0;
+        const b = c.u === 'kg' ? cab * k * pr : cab * pr;
+        const cv = CFG.comVend == null ? null : b * CFG.comVend / 100, iv = cv == null ? null : cv * CFG.iva / 100;
+        const neto = b - (cv || 0) - (iv || 0);
+        $('#qRes').innerHTML = `<div class="list"><div class="li"><span class="grow">Importe de la hacienda</span><b class="mono">${usd(b)}</b></div><div class="li"><span class="grow">Comisión del escritorio + IVA</span><b class="mono">${cv == null ? '<span class="muted">a cargar</span>' : '- ' + usd(cv + iv)}</b></div><div class="li"><span class="grow">IMEBA</span><b class="mono muted">no se descuenta en Plaza Rural (Art. 18)</b></div><div class="li"><span class="grow strong">Le queda al productor</span><b class="mono" style="font-size:17px;color:var(--brand)">${usd(neto)}</b></div><div class="li"><span class="grow muted">Por cabeza</span><b class="mono muted">${usd(cab ? neto / cab : 0)}</b></div></div>${cv == null ? '<p class="muted" style="font-size:12px;margin:8px 0 0">Con la tabla de comisiones cargada, descuenta la comisión sola.</p>' : ''}`;
+      };
+      $('#qCat').onchange = () => { const c = cat($('#qCat').value); $('#qPre').value = c.u === 'kg' ? c.ref.toFixed(2) : Math.round(c.ref); $('#qKg').disabled = c.u !== 'kg'; calc(); };
+      ['#qCab', '#qKg', '#qPre'].forEach(x => $(x).oninput = calc);
+      calc();
+      const des = () => {
+        const cab = +$('#dCab').value || 0, k = +$('#dKg').value || 0, km = +$('#dKm').value || 0;
+        const d = destarePorKm(km), neto = k * (1 - d / 100), tol = toleranciaKg(cat('tm'), k), porM = cargaPorMetro(k), metros = porM ? cab / porM : 0;
+        $('#dRes').innerHTML = `<div class="facts f3"><div><span>Destare</span><b>${d}%</b></div><div><span>Kg después del destare</span><b>${kg(neto)}</b></div><div><span>Kg totales netos</span><b>${kg(neto * cab)}</b></div><div><span>Tolerancia de kilos</span><b>${tol ? nf1.format(tol).replace(',0', '') + '%' : 'no aplica'}</b></div><div><span>Animales por metro</span><b>${nf1.format(porM)}</b></div><div><span>Metros de jaula</span><b>${nf1.format(metros)} m</b></div></div>`;
+      };
+      ['#dCab', '#dKg', '#dKm'].forEach(x => $(x).oninput = des);
+      des();
+    }
+  };
+};
 
 /* ---------- Reportes ---------- */
 const MESES_H = [['abr', 3120, 1180000], ['may', 2480, 960000], ['jun', 1890, 742000], ['jul', 2210, 905000], ['ago', 2760, 1170000]];
@@ -1837,7 +2015,7 @@ function webPrev(id) {
       <div style="background:var(--side);color:#fff;padding:10px 16px;font-size:12px;display:flex;gap:16px"><b>Romualdo &amp; Cía.</b><span style="opacity:.7">Remates</span><span style="opacity:.7">Plaza Rural</span><span style="opacity:.7">Exportación</span><span style="opacity:.7">Campos</span><span style="opacity:.7">Lanares</span></div>
       <div style="height:150px;background:linear-gradient(135deg,#2C5E3F,#8AA86B);display:grid;place-items:center;color:#fff"><svg class="ic" style="width:64px;height:64px;stroke-width:1.2" aria-hidden="true"><use href="#i-play"/></svg></div>
       <div style="padding:16px"><span class="tag gold">${r ? esc(r.nom) : 'Venta directa'}</span><div style="font-size:19px;font-weight:800;margin:8px 0 2px">${l.cab} ${esc(c.nom.toLowerCase())} ${esc(l.raza)}</div><div class="muted">${esc(p.paraje)}, ${esc(p.depto)} · ${l.kg} kg promedio · ${esc(l.edad)}</div>
-      <div class="facts f3" style="margin:14px 0"><div><span>Base</span><b>${l.precioBase ? precioU(c, l.precioBase) : 'A definir'}</b></div><div><span>Plazo</span><b>${l.plazo} días</b></div><div><span>Fecha</span><b>${r ? fdate(r.fecha) : 'Consultar'}</b></div></div>
+      <div class="facts f3" style="margin:14px 0"><div><span>Base</span><b>${l.precioBase ? precioU(c, l.precioBase) : 'A definir'}</b></div><div><span>Plazo</span><b>${plazoTxt(l.plazo)}</b></div><div><span>Fecha</span><b>${r ? fdate(r.fecha) : 'Consultar'}</b></div></div>
       <div class="flex"><button class="btn wa" id="wpWa">${ic('i-wa')} Consultar por WhatsApp</button><button class="btn" id="wpPdf">${ic('i-bajar')} Ficha PDF</button></div></div>
     </div>
   </div><div class="modal-f"><span class="muted" style="font-size:12.5px;align-self:center">El botón de WhatsApp abre la conversación con ${esc(ag(l.ag).nom)}, que tiene la zona.</span><span class="grow"></span><button class="btn" data-act="close">Cerrar</button></div>`, 'lg');
@@ -1859,23 +2037,23 @@ VIEWS.config = () => ({
   t: 'Configuración', s: 'Comisiones, agentes, reparto de contactos y automatizaciones',
   a: `<button class="btn danger" data-act="reset">${ic('i-reloj')}<span>Reiniciar demo</span></button>`,
   h: `<div class="grid g2 mb">
-    <div class="card"><h3>${ic('i-pct')} Comisiones y retenciones</h3>
+    <div class="card"><h3>${ic('i-pct')} Comisiones</h3>
       <div class="form">
-        <div class="field"><label for="cfV">Comisión vendedor (%)</label><input class="inp" id="cfV" type="number" step="0.1" value="${CFG.comVend}" data-cfg="comVend"></div>
-        <div class="field"><label for="cfC">Comisión comprador (%)</label><input class="inp" id="cfC" type="number" step="0.1" value="${CFG.comComp}" data-cfg="comComp"></div>
+        <div class="field"><label for="cfV">Comisión vendedor (%)</label><input class="inp" id="cfV" type="number" step="0.01" min="0" value="${CFG.comVend ?? ''}" placeholder="a cargar" data-cfg="comVend"></div>
+        <div class="field"><label for="cfC">Comisión comprador (%)</label><input class="inp" id="cfC" type="number" step="0.01" min="0" value="${CFG.comComp ?? ''}" placeholder="a cargar" data-cfg="comComp" ${CFG.cobraComp ? '' : 'disabled'}></div>
         <div class="field"><label for="cfI">IVA sobre comisiones (%)</label><input class="inp" id="cfI" type="number" value="${CFG.iva}" data-cfg="iva"></div>
-        <div class="field"><label for="cfR">IMEBA y adicionales (%)</label><input class="inp" id="cfR" type="number" step="0.1" value="${CFG.reten}" data-cfg="reten"></div>
         <div class="field"><label for="cfP">Plazo por defecto (días)</label><input class="inp" id="cfP" type="number" value="${CFG.plazo}" data-cfg="plazo"></div>
+        <div class="field full"><label class="check"><button class="sw ${CFG.cobraComp ? 'on' : ''}" data-act="sw" data-k="cobraComp" role="switch" aria-checked="${CFG.cobraComp}" aria-label="Cobrar comisión al comprador"></button> El escritorio cobra comisión al comprador</label></div>
       </div>
-      <p class="muted" style="font-size:12px;margin:12px 0 0">Aplica a las proformas nuevas. Las emitidas guardan los porcentajes con que se vendió.</p>
+      <p class="muted" style="font-size:12px;margin:12px 0 0">El sistema no trae porcentajes: se cargan los del escritorio. Mientras no estén cargados, las comisiones figuran como "a cargar".</p>
     </div>
     <div class="card"><h3>${ic('i-robot')} Automatizaciones</h3>
       <div class="list">${[['autoAsignar', 'Asignar contactos nuevos al representante de la zona'], ['bot', 'Responder solo fuera de hora y pedir los datos del lote'], ['autoWeb', 'Publicar en la web los lotes que entran a catálogo'], ['autoProforma', 'Generar la proforma al bajar el martillo'], ['autoEnvio', 'Mandar la proforma a vendedor y comprador por WhatsApp y mail']].map(([k, t]) => `<div class="li"><span class="grow" style="font-weight:600">${t}</span><button class="sw ${CFG[k] ? 'on' : ''}" data-act="sw" data-k="${k}" role="switch" aria-checked="${CFG[k]}" aria-label="${esc(t)}"></button></div>`).join('')}</div>
     </div>
   </div>
   <div class="grid g2 mb">
-    <div class="card"><h3>${ic('i-users')} Agentes y participación</h3><div class="tbl-wrap"><table><thead><tr><th>Agente</th><th>Rol</th><th class="num">% de la comisión</th></tr></thead><tbody>
-      ${AGENTES.map(a => `<tr><td><div class="flex">${avatar(a)}<b>${esc(a.nom)}</b></div></td><td>${esc(a.rol)}</td><td class="num">${a.casa ? '<span class="muted">socio</span>' : `<input class="inp" type="number" style="width:70px;text-align:right" value="${a.pct}" data-agpct="${a.id}" aria-label="Porcentaje de ${esc(a.nom)}">`}</td></tr>`).join('')}
+    <div class="card"><h3>${ic('i-users')} Agentes y participación</h3><div class="tbl-wrap"><table><thead><tr><th>Agente</th><th>Rol</th><th class="num">Su parte (%)</th></tr></thead><tbody>
+      ${AGENTES.map(a => `<tr><td><div class="flex">${avatar(a)}<b>${esc(a.nom)}</b></div></td><td>${esc(a.rol)}</td><td class="num">${a.casa ? '<span class="muted">socio</span>' : `<input class="inp" type="number" style="width:90px;text-align:right" placeholder="a definir" value="${a.pct ?? ''}" data-agpct="${a.id}" aria-label="Porcentaje de ${esc(a.nom)}">`}</td></tr>`).join('')}
     </tbody></table></div></div>
     <div class="card"><h3>${ic('i-pin')} Reparto de contactos por zona</h3><div class="tbl-wrap" style="max-height:360px;overflow-y:auto"><table><thead><tr><th>Departamento</th><th>Va a</th></tr></thead><tbody>
       ${DEPTOS.map(d => `<tr><td class="strong">${d}</td><td><select class="sel" data-zona="${d}" aria-label="Agente para ${d}">${AGENTES.map(a => `<option value="${a.id}" ${agDeZona(d).id === a.id ? 'selected' : ''}>${a.nom}</option>`).join('')}</select></td></tr>`).join('')}
@@ -1937,7 +2115,7 @@ function altaComp(v) {
 /* ================= Acciones ================= */
 const ACT = {
   back: () => back(),
-  nuevoLote: d => loteForm(null, { prod: d.prod || '', rem: d.rem || 'PR328' }),
+  nuevoLote: d => loteForm(null, { prod: d.prod || '', rem: d.rem && rem(d.rem).estado !== 'Catálogo cerrado' ? d.rem : 'PR329' }),
   editLote: d => loteForm(lote(d.id)),
   aCatalogo: d => aCatalogo(d.id),
   fichaPDF: d => fichaPDF(d.id),
@@ -1946,6 +2124,7 @@ const ACT = {
   verPF: d => verPF(d.id, d.l),
   pfTab: d => verPF(d.id, d.l),
   simRemate: d => simRemate(d.id),
+  preoferta: d => preofertaModal(d.id),
   printCat: d => imprimir(docCatalogo(rem(d.id))),
   enviarCat: d => {
     const r = rem(d.id), ls = LOTES.filter(l => l.rem === d.id && l.estado === 'En catálogo');
@@ -2057,12 +2236,12 @@ const ACT = {
   csvLotes: () => csv('lotes-romualdo.csv', [['Lote', 'Productor', 'Establecimiento', 'Departamento', 'DICOSE', 'Categoría', 'Raza', 'Cabezas', 'Kg promedio', 'Canal', 'Remate', 'Precio base', 'Precio venta', 'Estado']].concat((S.lotesVis || LOTES).map(l => { const p = prod(l.prod); return [l.id, p.nom, p.est, p.depto, p.dicose, cat(l.cat).nom, l.raza, l.cab, l.kg, canalDe(l), l.rem ? rem(l.rem).nom : '', l.precioBase ? nf2.format(l.precioBase) : '', l.venta ? nf2.format(l.venta.precio) : '', l.estado]; }))),
   csvOfertas: () => csv('ofertas-romualdo.csv', [['Lote', 'Zona', 'Categoría', 'Cabezas', 'Kg', 'Base', 'Compradores que le sirven']].concat((S.ofVis || []).map(l => [l.id, prod(l.prod).depto, cat(l.cat).nom, l.cab, l.kg, l.precioBase ? nf2.format(l.precioBase) : '', compradoresPara(l).map(x => x.c.nom).join(', ')]))),
   csvRemate: d => { const r = rem(d.id); csv(`catalogo-${r.id}.csv`, [['Nº', 'Lote', 'Productor', 'Departamento', 'Categoría', 'Raza', 'Cabezas', 'Kg', 'Base', 'Resultado', 'Comprador']].concat(LOTES.filter(l => l.rem === r.id).map((l, i) => [i + 1, l.id, prod(l.prod).nom, prod(l.prod).depto, cat(l.cat).nom, l.raza, l.cab, l.kg, l.precioBase ? nf2.format(l.precioBase) : '', l.venta ? nf2.format(l.venta.precio) : l.estado, l.venta ? comp(l.venta.comp).nom : '']))); },
-  csvPF: () => csv('proformas-romualdo.csv', [['Proforma', 'Fecha', 'Lote', 'Vendedor', 'Comprador', 'Cabezas', 'Kg totales', 'Precio', 'Bruto', 'Com. vendedor', 'Com. comprador', 'Agente vendedor', 'Agente comprador', 'Líquido productor', 'Total comprador']].concat(PROFORMAS.map(p => { const k = calcPF(p); return [p.id, fdateL(p.fecha), k.l.id, prod(k.l.prod).nom, k.cp.nom, k.l.cab, Math.round(k.kgTot), nf2.format(k.v.precio), nf2.format(k.bruto), nf2.format(k.comV), nf2.format(k.comC), k.agV.nom, k.agC.nom, nf2.format(k.netoProd), nf2.format(k.totComp)]; }))),
-  csvCom: () => csv('comisiones-romualdo.csv', [['Agente', 'Proforma', 'Lado', 'Comisión', 'Parte agente']].concat(comisionesPorAgente().flatMap(r => r.lineas.map(x => [r.a.nom, x.p.id, x.lado, nf2.format(x.base), nf2.format(x.parte)])))),
+  csvPF: () => csv('proformas-romualdo.csv', [['Proforma', 'Fecha', 'Lote', 'Vendedor', 'Comprador', 'Cabezas', 'Kg totales', 'Precio', 'Importe', 'Com. vendedor', 'Com. comprador', 'Agente vendedor', 'Agente comprador', 'Líquido productor', 'Total comprador']].concat(PROFORMAS.map(p => { const k = calcPF(p); return [p.id, fdateL(p.fecha), k.l.id, prod(k.l.prod).nom, k.cp.nom, k.l.cab, Math.round(k.kgTot), nf2.format(k.v.precio), nf2.format(k.bruto), k.comV == null ? 'a cargar' : nf2.format(k.comV), k.comC == null ? (CFG.cobraComp ? 'a cargar' : 'no aplica') : nf2.format(k.comC), k.agV.nom, k.agC.nom, nf2.format(k.netoProd), nf2.format(k.totComp)]; }))),
+  csvCom: () => csv('comisiones-romualdo.csv', [['Agente', 'Proforma', 'Lado', 'Comisión', 'Parte agente']].concat(comisionesPorAgente().flatMap(r => r.lineas.map(x => [r.a.nom, x.p.id, x.lado, x.base == null ? 'a cargar' : nf2.format(x.base), x.parte == null ? 'a cargar' : nf2.format(x.parte)])))),
   csvCob: () => csv('cobranza-romualdo.csv', [['Proforma', 'Comprador', 'Vence', 'Total', 'Estado cobro', 'Productor', 'Líquido', 'Estado pago']].concat(PROFORMAS.map(p => { const k = calcPF(p); return [p.id, k.cp.nom, fdateL(k.vence), nf2.format(k.totComp), estadoCobro(p).t, prod(k.l.prod).nom, nf2.format(k.netoProd), estadoPago(p).t]; }))),
   csvProd: () => csv('productores-romualdo.csv', [['Nombre', 'Establecimiento', 'Departamento', 'Paraje', 'DICOSE', 'Teléfono', 'Hectáreas', 'Agente', 'Estado']].concat(PRODUCTORES.map(p => [p.nom, p.est, p.depto, p.paraje, p.dicose, p.tel, p.has, ag(p.ag).nom, p.temp]))),
   csvComp: () => csv('compradores-romualdo.csv', [['Nombre', 'Tipo', 'Departamento', 'Teléfono', 'Busca', 'Zonas', 'Agente']].concat(COMPRADORES.map(c => [c.nom, c.tipo, c.depto, c.tel, c.cats.map(k => cat(k).nom).join(', '), c.zonas.join(', '), ag(c.ag).nom]))),
-  csvPrecios: () => csv('precios-referencia.csv', [['Categoría', 'Unidad', 'Remate 326', 'Remate 327']].concat(CATS.map(c => [c.nom, c.u === 'kg' ? 'US$/kg' : 'US$/cab', nf2.format(c.ant), nf2.format(c.ref)]))),
+  csvPrecios: () => csv('remate-327-resultados.csv', [['Categoría', 'Unidad', 'Cabezas', 'Lotes', 'Máximo', 'Mínimo', 'Promedio', 'Al bulto', 'Colocación %']].concat(CATS.filter(c => c.ref).map(c => [c.nom, c.u === 'kg' ? 'US$/kg' : 'US$/cab', c.cab, c.lotes, nf2.format(c.max), nf2.format(c.min), nf2.format(c.ref), c.bulto, nf2.format(c.col)]))),
   csvRep: () => csv('resumen-romualdo.csv', [['Mes', 'Cabezas', 'Negociado US$']].concat(MESES_H.map(m => [m[0], m[1], m[2]])).concat([[MES[HOY.getMonth()], LOTES.filter(l => l.venta && l.venta.fecha.getMonth() === HOY.getMonth()).reduce((a, l) => a + l.cab, 0), Math.round(PROFORMAS.reduce((a, p) => a + calcPF(p).bruto, 0))]]))
 };
 const ACTC = {
@@ -2086,11 +2265,11 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => {
   const el = e.target;
   if (el.dataset.actChange && ACTC[el.dataset.actChange]) return ACTC[el.dataset.actChange](el);
-  if (el.dataset.cfg) { CFG[el.dataset.cfg] = +el.value; toast(`Guardado. Las próximas proformas usan ${NOMBRE_CFG[el.dataset.cfg]} ${nf1.format(+el.value)}${el.dataset.cfg === 'plazo' ? ' días' : '%'}.`); return; }
-  if (el.dataset.agpct) { const a = ag(el.dataset.agpct); a.pct = +el.value; toast(`${a.nom} cobra ${a.pct}% de las comisiones que trae.`); return; }
+  if (el.dataset.cfg) { const k = el.dataset.cfg, v = el.value === '' ? null : +el.value; CFG[k] = v; render(); toast(v == null ? `Sin ${NOMBRE_CFG[k]} cargada.` : k === 'plazo' ? `Plazo por defecto: ${v} días.` : `${NOMBRE_CFG[k][0].toUpperCase() + NOMBRE_CFG[k].slice(1)}: ${nf2.format(v)}%. Proformas, reparto y cobranza recalculados.`); return; }
+  if (el.dataset.agpct) { const a = ag(el.dataset.agpct); a.pct = el.value === '' ? null : +el.value; toast(a.pct == null ? `La parte de ${a.nom} queda a definir.` : `${a.nom} cobra ${nf2.format(a.pct)}% de las comisiones que trae.`); return; }
   if (el.dataset.zona) { const d = el.dataset.zona; AGENTES.forEach(a => a.zona = a.zona.filter(z => z !== d)); ag(el.value).zona.push(d); toast(`Los contactos de ${d} ahora van a ${ag(el.value).nom}.`); }
 });
-const NOMBRE_CFG = { comVend: 'comisión vendedor', comComp: 'comisión comprador', iva: 'IVA', reten: 'retenciones', plazo: 'plazo' };
+const NOMBRE_CFG = { comVend: 'comisión vendedor', comComp: 'comisión comprador', iva: 'IVA', plazo: 'plazo' };
 let qT = null;
 document.addEventListener('input', e => {
   const el = e.target;
@@ -2136,7 +2315,7 @@ function cmdIndex() {
   LOTES.forEach(l => it.push({ g: 'Lotes', t: `${l.id} · ${l.cab} ${cat(l.cat).nom.toLowerCase()}`, s: `${prod(l.prod).nom} · ${prod(l.prod).depto} · ${l.estado}`, i: 'i-lote', fn: () => go('lote', l.id) }));
   PRODUCTORES.forEach(p => it.push({ g: 'Productores', t: p.nom, s: `${p.est} · ${p.depto} · DICOSE ${p.dicose}`, i: 'i-user', fn: () => fichaProd(p.id) }));
   COMPRADORES.forEach(c => it.push({ g: 'Compradores', t: c.nom, s: `${c.tipo} · ${c.depto}`, i: 'i-comprador', fn: () => fichaComp(c.id) }));
-  REMATES.forEach(r => it.push({ g: 'Remates', t: r.nom, s: fdate(r.fecha), i: 'i-martillo', fn: () => go('remate', r.id) }));
+  REMATES.forEach(r => it.push({ g: 'Remates', t: r.nom, s: fechaRem(r), i: 'i-martillo', fn: () => go('remate', r.id) }));
   PROFORMAS.forEach(p => { const k = calcPF(p); it.push({ g: 'Proformas', t: `${p.id} · ${k.cp.nom}`, s: `lote ${k.l.id} · ${usd(k.bruto)}`, i: 'i-doc', fn: () => verPF(p.id) }); });
   AGENTES.forEach(a => it.push({ g: 'Agentes', t: a.nom, s: a.rol + ' · ' + a.zona.join(', '), i: 'i-users', fn: () => comDet(a.id) }));
   return it;
@@ -2213,6 +2392,7 @@ addEventListener('resize', () => { if (tourOn) tourStep(); });
 
 /* ================= Arranque ================= */
 (function seed() {
+  fichaEjemplo();
   const plazos = { 'RC-1050': 7, 'RC-1049': 15, 'RC-1051': 0 };
   Object.keys(plazos).forEach(id => lote(id).plazo = plazos[id]);
   PFN = 2603;
