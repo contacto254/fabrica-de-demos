@@ -12,8 +12,23 @@ echo "Verificando https://$HOST"
 echo
 
 printf '  DNS ................ '
-DEST=$(nslookup -type=CNAME "$HOST" 1.1.1.1 2>/dev/null | grep -o '[a-z0-9]\{8\}\.up\.railway\.app' | head -1)
-if [ -n "$DEST" ]; then echo "OK -> $DEST"; else echo "todavia no resuelve"; fi
+# Cada entorno trae una herramienta distinta: Git Bash tiene nslookup, la nube de
+# Claude Code solo getent. Probamos las tres y usamos la que haya.
+DEST=""
+if command -v dig >/dev/null 2>&1; then
+  DEST=$(dig +short CNAME "$HOST" @1.1.1.1 2>/dev/null | grep -o '[a-z0-9]\{8\}\.up\.railway\.app' | head -1)
+elif command -v nslookup >/dev/null 2>&1; then
+  DEST=$(nslookup -type=CNAME "$HOST" 1.1.1.1 2>/dev/null | grep -o '[a-z0-9]\{8\}\.up\.railway\.app' | head -1)
+fi
+if [ -n "$DEST" ]; then
+  echo "OK -> $DEST"
+elif command -v getent >/dev/null 2>&1 && IP=$(getent hosts "$HOST" 2>/dev/null | awk '{print $1}' | head -1) && [ -n "$IP" ]; then
+  # getent sigue el CNAME hasta la IP final, asi que no vemos el destino, pero
+  # que resuelva alcanza para saber que el DNS ya esta.
+  echo "OK -> resuelve ($IP)"
+else
+  echo "todavia no resuelve"
+fi
 
 printf '  Certificado ........ '
 if curl -s -o /dev/null --max-time 10 "https://$HOST/healthz" 2>/dev/null; then

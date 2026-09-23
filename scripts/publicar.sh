@@ -28,38 +28,92 @@ cd "$DIR" || exit 1
 
 echo
 echo "1/5  Servicio en Railway"
-if railway status --json 2>/dev/null | grep -q "\"name\":\"$SLUG\""; then
-  echo "     ya existe"
-else
-  railway add --service "$SLUG" >/dev/null 2>&1
-  echo "     creado"
+# Railway tiene dos tipos de token y se usan distinto:
+#   RAILWAY_TOKEN      es de proyecto: ya viene apuntando a un proyecto.
+#   RAILWAY_API_TOKEN  es de cuenta: hay que elegirle el proyecto con 'railway link'.
+# Ojo con el 'set -o pipefail' de arriba: filtrar con una tuberia devuelve el
+# codigo de railway y no el del grep, asi que la salida se guarda antes.
+PRUEBA=$(railway status < /dev/null 2>&1 || true)
+if [ -n "${RAILWAY_TOKEN:-}" ] && printf '%s' "$PRUEBA" | grep -qi 'invalid railway_token'; then
+  if [ -n "${RAILWAY_API_TOKEN:-}" ]; then
+    echo "     RAILWAY_TOKEN no sirve; sigo con RAILWAY_API_TOKEN (token de cuenta)"
+    unset RAILWAY_TOKEN
+  else
+    echo "     RAILWAY_TOKEN no sirve y no hay RAILWAY_API_TOKEN para caer atras"
+    exit 1
+  fi
 fi
-# Con un token de proyecto (RAILWAY_TOKEN) el proyecto ya viene fijado por el token, y
-# 'railway link' no tiene con que sesion resolver el nombre: solo se linkea si no hay token.
+
+# Con token de cuenta hay que elegir el proyecto ANTES de preguntar nada: que
+# diga "no linked project" sin haber linkeado todavia es lo esperado, no un error.
 if [ -z "${RAILWAY_TOKEN:-}" ]; then
-  railway link --project "$PROYECTO" --environment production --service "$SLUG" >/dev/null 2>&1
+  SALIDA_LINK=$(railway link --project "$PROYECTO" --environment production < /dev/null 2>&1 || true)
+  if printf '%s' "$SALIDA_LINK" | grep -qiE 'unauthoriz|invalid|not found|no projects'; then
+    echo "     No pude entrar al proyecto '$PROYECTO'. Railway dijo:"
+    printf '%s\n' "$SALIDA_LINK" | sed 's/^/       /' | head -10
+    echo
+    echo "     El token de cuenta tiene que pertenecer a la cuenta duena de ese proyecto."
+    exit 1
+  fi
+  echo "     proyecto $PROYECTO"
+fi
+
+# Recien ahora tiene sentido preguntar el estado.
+ESTADO=$(railway status < /dev/null 2>&1 || true)
+if printf '%s' "$ESTADO" | grep -qiE 'unauthoriz|not logged|invalid token|invalid railway'; then
+  echo "     Railway no acepta el token:"
+  printf '%s\n' "$ESTADO" | sed 's/^/       /' | head -8
+  echo
+  echo "     Tokens que llegaron a este script:"
+  [ -n "${RAILWAY_TOKEN:-}" ]     && echo "       RAILWAY_TOKEN      si" || echo "       RAILWAY_TOKEN      no"
+  [ -n "${RAILWAY_API_TOKEN:-}" ] && echo "       RAILWAY_API_TOKEN  si" || echo "       RAILWAY_API_TOKEN  no"
+  exit 1
+fi
+printf '%s\n' "$ESTADO" | head -4 | sed 's/^/       /'
+
+# El servicio puede existir de una corrida anterior.
+if printf '%s' "$ESTADO" | grep -q "$SLUG"; then
+  echo "     el servicio ya existe"
+else
+  SALIDA_ADD=$(railway add --service "$SLUG" < /dev/null 2>&1 || true)
+  if printf '%s' "$SALIDA_ADD" | grep -qiE 'unauthoriz|invalid|forbidden'; then
+    echo "     No pude crear el servicio. Railway dijo:"
+    printf '%s\n' "$SALIDA_ADD" | sed 's/^/       /' | head -12
+    exit 1
+  fi
+  echo "     servicio creado"
+fi
+
+# Con token de cuenta, apuntar tambien al servicio antes de subir.
+if [ -z "${RAILWAY_TOKEN:-}" ]; then
+  railway link --project "$PROYECTO" --environment production --service "$SLUG" >/dev/null < /dev/null 2>&1 || true
 fi
 
 echo
 echo "2/5  Subiendo (tarda 1-2 minutos)"
-if railway up --service "$SLUG" --ci 2>&1 | tail -3 | grep -q "Deploy complete"; then
+# La salida se guarda entera: cuando esto falla, lo unico que sirve es lo que
+# dijo Railway, y antes se perdia en el pipe.
+SALIDA_UP=$(railway up --service "$SLUG" --ci < /dev/null 2>&1)
+if echo "$SALIDA_UP" | grep -q "Deploy complete"; then
   echo "     desplegado"
 else
-  echo "     El deploy fallo. Mira el detalle con:"
-  echo "       railway logs --service $SLUG --build"
+  echo "     El deploy fallo. Esto dijo Railway:"
+  echo "$SALIDA_UP" | sed 's/^/       /' | tail -30
+  echo
+  echo "     Para ver el detalle del build:  railway logs --service $SLUG --build"
   exit 1
 fi
 
 echo
 echo "3/5  Dominio propio en Railway"
-SALIDA=$(railway domain "$HOST" --service "$SLUG" 2>&1)
+SALIDA=$(railway domain "$HOST" --service "$SLUG" < /dev/null 2>&1)
 CNAME_TARGET=$(echo "$SALIDA" | grep -o '[a-z0-9]\{8\}\.up\.railway\.app' | head -1)
 VERIFY_TXT=$(echo "$SALIDA"  | grep -o 'railway-verify=[a-f0-9]\{64\}' | head -1)
 
 if [ -z "$CNAME_TARGET" ]; then
   # El dominio ya estaba dado de alta: pedimos su estado para sacar los datos.
-  ID=$(railway domain list --service "$SLUG" 2>/dev/null | grep "$HOST" | awk '{print $3}')
-  SALIDA=$(railway domain status "$ID" 2>&1)
+  ID=$(railway domain list --service "$SLUG" < /dev/null 2>/dev/null | grep "$HOST" | awk '{print $3}')
+  SALIDA=$(railway domain status "$ID" < /dev/null 2>&1)
   CNAME_TARGET=$(echo "$SALIDA" | grep -o '[a-z0-9]\{8\}\.up\.railway\.app' | head -1)
   VERIFY_TXT=$(echo "$SALIDA"  | grep -o 'railway-verify=[a-f0-9]\{64\}' | head -1)
 fi
@@ -71,9 +125,19 @@ cd - >/dev/null || exit 1
 
 echo
 echo "4/5  DNS en Cloudflare"
-ZONE=$(curl -s "$API/zones?name=$ZONA" -H "Authorization: Bearer $CF_TOKEN" \
-       | grep -o '"id":"[a-f0-9]\{32\}"' | head -1 | cut -d'"' -f4)
-[ -z "$ZONE" ] && { echo "     No pude leer la zona $ZONA. Revisa el token."; exit 1; }
+# La respuesta se guarda entera: cuando esto falla, Cloudflare explica por que
+# en el cuerpo, y antes se perdia en el pipe. El token nunca se imprime.
+RES_ZONA=$(curl -s "$API/zones?name=$ZONA" -H "Authorization: Bearer $CF_TOKEN")
+ZONE=$(printf '%s' "$RES_ZONA" | grep -o '"id":"[a-f0-9]\{32\}"' | head -1 | cut -d'"' -f4)
+if [ -z "$ZONE" ]; then
+  echo "     No pude leer la zona $ZONA. Esto contesto Cloudflare:"
+  printf '%s\n' "$RES_ZONA" | head -c 600 | sed 's/^/       /'
+  echo
+  echo "     El token tiene que ser de la plantilla 'Edit zone DNS' y en Zone"
+  echo "     Resources incluir la zona $ZONA. Si la lista viene vacia, el token"
+  echo "     es de otra cuenta de Cloudflare o no alcanza a esa zona."
+  exit 1
+fi
 
 upsert() { # tipo nombre contenido
   local TYPE="$1" NAME="$2" CONTENT="$3" ID BODY RES

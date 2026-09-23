@@ -32,14 +32,27 @@ Create Token → plantilla **Edit zone DNS** → en Zone Resources elegir `custo
 pantalla final el token está debajo del título **Your API Token**; la caja de arriba dice
 *Account ID* y no sirve.
 
-**Railway.** En [railway.com/account/tokens](https://railway.com/account/tokens), crear uno
-para el proyecto `customerp-demos`.
+Copialo con el botón de copiar que trae Cloudflare, no seleccionando con el mouse: si se
+corta un carácter, la API contesta `9109 Invalid access token` y no hay forma de darse cuenta
+mirándolo.
+
+**Railway.** En [railway.com/account/tokens](https://railway.com/account/tokens). Hay dos
+tipos y sirve cualquiera, pero cada uno va en su secreto:
+
+| Tipo | Secreto | Cómo se crea |
+| --- | --- | --- |
+| De proyecto | `RAILWAY_TOKEN` | Eligiendo `customerp-demos` en el desplegable |
+| De cuenta | `RAILWAY_API_TOKEN` | Sin elegir proyecto |
+
+No son intercambiables: un token de cuenta cargado en `RAILWAY_TOKEN` devuelve
+`Invalid RAILWAY_TOKEN`. El de cuenta es el más cómodo, porque además puede **crear** el
+servicio del demo la primera vez.
 
 Con los dos a mano:
 
 ```bash
-gh secret set CF_TOKEN      --repo contacto254/fabrica-de-demos
-gh secret set RAILWAY_TOKEN --repo contacto254/fabrica-de-demos
+gh secret set CF_TOKEN          --repo contacto254/fabrica-de-demos
+gh secret set RAILWAY_API_TOKEN --repo contacto254/fabrica-de-demos
 ```
 
 Cada comando pide el valor y no lo deja escrito en ningún lado. También se pueden cargar
@@ -73,6 +86,15 @@ sigue desde la misma conversación con `gh run watch`. En unos cuatro minutos ti
 
 **El flujo falla diciendo que faltan secretos.** No están cargados, o quedaron con otro
 nombre. Volvé al punto 1. El resumen del flujo trae los comandos exactos.
+
+**No se sabe cuál de los tokens quedó mal.** El flujo lo dice solo: al empezar imprime qué
+secretos ve y cuántos caracteres mide cada uno, sin mostrar nunca el contenido. Un largo
+raro suele ser un copiado que se cortó.
+
+**Railway o Cloudflare rechazan el token.** El registro del paso *Publicar* trae la
+respuesta textual del servicio, no un "revisá el token" a secas. `Invalid RAILWAY_TOKEN`
+es un token de cuenta puesto en el secreto de proyecto; `9109 Invalid access token` de
+Cloudflare es un token vencido, revocado o cortado al copiar.
 
 **El colega dice que no puede llegar a Railway.** Es lo esperado y no hay que arreglarlo: la
 receta está escrita para que en ese caso empuje y deje publicar a GitHub.
