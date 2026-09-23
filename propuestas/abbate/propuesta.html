@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Abbate Mármoles · Diagnóstico y propuesta</title>
+<style>
+@font-face{font-family:"Jakarta";src:url(fuentes/jakarta-400.woff2) format("woff2");font-weight:400}
+@font-face{font-family:"Jakarta";src:url(fuentes/jakarta-500.woff2) format("woff2");font-weight:500}
+@font-face{font-family:"Jakarta";src:url(fuentes/jakarta-600.woff2) format("woff2");font-weight:600}
+@font-face{font-family:"Jakarta";src:url(fuentes/jakarta-700.woff2) format("woff2");font-weight:700}
+@font-face{font-family:"Jakarta";src:url(fuentes/jakarta-800.woff2) format("woff2");font-weight:800}
+@font-face{font-family:"Mono";src:url(fuentes/mono-500.woff2) format("woff2");font-weight:500}
+
+:root{
+  --ink:#232326; --ink2:#3d3d42; --muted:#6c6b70; --line:#d8d4cc; --line2:#e6e2da;
+  --paper:#ffffff; --stone:#f5f3ef; --stone2:#ebe7df;
+  --accent:#d9442a; --accent-soft:#fbe5df; --accent-ink:#9e2c17;
+  --ok:#2e7a58; --ok-soft:#dcefe4; --warn:#a86c12; --warn-soft:#f7ebd2;
+  --blue:#2f5d8c; --blue-soft:#dfe9f4;
+}
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#888}
+body{font-family:"Jakarta",sans-serif;color:var(--ink);font-size:10pt;line-height:1.48;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:210mm;height:297mm;padding:17mm 18mm 18mm;position:relative;overflow:hidden;background:var(--paper);page-break-after:always;break-after:page;margin:0 auto}
+@media screen{.page{margin:10mm auto;box-shadow:0 2px 12px rgba(0,0,0,.25)}}
+.foot{position:absolute;left:18mm;right:18mm;bottom:9mm;display:flex;justify-content:space-between;font-size:7.5pt;color:var(--muted);border-top:1px solid var(--line2);padding-top:2.2mm}
+.kicker{font-size:7.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 2mm}
+h1{font-size:21pt;line-height:1.15;font-weight:800;margin:0 0 3mm;letter-spacing:-.01em}
+h2{font-size:12.5pt;font-weight:700;margin:6mm 0 2mm}
+h3{font-size:10.5pt;font-weight:700;margin:4mm 0 1.2mm}
+p{margin:0 0 2.6mm}
+.lead{font-size:11.5pt;line-height:1.5;color:var(--ink2);margin-bottom:5mm}
+.muted{color:var(--muted)}
+.small{font-size:8.5pt}
+ul{margin:0 0 3mm;padding-left:4.5mm}
+li{margin:0 0 1.3mm}
+strong{font-weight:700}
+.mono{font-family:"Mono",monospace;font-size:.92em}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4mm}
+.card{background:var(--stone);border-radius:3mm;padding:4mm 4.5mm}
+.card h3{margin-top:0}
+.tight{gap:4mm}.tight .card{padding:3.2mm 4mm}.tight .card p{font-size:8.8pt;line-height:1.42}
+.card.accent{background:var(--accent-soft)}
+.card.ok{background:var(--ok-soft)}
+.card.blue{background:var(--blue-soft)}
+.card.line{background:none;border:1px solid var(--line)}
+.num{font-size:22pt;font-weight:800;line-height:1;color:var(--ink)}
+.num small{font-size:9pt;font-weight:600;color:var(--muted);display:block;margin-top:1.4mm;line-height:1.3}
+.quote{border-left:1.2mm solid var(--accent);padding:1mm 0 1mm 4.5mm;font-size:11pt;line-height:1.5;color:var(--ink2);margin:4mm 0}
+.quote cite{display:block;font-style:normal;font-size:8pt;color:var(--muted);margin-top:1.5mm}
+table{width:100%;border-collapse:collapse;font-size:8.6pt;line-height:1.4}
+th{text-align:left;font-weight:700;font-size:7.5pt;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1.4px solid var(--ink);padding:1.6mm 2mm 1.6mm 0}
+td{vertical-align:top;border-bottom:1px solid var(--line2);padding:2mm 2.5mm 2mm 0}
+td:first-child{font-weight:600}
+.tag{display:inline-block;font-size:7pt;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.6mm 1.8mm;border-radius:1mm;background:var(--stone2);color:var(--ink2)}
+.tag.a{background:var(--accent-soft);color:var(--accent-ink)}
+.tag.o{background:var(--ok-soft);color:var(--ok)}
+.tag.b{background:var(--blue-soft);color:var(--blue)}
+.tag.w{background:var(--warn-soft);color:var(--warn)}
+svg{display:block;width:100%;height:auto;font-family:"Jakarta",sans-serif}
+.fig{margin:3mm 0 2mm}
+.figcap{font-size:8pt;color:var(--muted);margin-top:1.5mm}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:1.6mm 6mm;font-size:8.4pt;line-height:1.38;margin-top:3mm}
+.legend div{display:flex;gap:2mm;align-items:flex-start}
+.dot{flex:0 0 auto;width:4.6mm;height:4.6mm;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:7.5pt;display:flex;align-items:center;justify-content:center;margin-top:.1mm}
+.check li{list-style:none;position:relative;padding-left:5mm;margin-left:-4.5mm}
+.check li:before{content:"";position:absolute;left:0;top:1.3mm;width:2.6mm;height:2.6mm;border:1.3px solid var(--ink2);border-radius:.6mm}
+.steps{counter-reset:s;padding:0;margin:0}
+.steps li{list-style:none;counter-increment:s;position:relative;padding-left:8mm;margin-bottom:2.4mm}
+.steps li:before{content:counter(s);position:absolute;left:0;top:0;width:5.4mm;height:5.4mm;border-radius:50%;background:var(--ink);color:#fff;font-size:7.8pt;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* Portada */
+.cover{background:#1d1d20;color:#f3f1ec;padding:22mm 20mm}
+.cover .brand{font-size:9pt;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#d8d3c8}
+.cover .bar{width:18mm;height:1.4mm;background:var(--accent);margin:8mm 0 9mm}
+.cover h1{font-size:40pt;line-height:1.03;letter-spacing:-.02em;color:#fff;margin:0 0 7mm}
+.cover .sub{font-size:13pt;line-height:1.45;color:#cfcac0;max-width:140mm}
+.cover .veins{position:absolute;right:0;top:0;width:100%;height:100%;opacity:.5}
+.cover .bottom{position:absolute;left:20mm;right:20mm;bottom:20mm}
+.cover .q{font-size:12.5pt;line-height:1.5;color:#fff;border-left:1.2mm solid var(--accent);padding-left:5mm;max-width:150mm}
+.cover .q cite{display:block;font-style:normal;font-size:8.5pt;color:#a9a39a;margin-top:2mm}
+.cover .meta{display:flex;justify-content:space-between;margin-top:12mm;font-size:8.5pt;color:#a9a39a;border-top:1px solid #3a3a3e;padding-top:3mm}
+</style>
+</head>
+<body>
+
+<!-- 1 · PORTADA -->
+<section class="page cover">
+  <svg class="veins" viewBox="0 0 800 1130" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M820 120 C 640 210, 610 330, 470 420 S 260 560, 180 760 S 60 1000, -20 1080" fill="none" stroke="#3a3935" stroke-width="2"/>
+    <path d="M820 260 C 700 300, 640 420, 560 520 S 420 700, 380 860 S 300 1080, 260 1160" fill="none" stroke="#2f2e2b" stroke-width="1.4"/>
+    <path d="M600 -20 C 580 90, 520 170, 540 260 S 640 380, 610 470" fill="none" stroke="#34332f" stroke-width="1"/>
+    <path d="M470 420 C 520 470, 610 480, 700 560 S 820 700, 840 760" fill="none" stroke="#2c2b28" stroke-width="1"/>
+  </svg>
+  <div style="position:relative">
+    <div class="brand">Abbate Mármoles &nbsp;·&nbsp; Concurso ORT 2026</div>
+    <div class="bar"></div>
+    <h1>Cada obra,<br>en un solo lugar.</h1>
+    <div class="sub">Diagnóstico del flujo de información entre ventas, medición, taller y colocación, y propuesta de trabajo para el equipo.</div>
+  </div>
+  <div class="bottom">
+    <div class="q">“Poder tener un mapeo de en qué parte del proceso está cada obra. Cuándo entró, dónde está ahora, qué pasó. ¿Se midió? ¿No se midió? ¿Por qué?”
+      <cite>Entrevista con la empresa, septiembre de 2026, ante la pregunta de qué cambiaría hoy mismo</cite></div>
+    <div class="meta"><span>Documento de trabajo · versión 1</span><span>Montevideo, septiembre de 2026</span></div>
+  </div>
+</section>
+
+<!-- 2 · RESUMEN -->
+<section class="page">
+  <p class="kicker">Resumen</p>
+  <h1>El problema no es la falta de un sistema. Es que la historia de cada trabajo está repartida en cinco lugares.</h1>
+  <p class="lead">Abbate creció en volumen y en exigencia de obra (Sofitel, The Grand Hotel, SODRE, Cipriani) sin que creciera igual la forma en que la información viaja por dentro. El cliente no lo ve; la empresa lo sufre: comunicaciones duplicadas, datos que no llegan a tiempo, un plazo de taller que se achica sin que nadie lo decida.</p>
+
+  <div class="grid3" style="margin-bottom:5mm">
+    <div class="card"><div class="num">+30<small>interacciones por trabajo, y se multiplican por cada unidad en un edificio</small></div></div>
+    <div class="card"><div class="num">5<small>lugares donde vive la información hoy: papel carbónico, grupos de WhatsApp, libretas, la memoria del taller y la del vendedor</small></div></div>
+    <div class="card"><div class="num">10–15<small>días de taller prometidos que se achican cuando se atrasan la aceptación o la medición</small></div></div>
+  </div>
+
+  <h2>Tres hallazgos</h2>
+  <ol class="steps">
+    <li><strong>Lo que falta es trazabilidad, no un ERP.</strong> La pregunta que la empresa quiere contestar es una sola: en qué etapa está cada trabajo, desde cuándo y por qué. Todo lo demás es accesorio.</li>
+    <li><strong>La unidad de trabajo no es la obra, es cada unidad dentro de la obra.</strong> En un edificio, el depto 4B puede estar medido mientras el 4C espera al carpintero. Un sistema con un único estado por obra no sirve para los trabajos que más duelen.</li>
+    <li><strong>Slabware no falló por ser software, falló por pedirle a Abbate que trabajara como otra empresa:</strong> presupuesto con formato ajeno, stock por placa, dibujo de piezas que nadie necesitaba. La solución tiene que digitalizar la forma de trabajar actual, no reemplazarla.</li>
+  </ol>
+
+  <h2>Qué proponemos</h2>
+  <p>Una <strong>ficha única por trabajo</strong> que cuente su historia completa y que cada rol pueda ver y actualizar con lo mínimo: el vendedor desde el celular, administración desde la computadora, el taller con la misma orden en papel que ya usa, pero impresa con un código para marcar el avance. Se empieza por el seguimiento y se suman módulos sólo cuando el anterior está en uso.</p>
+
+  <div class="card accent" style="margin-top:4mm">
+    <h3>Lo urgente: la ventana de relevamiento cierra a mediados de octubre</h3>
+    <p style="margin:0">La zafra arranca a mediados de octubre y va hasta el 23 de diciembre. La propia empresa pidió no ir “mucho más allá de octubre” para visitar. Quedan unas tres semanas para la visita, las entrevistas por rol y la encuesta. Lo que no se releve ahora no se releva en este semestre. El detalle está en las páginas 12 y 13.</p>
+  </div>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 3 · LA EMPRESA -->
+<section class="page">
+  <p class="kicker">La empresa</p>
+  <h1>Una familia en la piedra desde 1902, dos sedes y un rubro que llega al final de la obra</h1>
+
+  <div class="grid2">
+    <div>
+      <h3>Historia</h3>
+      <ul>
+        <li><strong>Emilio Carlo Abbate Piazzoli</strong> (Como, 1902 – Montevideo, 1981): fundador, mármol funerario.</li>
+        <li><strong>Carlos</strong>: mármol funerario y empresa fúnebre.</li>
+        <li><strong>Santiago</strong>: marmolería desde 1979, año que la empresa toma como fundación.</li>
+        <li><strong>Nicolás</strong>: en la empresa desde 1998. En los últimos años tomó más peso en la conducción.</li>
+      </ul>
+      <h3>Qué hace</h3>
+      <p>Suministro y manufactura de piedras naturales y sintéticas: mármoles, granitos, cuarcitas, piedra sinterizada y cuarzo. En la web: mármoles, granitos, sintéticos (Silestone y Dekton) y terminaciones.</p>
+      <p><strong>Servicios:</strong> entrega de materiales en sitio, rectificación de medidas, restauración y pulido, colocación de mesas, pisos y paredes, y asesoramiento completo a clientes y profesionales.</p>
+    </div>
+    <div>
+      <h3>Sedes</h3>
+      <div class="card line" style="margin-bottom:3mm">
+        <strong>Montevideo · 30 empleados</strong><br>
+        <span class="small">Salón de ventas, administración y planta industrial: grúa puente, waterjet, cortadoras. Concentra el conocimiento del oficio. Abastece a Maldonado.</span>
+      </div>
+      <div class="card line" style="margin-bottom:3mm">
+        <strong>Maldonado · 10 empleados</strong><br>
+        <span class="small">Salón de ventas y taller auxiliar para piezas más chicas. Cada vez más clientes extranjeros, que no entienden por qué hay que volver a medir si ya hay plano.</span>
+      </div>
+      <h3>A quién le vende</h3>
+      <table>
+        <tr><td>Consumidor final</td><td>Mesadas, baños, obras puntuales</td></tr>
+        <tr><td>Estudios de diseño y arquitectura</td><td>Piezas a medida, terminaciones especiales</td></tr>
+        <tr><td>Empresas constructoras</td><td>Series repetitivas, gran volumen</td></tr>
+        <tr><td>Proyectos de alto estándar</td><td>Volumen y exigencia técnica combinados</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <h2>Las particularidades que cualquier solución tiene que respetar</h2>
+  <div class="grid2 tight">
+    <div class="card"><h3>No se fabrica por plano</h3><p style="margin:0">Se cotiza por plano pero se fabrica por medida real, después de que terminan el carpintero y la albañilería. Las paredes no quedan a escuadra y el mármol cortado no tiene vuelta: un centímetro de menos y la pieza no sirve.</p></div>
+    <div class="card"><h3>Depende de otros</h3><p style="margin:0">Abbate entra casi al final de la obra. Si el mueble de cocina no está pronto, no se puede medir, y la fecha se corre aunque nadie de la empresa haya fallado.</p></div>
+    <div class="card"><h3>No trabaja por stock de placas</h3><p style="margin:0">El cliente no elige “esta chapa con esta veta”. Las herramientas del rubro que asumen stock por placa no encajan.</p></div>
+    <div class="card"><h3>Zafra muy marcada</h3><p style="margin:0">De mediados de octubre a la licencia de la construcción (24 de diciembre). No se puede sostener todo el año la capacidad que pide noviembre, y hay que rechazar trabajos sin un dato claro de hasta cuándo aceptar.</p></div>
+  </div>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 4 · MAPA DEL NEGOCIO -->
+<section class="page">
+  <p class="kicker">Diagrama 1 · Mapa del negocio</p>
+  <h1>Quién compra, por dónde entra y quién toca cada trabajo</h1>
+  <p class="lead" style="margin-bottom:2mm">Cuatro tipos de cliente entran por cinco canales y pasan por seis áreas. No hay encargado por área; el capataz del taller y una vendedora referente hacen de nexo informal.</p>
+  <div class="fig"><svg id="d-mapa" viewBox="0 0 1000 1044"></svg></div>
+  <p class="figcap">Las flechas muestran por dónde pasa un trabajo típico. En rojo, lo que viene de afuera y condiciona los plazos internos.</p>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 5 · FLUJO DE TRABAJO -->
+<section class="page">
+  <p class="kicker">Diagrama 2 · Flujo de trabajo</p>
+  <h1>Cinco etapas, cinco documentos y siete puntos de quiebre</h1>
+  <div class="fig"><svg id="d-flujo" viewBox="0 0 1000 776"></svg></div>
+  <div class="legend">
+    <div><span class="dot">1</span><span><strong>Entradas dispersas.</strong> Mail, WhatsApp, mostrador, web y vendedor. Un mismo edificio llega por varias constructoras y se presupuesta dos veces.</span></div>
+    <div><span class="dot">2</span><span><strong>No hay aceptación formal.</strong> No existe la orden de compra interna: quien va a medir no sabe con certeza qué, dónde ni con qué terminación.</span></div>
+    <div><span class="dot">3</span><span><strong>Visitas de medición fallidas.</strong> Se llega y los muebles no están prontos, o la visita del viernes pasa al lunes. El vendedor no se entera.</span></div>
+    <div><span class="dot">4</span><span><strong>Orden de taller con supuestos.</strong> Lo que para quien dibuja es obvio, el taller no lo lee igual. Gerardo vuelve a preguntar o la pieza sale mal.</span></div>
+    <div><span class="dot">5</span><span><strong>El plazo del taller absorbe los atrasos.</strong> La fecha con el cliente no se mueve; los días que se pierden antes se descuentan del taller.</span></div>
+    <div><span class="dot">6</span><span><strong>El vendedor no sabe dónde está su venta.</strong> El cliente llama a reclamar y la respuesta es “esperá que averiguo”.</span></div>
+    <div><span class="dot">7</span><span><strong>Sin postventa.</strong> No hay conformidad del cliente ni feedback sobre colocadores externos o zafrales, salvo que alguien de confianza se queje.</span></div>
+  </div>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 6 · FLUJOS DE INFORMACIÓN -->
+<section class="page">
+  <p class="kicker">Diagrama 3 · Flujos de información</p>
+  <h1>De una red de mensajes a una ficha que todos miran</h1>
+  <p class="lead" style="margin-bottom:2mm">Hoy cada par de personas se comunica por su propio canal, y cada uno tiene una parte de la historia. La propuesta no le quita a nadie su canal con el cliente: agrega un solo lugar donde queda lo que pasó.</p>
+  <div class="fig"><svg id="d-info" viewBox="0 0 1000 600"></svg></div>
+  <div class="grid2" style="margin-top:3mm">
+    <div class="card accent">
+      <h3>Hoy</h3>
+      <ul style="margin:0">
+        <li>Varios grupos de WhatsApp por obra, sin orden: uno con el constructor, otro con el colocador, otro para presupuestos.</li>
+        <li>La orden de taller viaja en block con papel carbónico, por bandejas.</li>
+        <li>Las observaciones de medición quedan en la libreta de quien fue.</li>
+        <li>Para saber el estado hay que llamar o preguntar en persona.</li>
+      </ul>
+    </div>
+    <div class="card ok">
+      <h3>Propuesto</h3>
+      <ul style="margin:0">
+        <li>Cada cambio de estado queda registrado con fecha, autor y motivo.</li>
+        <li>El vendedor recibe un aviso cuando su venta avanza o se traba.</li>
+        <li>El taller sigue con papel, pero impreso desde la ficha y con un código para marcar el avance.</li>
+        <li>WhatsApp con el cliente sigue igual; los grupos internos dejan de ser necesarios.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 7 · PLAZO Y UNIDAD -->
+<section class="page">
+  <p class="kicker">Diagramas 4 y 5 · Dos mecanismos que explican el dolor</p>
+  <h1>Dónde se pierde el plazo y por qué el estado va por unidad</h1>
+  <h2 style="margin-top:3mm">El atraso previo se lo come el taller</h2>
+  <p>Caso ilustrativo, armado con las situaciones que describió la empresa. La fecha comprometida con el cliente queda fija; cada día perdido antes de la orden de taller sale de los días de fabricación.</p>
+  <div class="fig"><svg id="d-plazo" viewBox="0 0 1000 330"></svg></div>
+  <p class="figcap">Hoy nadie registra estos días, así que el problema se discute por impresión. Medirlos es el primer indicador que la solución debería dar.</p>
+
+  <h2>Cinco pisos iguales, ningún baño igual</h2>
+  <p>En Cipriani cada habitación había que medirla por separado aunque en el plano fueran idénticas. En una obra grande el trabajo avanza a ritmos distintos en cada unidad, y el estado se tiene que llevar a ese nivel.</p>
+  <div class="fig"><svg id="d-unidad" viewBox="0 0 1000 350"></svg></div>
+  <p class="figcap">Ejemplo ilustrativo. Cada celda es una unidad con su propio estado, sus mediciones y sus observaciones.</p>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 8 · DIAGNÓSTICO -->
+<section class="page">
+  <p class="kicker">Diagnóstico</p>
+  <h1>Cada dolor, su causa y la respuesta concreta</h1>
+  <p class="lead">Todos los dolores salen de la presentación de la empresa o de la entrevista. La columna de respuesta es la base funcional de la propuesta.</p>
+  <table>
+    <tr><th style="width:26%">Dolor</th><th style="width:31%">Causa de fondo</th><th>Respuesta</th></tr>
+    <tr><td>No hay una vía formal para dar por aceptado un presupuesto</td><td>La aceptación ocurre en una conversación y no deja registro.</td><td>Botón de aceptación que genera la <strong>orden de compra interna</strong> y la ficha de medición: ubicación, producto, terminaciones.</td></tr>
+    <tr><td>Se va a medir y los muebles no están prontos</td><td>La visita se agenda sin confirmar que la obra está habilitada.</td><td><strong>Agenda de rectificación</strong> con confirmación “listo para medir”. Las visitas fallidas se registran con su motivo.</td></tr>
+    <tr><td>El vendedor no se entera y el cliente llama a reclamar</td><td>Nadie tiene la obligación ni el medio de avisarle.</td><td><strong>Avisos automáticos</strong> al vendedor de cada venta y una vista “mis obras” en el celular.</td></tr>
+    <tr><td>Observaciones de obra en una libreta personal</td><td>No hay un lugar común pegado al trabajo.</td><td><strong>Observaciones con foto</strong> ligadas a la unidad o a la pieza, visibles para todos.</td></tr>
+    <tr><td>La orden de taller da cosas por sentado</td><td>Cada uno dibuja y describe a su manera.</td><td><strong>Orden de taller estandarizada:</strong> checklist obligatoria (veta, cantos, huecos, terminación, zócalo), croquis o CAD adjunto y consultas del taller con respuesta registrada.</td></tr>
+    <tr><td>Se achica el plazo del taller</td><td>Los atrasos previos no se ven ni se miden.</td><td><strong>Reloj de plazo</strong> por trabajo y registro de días perdidos por causa: aceptación, obra no pronta, reprogramación.</td></tr>
+    <tr><td>Presupuestos duplicados desde varias constructoras</td><td>No hay registro central de obras.</td><td><strong>Aviso de posible duplicado</strong> al cargar una obra con la misma dirección o nombre.</td></tr>
+    <tr><td>El vendedor no sabe si hay material o si está discontinuado</td><td>La disponibilidad vive en la cabeza de pocos.</td><td><strong>Catálogo de materiales</strong> con estado: disponible, bajo pedido con demora, discontinuado. Sin stock por placa.</td></tr>
+    <tr><td>No se sabe hasta cuándo tomar trabajos en zafra</td><td>No hay una vista de carga del taller contra su capacidad.</td><td><strong>Capacidad semanal del taller</strong> contra lo comprometido, con el corte de licencia marcado.</td></tr>
+    <tr><td>Sin postventa; colocadores que “no caen bien”</td><td>El trabajo se da por cerrado al entregar.</td><td><strong>Conformidad del cliente</strong> al cierre: encuesta de tres preguntas que incluye al colocador.</td></tr>
+    <tr><td>Muchos grupos de WhatsApp superpuestos</td><td>WhatsApp es el único canal compartido que existe.</td><td>La ficha pasa a ser el canal interno. WhatsApp queda para el cliente.</td></tr>
+  </table>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 9 · SLABWARE Y PRINCIPIOS -->
+<section class="page">
+  <p class="kicker">Antecedente</p>
+  <h1>Qué nos enseña el intento con Slabware</h1>
+  <p class="lead">Slabware es un software brasileño específico para empresas de piedra. Se probó durante meses: hubo capacitación con videos para dos personas de presupuestación, que lo adoptaron rápido. No se implementó porque “no se adaptó a nuestras formas de hacer las cosas”.</p>
+  <table style="margin-bottom:5mm">
+    <tr><th style="width:27%">Qué traía</th><th style="width:36%">Por qué no encajó</th><th>Qué aprendemos</th></tr>
+    <tr><td>Todo integrado: web, stock, clientes, vendedores, gráficas</td><td>Adoptarlo era todo o nada, con costo mensual.</td><td>Empezar por un solo flujo, el seguimiento, y crecer por módulos.</td></tr>
+    <tr><td>Presupuesto con formato propio</td><td>El rango va de un zócalo a Cipriani. Cada presupuesto se personaliza.</td><td>No tocar cómo se presupuesta. Se adjunta el presupuesto que ya hacen.</td></tr>
+    <tr><td>Descuento de stock desde el presupuesto, placa por placa</td><td>Abbate no trabaja por stock de placas.</td><td>Catálogo simple con disponibilidad y demora.</td></tr>
+    <tr><td>Dibujo de piezas con la textura del material</td><td>Abbate no diseña: el diseño llega resuelto.</td><td>Ninguna función que se vea bien pero no cambie el proceso.</td></tr>
+    <tr><td>Capacitación a dos personas</td><td>Nunca llegó al resto de la empresa.</td><td>La adopción se diseña junto con el software.</td></tr>
+    <tr><td>Backend de catálogo y web</td><td>Fue lo que más gustó; hoy se evalúa mantener sólo eso.</td><td>El catálogo tiene valor propio y puede alimentar la web.</td></tr>
+  </table>
+
+  <h2>Principios de diseño de la propuesta</h2>
+  <div class="grid2">
+    <div class="card"><h3>1 · Una pregunta, bien contestada</h3><p style="margin:0">Dónde está cada trabajo, desde cuándo y por qué. Cada función tiene que ayudar a responder eso.</p></div>
+    <div class="card"><h3>2 · Digitalizar, no reemplazar</h3><p style="margin:0">Los mismos pasos, los mismos documentos y los mismos nombres que la empresa ya usa.</p></div>
+    <div class="card"><h3>3 · Cargar lo mínimo</h3><p style="margin:0">Cambiar un estado tiene que ser más rápido que mandar un WhatsApp. Si no, no se usa.</p></div>
+    <div class="card"><h3>4 · Híbrido donde haga falta</h3><p style="margin:0">El taller no está obligado a usar pantallas. El papel sigue, pero sale del sistema y vuelve a él.</p></div>
+    <div class="card"><h3>5 · Por unidad, no por obra</h3><p style="margin:0">El modelo es obra, unidades y piezas, para que un edificio de 50 viviendas no sea una caja negra.</p></div>
+    <div class="card"><h3>6 · Medir antes y después</h3><p style="margin:0">Una línea de base ahora permite demostrar la mejora con números propios y no con impresiones.</p></div>
+  </div>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 10 · LA SOLUCIÓN -->
+<section class="page">
+  <p class="kicker">Propuesta</p>
+  <h1>La ficha única de obra y lo que ve cada rol</h1>
+  <div class="grid2" style="margin-bottom:4mm">
+    <div class="card ok">
+      <h3>Fase 1 · Seguimiento <span class="tag o">núcleo</span></h3>
+      <ul style="margin:0">
+        <li>Ficha de trabajo con línea de tiempo de todo lo que pasó</li>
+        <li>Tablero por etapas, con filtro por sede y por vendedor</li>
+        <li>Aceptación formal y orden de compra interna</li>
+        <li>Agenda de rectificación con motivos de visita fallida</li>
+        <li>Orden de taller estandarizada con código impreso</li>
+        <li>Avisos al vendedor</li>
+        <li>Obras grandes divididas en unidades</li>
+      </ul>
+    </div>
+    <div class="card blue">
+      <h3>Fase 2 · Control <span class="tag b">después</span></h3>
+      <ul style="margin:0">
+        <li>Capacidad del taller y planificación de zafra</li>
+        <li>Catálogo de materiales con disponibilidad</li>
+        <li>Detección de presupuestos duplicados</li>
+        <li>Postventa y conformidad del cliente</li>
+        <li>Tablero de dirección con indicadores de plazo</li>
+        <li>Conexión con la web: catálogo público</li>
+      </ul>
+    </div>
+  </div>
+  <table>
+    <tr><th style="width:17%">Rol</th><th style="width:30%">Qué ve</th><th style="width:30%">Qué carga</th><th>Dónde</th></tr>
+    <tr><td>Vendedor</td><td>Sus trabajos y en qué etapa está cada uno. Avisos de avance o traba.</td><td>Nuevo pedido, aceptación, notas de la charla con el cliente.</td><td>Celular</td></tr>
+    <tr><td>Mostrador y administración</td><td>Todos los trabajos de su sede y la agenda de mediciones.</td><td>Pedidos de mostrador, presupuesto adjunto, coordinación de visitas.</td><td>Computadora</td></tr>
+    <tr><td>Técnica y medición</td><td>La ficha de medición: qué medir, dónde, con qué terminación.</td><td>Medidas, fotos, observaciones de obra y orden de taller con croquis o CAD.</td><td>Tablet o celular en obra</td></tr>
+    <tr><td>Taller (Gerardo)</td><td>Cola de trabajo por fecha comprometida, en pantalla y en papel.</td><td>Marca “en proceso” y “terminado” con el código de la orden. Deja consultas.</td><td>Orden impresa y una tablet o pantalla en planta</td></tr>
+    <tr><td>Colocación</td><td>Agenda de entregas y colocaciones.</td><td>Cierre del trabajo y foto final.</td><td>Celular</td></tr>
+    <tr><td>Dirección (Nicolás)</td><td>Tablero general: atrasos, días perdidos por causa y carga del taller.</td><td>Nada obligatorio.</td><td>Cualquiera</td></tr>
+  </table>
+  <h2>Lo que deja afuera a propósito</h2>
+  <p>No arma presupuestos. No lleva stock por placa. No reemplaza WhatsApp con el cliente. No obliga al taller a usar pantallas. No interviene en el diseño. Cada una de esas cosas fue un motivo de rechazo en el intento anterior o no aporta a la pregunta central.</p>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 11 · ADOPCIÓN -->
+<section class="page">
+  <p class="kicker">Adopción</p>
+  <h1>Acá se gana o se pierde</h1>
+  <p class="lead">Es una empresa familiar, con mucha antigüedad (60 % del personal) y un dueño que cuida que nadie se sienta desplazado. Criticar la forma de trabajar se vive como criticar a la familia. La propuesta tiene que llegar como algo que ahorra el “¿en qué había quedado fulano?”, no como un control.</p>
+  <h2>Cuatro perfiles, cuatro formas de llegar</h2>
+  <table style="margin-bottom:4mm">
+    <tr><th style="width:18%">Perfil</th><th style="width:36%">Cómo es (según la entrevista)</th><th>Implicancia</th></tr>
+    <tr><td>Taller</td><td>Gente de obra, hombres, liderazgos fuertes. Ya trabajan con máquinas que leen CAD.</td><td>No cambiar su herramienta: papel impreso con código. Gerardo como referente, no como usuario obligado.</td></tr>
+    <tr><td>Administración</td><td>Horario fijo, frente a la computadora.</td><td>Son quienes más cargan. La pantalla tiene que ser rápida y parecerse a sus planillas.</td></tr>
+    <tr><td>Vendedores</td><td>“Muy despiertos, muy ávidos”. En la calle y en obra.</td><td>El gancho es contestarle al cliente sin llamar a nadie. Todo desde el celular.</td></tr>
+    <tr><td>Técnicos</td><td>Arquitecta y dibujante CAD. Traducen medidas a piezas.</td><td>Ganan un lugar donde dejar observaciones que todos ven. Primeros usuarios naturales.</td></tr>
+  </table>
+  <div class="grid2">
+    <div>
+      <h3>Aliados con nombre</h3>
+      <ul>
+        <li><strong>Graciela</strong>: vendedora, mano derecha de Nicolás, genera espacios de conversación.</li>
+        <li><strong>Las dos personas capacitadas en Slabware</strong>: lo adoptaron enseguida.</li>
+        <li><strong>La arquitecta que hizo de nexo</strong>: conoce el problema desde adentro y ya probó una herramienta.</li>
+        <li><strong>Gerardo</strong>, capataz del taller: si él lo adopta, el taller lo sigue.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Tácticas</h3>
+      <ul>
+        <li>Implementar fuera de zafra, en horario de trabajo.</li>
+        <li>Piloto acotado: sólo los trabajos que entren después de la licencia, sin migrar los viejos.</li>
+        <li>Quince minutos por semana frente al tablero, con café. No la reunión donde se reta.</li>
+        <li>Mostrar los números de la línea de base contra los del piloto.</li>
+        <li>Capacitaciones cortas que también sirvan para otros temas pendientes, como la lectura de planos.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 12 · PRÓXIMOS PASOS -->
+<section class="page">
+  <p class="kicker">Próximos pasos</p>
+  <h1>Calendario: relevar antes de la zafra, implementar después</h1>
+  <div class="fig"><svg id="d-plan" viewBox="0 0 1000 400"></svg></div>
+  <p class="figcap">Las fechas de licencia y de entrega del concurso son aproximadas y hay que confirmarlas.</p>
+
+  <h2>Qué hacer en las próximas tres semanas</h2>
+  <ol class="steps">
+    <li><strong>Pedir la visita ya</strong>, en horario de 8 a 12 o de 14 a 18, antes de mediados de octubre. Idealmente dos visitas: una a Montevideo (taller y administración) y otra corta a Maldonado.</li>
+    <li><strong>Seguir un trabajo real de punta a punta</strong>, uno reciente y terminado: contar cada mensaje, llamada y papel. Así los “+30 interacciones” pasan a ser un número propio.</li>
+    <li><strong>Juntar artefactos reales:</strong> fotos de una orden de taller en papel carbónico, un presupuesto de cada vendedor, una planilla de medición, un croquis que el taller no haya entendido y la lista de vendedores con sus códigos.</li>
+    <li><strong>Entrevistas cortas por rol</strong>, de 20 minutos: un vendedor, una administrativa de mostrador, la dibujante CAD, Gerardo y un colocador. Las guías están en la página siguiente.</li>
+    <li><strong>Mandar la encuesta</strong> online, en lenguaje simple, sin preguntas de clima laboral.</li>
+    <li><strong>Levantar la línea de base</strong> con lo que haya: fechas en órdenes y presupuestos de los últimos meses.</li>
+  </ol>
+  <div class="card blue" style="margin-top:3mm">
+    <h3>Para la entrega del concurso: un prototipo navegable</h3>
+    <p style="margin:0">Además del diagnóstico, llevar un prototipo que se pueda recorrer con datos reconocibles de Abbate: sus sedes, sus materiales, sus tipos de obra, un edificio dividido en unidades y el reloj de plazo del taller. Que la empresa se vea adentro convence más que cualquier diapositiva. Conviene mostrarlo antes a Graciela o a la arquitecta que hizo de nexo, en media hora, para ajustarlo con su mirada.</p>
+  </div>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 13 · GUÍA DE RELEVAMIENTO -->
+<section class="page">
+  <p class="kicker">Guía de relevamiento</p>
+  <h1>Qué preguntar, qué medir, qué encuestar</h1>
+  <div class="grid2">
+    <div>
+      <h3>Vendedor</h3>
+      <ul>
+        <li>¿Cómo te enterás de que tu venta avanzó o se trabó?</li>
+        <li>¿Cuántas veces por semana te llama un cliente a preguntar y no sabés la respuesta?</li>
+        <li>¿Cómo das por aceptado un presupuesto hoy? ¿A quién le avisás?</li>
+      </ul>
+      <h3>Mostrador y administración</h3>
+      <ul>
+        <li>¿Dónde anotás el pedido que entra por mostrador, mail o WhatsApp?</li>
+        <li>¿Cómo se coordina una visita de medición y quién la confirma?</li>
+        <li>¿En cuántos grupos de WhatsApp de trabajo estás?</li>
+      </ul>
+      <h3>Técnica y medición</h3>
+      <ul>
+        <li>¿Qué información te falta cuando salís a medir?</li>
+        <li>¿Qué pasa cuando llegás y la obra no está pronta? ¿A quién le avisás?</li>
+        <li>¿Qué parte de la orden de taller se dibuja a mano y qué parte en CAD?</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Taller (Gerardo)</h3>
+      <ul>
+        <li>¿Cómo te llega una orden y cómo decidís el orden en que se hace?</li>
+        <li>¿Qué dudas se repiten al leer una orden? Pedile ejemplos.</li>
+        <li>¿Cuántos días reales tuvieron los últimos cinco trabajos?</li>
+        <li>¿Hay wifi y lugar para una pantalla o una tablet en planta?</li>
+      </ul>
+      <h3>Colocación</h3>
+      <ul>
+        <li>¿Cómo te enterás del día y del lugar? ¿Qué pasa si la obra no está lista?</li>
+        <li>¿Cómo das por terminado un trabajo?</li>
+      </ul>
+      <h3>Dirección (Nicolás)</h3>
+      <ul>
+        <li>¿Qué tres números querrías ver todos los lunes?</li>
+        <li>¿Cuánto estarían dispuestos a pagar por mes por una herramienta?</li>
+        <li>¿Qué pasó con la postulación a ANDE?</li>
+      </ul>
+    </div>
+  </div>
+  <div class="grid2" style="margin-top:2mm">
+    <div class="card">
+      <h3>Línea de base: qué medir</h3>
+      <ul class="check" style="margin:0">
+        <li>Días de presupuesto a aceptación</li>
+        <li>Días de aceptación a medición</li>
+        <li>Visitas de medición fallidas por mes, y por qué</li>
+        <li>Días de medición a orden de taller</li>
+        <li>Días reales de taller contra prometidos</li>
+        <li>Presupuestos duplicados por año</li>
+        <li>Trabajos activos en un mes normal y en noviembre</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Encuesta: ejemplos de preguntas</h3>
+      <ul style="margin:0">
+        <li>¿Cuántas veces por día preguntás a alguien en qué está un trabajo? (0 · 1–3 · 4–10 · más)</li>
+        <li>¿Dónde buscás primero esa información? (WhatsApp · papel · llamo · en persona)</li>
+        <li>Si pudieras ver el estado de cada trabajo en el celular, ¿lo usarías? (sí · tal vez · no)</li>
+        <li>¿Preferís seguir con papel y que otro lo cargue? (sí · no · me da igual)</li>
+        <li>¿Qué es lo que más tiempo te hace perder? (respuesta libre)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<!-- 14 · PREGUNTAS ABIERTAS -->
+<section class="page">
+  <p class="kicker">Pendientes</p>
+  <h1>Preguntas abiertas y supuestos a confirmar</h1>
+  <p class="lead">Estas dudas cambian el diseño de la solución. Conviene resolverlas en la visita o por mail con la persona que hace de nexo.</p>
+  <table>
+    <tr><th style="width:40%">Pregunta</th><th>Por qué importa</th></tr>
+    <tr><td>¿El plazo del taller es de 10 o de 15 días?</td><td>La entrevista dice 10 y la presentación dice 15. Define el reloj de plazo y la meta del indicador.</td></tr>
+    <tr><td>¿Cuántos trabajos activos hay en un mes normal y en noviembre?</td><td>Dimensiona el tablero, la carga de datos y la capacidad del taller.</td></tr>
+    <tr><td>¿Qué software se usa hoy para facturar y para CAD?</td><td>Define con qué hay que convivir y qué se puede adjuntar o importar.</td></tr>
+    <tr><td>¿Cómo viaja una orden de Montevideo a Maldonado y al revés?</td><td>Es el flujo entre sedes, donde la información más se pierde.</td></tr>
+    <tr><td>¿Cuántos grupos de WhatsApp de trabajo existen?</td><td>Es un buen número para el antes y el después.</td></tr>
+    <tr><td>¿Hay wifi en planta? ¿Los técnicos y colocadores usan celular del trabajo?</td><td>Define si el taller puede tener pantalla y si se puede cargar desde la obra.</td></tr>
+    <tr><td>¿Quién decide hoy qué trabajos se rechazan en zafra, y con qué dato?</td><td>Define el módulo de capacidad.</td></tr>
+    <tr><td>¿Qué quedó del backend de Slabware? ¿Se mantiene el catálogo?</td><td>Evita duplicar trabajo y aprovecha lo que ya gustó.</td></tr>
+    <tr><td>¿Cuál es el presupuesto mensual aceptable?</td><td>Condiciona si la propuesta es a medida, sobre una plataforma existente o una mezcla.</td></tr>
+    <tr><td>¿Fecha y formato exactos de la entrega del concurso?</td><td>Ordena el calendario del equipo y define si se puede presentar un prototipo.</td></tr>
+  </table>
+
+  <h2>Supuestos de este documento</h2>
+  <ul>
+    <li>Los datos salen de la presentación de la empresa, de la transcripción de la entrevista y de la web pública. No hubo visita todavía.</li>
+    <li>Los diagramas 4 y 5 son ilustrativos: combinan situaciones reales descritas por la empresa, pero los números no son mediciones.</li>
+    <li>La licencia de la construcción se toma desde el 24 de diciembre. Su duración exacta y la fecha de entrega del concurso son aproximadas.</li>
+  </ul>
+  <div class="foot"><span>Abbate Mármoles · Diagnóstico y propuesta</span><span class="pn"></span></div>
+</section>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const C={ink:'#232326',ink2:'#3d3d42',muted:'#6c6b70',line:'#cfcac1',stone:'#f5f3ef',stone2:'#ebe7df',accent:'#d9442a',accentSoft:'#fbe5df',ok:'#2e7a58',okSoft:'#dcefe4',blue:'#2f5d8c',blueSoft:'#dfe9f4',warn:'#a86c12',warnSoft:'#f7ebd2',white:'#fff'};
+function el(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+function defs(svg){const d=el('defs',{},svg);
+  for(const [id,col] of [['ah',C.ink2],['aa',C.accent],['ao',C.ok],['am',C.muted]]){
+    const m=el('marker',{id:svg.id+id,viewBox:'0 0 10 10',refX:9,refY:5,markerWidth:7,markerHeight:7,orient:'auto-start-reverse'},d);
+    el('path',{d:'M0,0 L10,5 L0,10 z',fill:col},m);}
+}
+function wrap(t,max){const w=t.split(' ');const out=[];let cur='';for(const x of w){if((cur+' '+x).trim().length>max){if(cur)out.push(cur);cur=x}else cur=(cur+' '+x).trim()}if(cur)out.push(cur);return out}
+const FS=1.3;
+function text(svg,x,y,str,o={}){const s=(o.size||13)*FS;const t=el('text',{x,y,'font-size':s,'font-weight':o.weight||400,fill:o.fill||C.ink,'text-anchor':o.anchor||'start'},svg);
+  const lines=o.max?wrap(str,o.max):[str];lines.forEach((l,i)=>{const ts=el('tspan',{x,dy:i?s*(o.lh||1.28):0},t);ts.textContent=l});return lines.length}
+const TONES={base:[C.white,C.line],stone:[C.stone,C.stone2],accent:[C.accentSoft,C.accent],ok:[C.okSoft,C.ok],blue:[C.blueSoft,C.blue],dark:[C.ink,C.ink],warn:[C.warnSoft,C.warn]};
+function box(svg,b){const [f,s]=TONES[b.tone||'base'];
+  el('rect',{x:b.x,y:b.y,width:b.w,height:b.h,rx:b.r??9,fill:b.dashed?(b.fill||'none'):f,stroke:s,'stroke-width':b.sw||1.3,'stroke-dasharray':b.dashed?'5 4':'none'},svg);
+  const light=b.tone==='dark';const pad=b.pad||12;const ts=b.ts||14.5,ls=b.ls||12;
+  const cx=b.center?b.x+b.w/2:b.x+pad;const anchor=b.center?'middle':'start';
+  let y=b.y+pad+ts*FS*0.85;
+  if(b.title){const n=text(svg,cx,y,b.title,{size:ts,weight:700,fill:light?'#fff':(b.titleFill||C.ink),anchor,max:Math.floor((b.w-2*pad)/(ts*FS*0.56)),lh:1.18});y+=FS*(ts*1.18*(n-1)+ls*1.45)}
+  for(const l of (b.lines||[])){const n=text(svg,cx,y,l,{size:ls,fill:light?'#e9e6e0':(b.lineFill||C.ink2),anchor,max:Math.floor((b.w-2*pad)/(ls*FS*0.53)),lh:1.28});y+=FS*ls*1.28*n+ (b.gap??2)}
+  return b}
+function arrow(svg,pts,o={}){const col=o.color||C.ink2;const mk={[C.ink2]:'ah',[C.accent]:'aa',[C.ok]:'ao',[C.muted]:'am'}[col]||'ah';
+  const a={points:pts.map(p=>p.join(',')).join(' '),fill:'none',stroke:col,'stroke-width':o.w||1.6,'marker-end':o.noEnd?'none':`url(#${svg.id+mk})`};
+  if(o.both)a['marker-start']=`url(#${svg.id+mk})`;if(o.dash)a['stroke-dasharray']=o.dash;el('polyline',a,svg);
+  if(o.label){const [lx,ly]=o.at;const q=(o.ls||11)*FS;const n=o.label.length*q*0.55+10;if(!o.noBg)el('rect',{x:o.anchor==='start'?lx-4:lx-n/2,y:ly-q-1,width:n,height:q+7,rx:3,fill:'#fff'},svg);
+    text(svg,lx,ly+2,o.label,{size:o.ls||11,fill:o.lfill||col,weight:600,anchor:o.anchor||'middle'})}}
+function marker(svg,x,y,n){el('circle',{cx:x,cy:y,r:13,fill:C.accent,stroke:'#fff','stroke-width':2},svg);text(svg,x,y+4.3,String(n),{size:12,weight:800,fill:'#fff',anchor:'middle'})}
+function label(svg,x,y,t,o={}){text(svg,x,y,t,{size:o.size||10.5,weight:700,fill:o.fill||C.muted,anchor:o.anchor||'start'});}
+
+/* ---------- Diagrama 1: mapa ---------- */
+(function(){const s=document.getElementById('d-mapa');defs(s);
+  label(s,0,16,'QUIÉN COMPRA');label(s,222,16,'POR DÓNDE ENTRA');
+  const cli=[['Consumidor final','Mesadas, baños, obras puntuales'],['Estudios de arquitectura y diseño','Piezas a medida, terminaciones especiales'],['Empresas constructoras','Series repetitivas, gran volumen'],['Proyectos de alto estándar','Sofitel, The Grand Hotel, SODRE, Cipriani']];
+  cli.forEach((c,i)=>box(s,{x:0,y:32+i*112,w:196,h:102,title:c[0],lines:[c[1]],ts:12,ls:10,pad:10,tone:'stone'}));
+  const can=['Web','Mail','WhatsApp','Mostrador en Montevideo o Maldonado','Vendedor que visita la obra'];
+  can.forEach((c,i)=>box(s,{x:224,y:32+i*89.6,w:170,h:78,title:c,ts:12,pad:10,tone:'base'}));
+  arrow(s,[[198,256],[220,256]]);
+  // Abbate
+  el('rect',{x:428,y:6,width:572,height:790,rx:14,fill:'none',stroke:C.ink,'stroke-width':1.8},s);
+  el('rect',{x:444,y:-8,width:300,height:26,fill:'#fff'},s);
+  label(s,452,12,'ABBATE MÁRMOLES · 40 PERSONAS',{fill:C.ink});
+  box(s,{x:446,y:36,w:190,h:236,title:'Comercial',lines:['Vendedores, cada uno con su código','Mostrador: administrativas que también venden','Graciela, referente comercial'],ts:13,ls:10.5,gap:5});
+  box(s,{x:654,y:36,w:180,h:236,title:'Técnica',lines:['Presupuestación','Dibujo CAD','Rectificación de medidas en obra','Arquitecta y dibujante'],ts:13,ls:10.5,gap:5});
+  box(s,{x:852,y:36,w:132,h:236,title:'Dirección',lines:['Nicolás','Decide qué trabajos se toman en zafra'],ts:13,ls:10.5,tone:'dark',gap:5});
+  box(s,{x:446,y:330,w:250,h:200,title:'Taller Montevideo',lines:['Gerardo, capataz','Waterjet, cortadoras CNC, grúa puente','Plazo prometido: 10 a 15 días'],ts:13,ls:10.5,tone:'stone',gap:5});
+  box(s,{x:748,y:330,w:236,h:200,title:'Taller Maldonado',lines:['Taller auxiliar para piezas chicas','Salón de ventas','Recibe producción de Montevideo'],ts:13,ls:10.5,tone:'stone',gap:5});
+  box(s,{x:446,y:590,w:250,h:190,title:'Colocación',lines:['Colocadores propios y zafrales','Se vende con o sin colocación','Entrega en todo el país'],ts:13,ls:10.5,gap:5});
+  box(s,{x:748,y:590,w:236,h:190,title:'Administración',lines:['Sueldos, impuestos, legales','Concentrada en Montevideo'],ts:13,ls:10.5,gap:5});
+  arrow(s,[[396,256],[442,256]]);
+  arrow(s,[[638,154],[650,154]]);
+  arrow(s,[[790,274],[790,300],[640,300],[640,326]],{label:'orden de taller',at:[790,305],ls:10});
+  arrow(s,[[698,480],[744,480]]);
+  arrow(s,[[570,532],[570,586]]);text(s,580,565,'entrega o coloca',{size:10,fill:C.muted,weight:600});
+  // Afuera
+  label(s,0,500,'AFUERA, PERO CONDICIONAN LA OBRA',{fill:C.accent});
+  box(s,{x:0,y:514,w:394,h:100,title:'Subcontratos de obra',lines:['Carpintero, constructora, sanitaria. Hasta que no terminan, no se puede medir.'],ts:12.5,ls:10.5,tone:'accent',pad:11});
+  box(s,{x:0,y:626,w:394,h:80,title:'Arquitectos y estudios',lines:['Traen el diseño resuelto. Abbate asesora sobre el material.'],ts:12.5,ls:10.5,pad:11});
+  box(s,{x:0,y:718,w:394,h:80,title:'Proveedores',lines:['Importadores locales, importación directa de sintéticos, maquinaria.'],ts:12.5,ls:10.5,pad:11});
+  arrow(s,[[396,540],[414,540],[414,300],[560,300],[560,274]],{color:C.accent,dash:'6 4'});
+  // Materiales
+  el('rect',{x:0,y:826,width:1000,height:214,rx:12,fill:C.stone},s);
+  label(s,18,858,'QUÉ VENDE',{fill:C.ink});
+  const mats=[['Mármoles','Naturales, importados'],['Granitos','Naturales'],['Sintéticos','Silestone, Dekton y marcas de importación directa'],['Terminaciones','Cantos, pulidos, huecos'],['Servicios','Medición, entrega, colocación, restauración y pulido']];
+  mats.forEach((m,i)=>box(s,{x:16+i*196,y:874,w:184,h:148,title:m[0],lines:[m[1]],ts:12.5,ls:10.5,pad:11}));
+})();
+
+/* ---------- Diagrama 2: flujo ---------- */
+(function(){const s=document.getElementById('d-flujo');defs(s);
+  const X0=140,CW=172,L=[['Cliente','o su arquitecto'],['Comercial','vendedor, mostrador'],['Técnica','presupuesto y medición'],['Taller','Montevideo'],['Colocación','propia o zafral']];
+  const LY=i=>74+i*116, LH=110;
+  const ST=['Presupuestación','Aceptación','Rectificación','Producción','Post venta'];
+  ST.forEach((t,i)=>{const x=X0+i*CW;el('rect',{x:x+3,y:0,width:CW-6,height:64,rx:8,fill:C.ink},s);
+    text(s,x+12,22,'0'+(i+1),{size:10,weight:700,fill:'#bdb8ae'});text(s,x+12,45,t,{size:11.5,weight:700,fill:'#fff'});});
+  L.forEach((l,i)=>{const y=LY(i);el('rect',{x:0,y,width:1000,height:LH,fill:i%2?'#fff':C.stone},s);
+    text(s,8,y+46,l[0],{size:12.5,weight:700});text(s,8,y+68,l[1],{size:9.5,fill:C.muted,max:16});});
+  for(let i=1;i<5;i++)el('line',{x1:X0+i*CW,y1:70,x2:X0+i*CW,y2:654,stroke:C.stone2,'stroke-width':1.2},s);
+  const B=(st,ln,t,o={})=>box(s,Object.assign({x:X0+st*CW+10,y:LY(ln)+10,w:CW-20,h:LH-20,lines:[t],ls:10.5,pad:10,gap:0},o));
+  const c1=B(0,0,'Pide presupuesto por web, mail, WhatsApp o mostrador');
+  const m1=B(0,1,'Recibe el pedido y lo asigna a su código');
+  const t1=B(0,2,'Cotiza desde planos o planilla');
+  const m2=B(1,1,'Ida y vuelta: recotiza, cambia material o diseño');
+  const c2=B(1,0,'Acepta, pide ajustes o no responde');
+  const c3=B(2,0,'Avisa cuando terminó el carpintero');
+  const m3=B(2,1,'Coordina la visita de medición');
+  const t3=B(2,2,'Rectifica medidas y arma la orden de taller');
+  const r4=B(3,3,'Fabrica. Gerardo revisa y consulta');
+  const m4=B(3,1,'El cliente llama: “¿qué pasó?”',{tone:'accent'});
+  const k4=B(3,4,'Coordina el día de colocación');
+  const k5=B(4,4,'Coloca o entrega');
+  const m5=B(4,1,'Sin protocolo de postventa',{dashed:true,tone:'accent',fill:'#fff'});
+  const c5=B(4,0,'¿Conforme? Nadie lo pregunta',{dashed:true,tone:'accent',fill:'#fff'});
+  const R=b=>[b.x+b.w,b.y+b.h/2],Lf=b=>[b.x,b.y+b.h/2],T=b=>[b.x+b.w/2,b.y],Bt=b=>[b.x+b.w/2,b.y+b.h];
+  arrow(s,[Bt(c1),T(m1)]);arrow(s,[Bt(m1),T(t1)]);
+  arrow(s,[R(t1),[m2.x+m2.w/2,R(t1)[1]],Bt(m2)],{label:'presupuesto',at:[m2.x+m2.w/2-6,R(t1)[1]+16],ls:10});
+  arrow(s,[T(m2),Bt(c2)],{both:true});
+  arrow(s,[R(c2),Lf(c3)]);arrow(s,[Bt(c3),T(m3)]);arrow(s,[Bt(m3),T(t3)]);
+  arrow(s,[R(t3),[r4.x+r4.w/2,R(t3)[1]],T(r4)],{label:'orden de taller',at:[r4.x+r4.w/2,R(t3)[1]-8],ls:10});
+  arrow(s,[Lf(r4),[t3.x+t3.w/2,Lf(r4)[1]],Bt(t3)],{color:C.accent,dash:'5 4',label:'consulta',at:[t3.x+t3.w/2+2,Lf(r4)[1]+16],ls:10});
+  arrow(s,[Bt(r4),T(k4)]);arrow(s,[R(k4),Lf(k5)]);
+  arrow(s,[T(k5),Bt(m5)],{color:C.accent,dash:'5 4'});arrow(s,[T(m5),Bt(c5)],{color:C.accent,dash:'5 4'});
+  marker(s,m1.x+m1.w-4,m1.y+4,1);marker(s,m2.x+m2.w-4,m2.y+4,2);marker(s,t3.x+t3.w-4,t3.y+4,3);
+  marker(s,r4.x+r4.w-26,r4.y+4,4);marker(s,r4.x+r4.w-2,r4.y+4,5);marker(s,m4.x+m4.w-4,m4.y+4,6);marker(s,m5.x+m5.w-4,m5.y+4,7);
+  // Documentos
+  const DY=672;text(s,8,DY+40,'Documento',{size:12.5,weight:700});text(s,8,DY+62,'que lo respalda',{size:9.5,fill:C.muted,max:16});
+  const docs=[['Presupuesto','Formato distinto por vendedor',false],['Orden de compra','No existe',true],['Orden de taller','Papel carbónico, bandejas',false],['Entrega y colocación','Sin registro de cierre',false],['Conformidad','No existe',true]];
+  docs.forEach((d,i)=>box(s,{x:X0+i*CW+10,y:DY,w:CW-20,h:100,title:d[0],lines:[d[1]],ts:12,ls:10,pad:10,tone:d[2]?'accent':'blue',dashed:d[2],fill:'#fff',titleFill:d[2]?C.accentInk||'#9e2c17':C.ink}));
+})();
+
+/* ---------- Diagrama 3: información ---------- */
+(function(){const s=document.getElementById('d-info');defs(s);
+  el('rect',{x:0,y:0,width:490,height:600,rx:14,fill:C.accentSoft},s);el('rect',{x:510,y:0,width:490,height:600,rx:14,fill:C.okSoft},s);
+  label(s,20,30,'HOY: CADA UNO TIENE UNA PARTE',{fill:C.accent,size:10.5});label(s,530,30,'PROPUESTO: UNA FICHA POR TRABAJO',{fill:C.ok,size:10.5});
+  const N=(x,y,t,sub,o={})=>{const w=o.w||150,h=o.h||(sub?68:50);box(s,{x:x-w/2,y:y-h/2,w,h,title:t,lines:sub?[sub]:[],ts:12,ls:9.5,pad:9,center:true,tone:o.tone||'base',gap:0});return{x,y,w,h}};
+  const tag=(x,y,t,col)=>{const w=t.length*9.5*FS*0.55+12;el('rect',{x:x-w/2,y:y-11,width:w,height:21,rx:4,fill:'#fff'},s);text(s,x,y+4,t,{size:9.5,fill:col,weight:600,anchor:'middle'})};
+  const P={cli:[245,90],ven:[100,190],mos:[390,190],nic:[245,300],tec:[100,400],col:[390,400],tal:[245,530]};
+  const E=(a,b,lab,o={})=>{const col=o.c||C.accent;const A=P[a],B=P[b];el('line',{x1:A[0],y1:A[1],x2:B[0],y2:B[1],stroke:col,'stroke-width':1.6,'stroke-dasharray':o.d||'none'},s);
+    if(lab)tag((A[0]+B[0])/2+(o.dx||0),(A[1]+B[1])/2+(o.dy||0),lab,col)};
+  E('nic','mos',null,{d:'3 3',c:C.muted});E('nic','tal',null,{d:'3 3',c:C.muted});E('nic','ven',null,{d:'3 3',c:C.muted});
+  E('cli','ven','WhatsApp, llamado',{dx:-20,dy:-12});E('cli','mos','mostrador, mail',{dx:20,dy:-12});
+  E('ven','tec','grupo WhatsApp');E('mos','tec','grupo WhatsApp',{dx:50,dy:-38});
+  E('tec','tal','papel carbónico',{dx:-10});E('tal','col','de palabra',{dx:10});
+  E('ven','tal',null,{d:'5 4'});E('col','cli','llamado',{d:'5 4',dx:60,dy:40});
+  N(...P.cli,'Cliente');N(...P.ven,'Vendedor');N(...P.mos,'Mostrador');N(...P.tec,'Técnica','libreta propia');N(...P.tal,'Taller','Gerardo');N(...P.col,'Colocador');N(...P.nic,'Nicolás',null,{tone:'dark',w:120});
+  // Propuesto
+  const cx=755,cy=305;
+  const Q={cli:[755,90],ven:[598,190],mos:[912,190],tec:[598,420],tal:[755,530],col:[912,420],nic:[930,305]};
+  for(const k of ['ven','mos','tec','tal','col','nic'])el('line',{x1:cx,y1:cy,x2:Q[k][0],y2:Q[k][1],stroke:C.ok,'stroke-width':2.2},s);
+  el('line',{x1:Q.cli[0],y1:Q.cli[1],x2:Q.ven[0],y2:Q.ven[1],stroke:C.muted,'stroke-width':1.6,'stroke-dasharray':'5 4'},s);
+  el('line',{x1:cx,y1:cy,x2:Q.cli[0],y2:Q.cli[1],stroke:C.ok,'stroke-width':1.6,'stroke-dasharray':'5 4'},s);
+  tag(640,128,'WhatsApp, como hoy',C.muted);tag(755,236,'encuesta de conformidad',C.ok);
+  N(...Q.cli,'Cliente');N(...Q.ven,'Vendedor','celular y avisos',{w:150});N(...Q.mos,'Mostrador','carga y coordina',{w:150});
+  N(...Q.tec,'Técnica','medidas y fotos',{w:150});N(...Q.tal,'Taller','orden impresa con código',{w:200});N(...Q.col,'Colocador','agenda y cierre',{w:150});N(...Q.nic,'Nicolás','tablero',{w:104,tone:'dark'});
+  box(s,{x:cx-88,y:cy-55,w:176,h:110,title:'Ficha de trabajo',lines:['etapa, fechas, quién','fotos, observaciones'],ts:13,ls:9.5,center:true,tone:'ok',gap:0,pad:14});
+})();
+
+/* ---------- Diagrama 4: plazo ---------- */
+(function(){const s=document.getElementById('d-plazo');defs(s);
+  const X=d=>150+d*40.5;
+  for(let d=0;d<=20;d++){el('line',{x1:X(d),y1:30,x2:X(d),y2:268,stroke:d%5?C.stone2:C.line,'stroke-width':1},s);if(d%5===0)text(s,X(d),22,'día '+d,{size:10.5,fill:C.muted,anchor:'middle',weight:600})}
+  const row=(y,t,sub)=>{text(s,0,y+20,t,{size:13,weight:700});text(s,0,y+37,sub,{size:10.5,fill:C.muted})};
+  const seg=(y,a,b,t,tone)=>{const [f,st]=TONES[tone];el('rect',{x:X(a)+1,y,width:X(b)-X(a)-2,height:44,rx:6,fill:f,stroke:st,'stroke-width':1.2},s);text(s,X(a)+8,y+27,t,{size:11,weight:600,fill:tone==='dark'?'#fff':C.ink2})};
+  row(48,'Lo planificado','con el cliente');
+  seg(48,0,3,'Espera','stone');seg(48,3,5,'Mide y OT','blue');seg(48,5,15,'Taller: 10 días','dark');seg(48,15,18,'Colocación','ok');
+  row(150,'Lo que pasa','caso ilustrativo');
+  seg(150,0,3,'Espera','stone');seg(150,3,8,'Obra no pronta','accent');seg(150,8,11,'Reprogramada','accent');seg(150,11,13,'Mide y OT','blue');seg(150,13,17,'Taller: 4','dark');seg(150,17,18,'Col.','ok');
+  const fx=X(18);el('line',{x1:fx,y1:34,x2:fx,y2:272,stroke:C.accent,'stroke-width':2.4},s);
+  text(s,fx-8,290,'Fecha comprometida con el cliente:',{size:10.5,weight:700,fill:C.accent,anchor:'end'});text(s,fx-8,308,'no se mueve',{size:10.5,weight:700,fill:C.accent,anchor:'end'});
+  arrow(s,[[X(3)+2,222],[X(12)-2,222]],{color:C.accent,both:true});
+  text(s,X(7.5),244,'8 días perdidos antes de la orden de taller',{size:11,weight:700,fill:C.accent,anchor:'middle'});
+  text(s,0,300,'Día 3: visita fallida, el carpintero no terminó.',{size:10,fill:C.muted});
+  text(s,0,318,'La visita del viernes pasa al lunes.',{size:10,fill:C.muted});
+})();
+
+/* ---------- Diagrama 5: unidad ---------- */
+(function(){const s=document.getElementById('d-unidad');defs(s);
+  label(s,0,14,'CÓMO SE ORGANIZA UN TRABAJO');
+  const lv=[['Obra','Edificio de 5 pisos','dark'],['Unidad','Piso 3 · Depto B','base'],['Ambiente','Baño principal','base'],['Piezas','Mesada 1,20 × 0,55 · Nicho de ducha 0,30 × 0,60 · Zócalo','stone']];
+  lv.forEach((l,i)=>{const y=28+i*78;box(s,{x:i*18,y,w:330-i*18,h:i===3?76:60,title:l[0],lines:[l[1]],ts:12.5,ls:10.5,pad:10,tone:l[2]});if(i<3)arrow(s,[[i*18+24,y+60],[i*18+24,y+76]])});
+  const st=[['Presupuestado','stone'],['A medir','blue'],['Medición fallida','accent'],['En taller','dark'],['Colocado','ok']];
+  const pattern=['44433','44343','32312','21211','11000'];
+  const GX=372,GY=40,CWd=106,CH=48;
+  label(s,GX,14,'ESTADO POR UNIDAD · MISMA OBRA');
+  ['A','B','C','D','E'].forEach((u,j)=>text(s,GX+64+j*CWd+CWd/2,GY+8,'Depto '+u,{size:10.5,fill:C.muted,anchor:'middle',weight:600}));
+  pattern.forEach((r,i)=>{const y=GY+18+i*(CH+6);text(s,GX,y+30,'Piso '+(5-i),{size:11.5,weight:700});
+    [...r].forEach((k,j)=>{const [n,t]=st[+k];const [f,sc]=TONES[t];el('rect',{x:GX+64+j*CWd+3,y,width:CWd-6,height:CH,rx:6,fill:f,stroke:sc,'stroke-width':1.1},s);
+      text(s,GX+64+j*CWd+CWd/2,y+29,n,{size:9,weight:600,fill:t==='dark'?'#fff':C.ink2,anchor:'middle'})})});
+  el('rect',{x:GX+64+1*CWd+1,y:GY+18+2*(CH+6)-2,width:CWd-2,height:CH+4,rx:8,fill:'none',stroke:C.ink,'stroke-width':2.2},s);
+  text(s,GX+64,GY+18+5*(CH+6)+14,'El 3B ya está en taller, el 3C tuvo una medición fallida y el 1E todavía no se midió.',{size:10.5,fill:C.muted});
+})();
+
+/* ---------- Diagrama 6: plan ---------- */
+(function(){const s=document.getElementById('d-plan');defs(s);
+  // 23 sep 2026 -> 30 abr 2027. x from 150 to 1000
+  const start=new Date(2026,8,15),end=new Date(2027,4,1);const span=(end-start)/864e5;const X=d=>150+((d-start)/864e5)/span*850;
+  const months=['sep','oct','nov','dic','ene','feb','mar','abr'];
+  for(let m=0;m<8;m++){const d=new Date(2026,8+m,1);const x=Math.max(150,X(d));el('line',{x1:x,y1:26,x2:x,y2:350,stroke:C.stone2,'stroke-width':1},s);
+    const nx=X(new Date(2026,8+m,15));text(s,Math.max(nx,170),18,months[m],{size:11,weight:700,fill:C.muted,anchor:'middle'})}
+  // zafra band
+  const z1=X(new Date(2026,9,15)),z2=X(new Date(2026,11,24));el('rect',{x:z1,y:28,width:z2-z1,height:322,fill:C.warnSoft},s);
+  text(s,(z1+z2)/2,344,'ZAFRA · no se implementa',{size:10.5,weight:700,fill:C.warn,anchor:'middle'});
+  const l1=z2,l2=X(new Date(2027,0,20));el('rect',{x:l1,y:28,width:l2-l1,height:322,fill:C.stone},s);
+  text(s,(l1+l2)/2,344,'licencia',{size:10.5,weight:700,fill:C.muted,anchor:'middle'});
+  const today=X(new Date(2026,8,23));el('line',{x1:today,y1:26,x2:today,y2:352,stroke:C.accent,'stroke-width':2},s);text(s,today+4,372,'hoy, 23 sep',{size:10.5,weight:700,fill:C.accent});
+  const lane=(y,t)=>text(s,0,y+22,t,{size:12.5,weight:700});
+  const bar=(y,a,b,t,tone)=>{const x1=X(a),x2=X(b);const [f,st]=TONES[tone];el('rect',{x:x1,y,width:x2-x1,height:34,rx:6,fill:f,stroke:st,'stroke-width':1.2},s);const tw=t.length*10.5*FS*0.54;const fits=tw+16<x2-x1;if(fits)text(s,x1+8,y+22,t,{size:10.5,weight:600,fill:tone==='dark'?'#fff':C.ink2});else if(x2+tw+10<1000)text(s,x2+8,y+22,t,{size:10.5,weight:600,fill:C.ink2});else text(s,x1-8,y+22,t,{size:10.5,weight:600,fill:C.ink2,anchor:'end'})};
+  lane(44,'Relevamiento');bar(44,new Date(2026,8,23),new Date(2026,9,16),'Visita, entrevistas, encuesta','accent');
+  lane(94,'Diagnóstico');bar(94,new Date(2026,9,5),new Date(2026,10,5),'Análisis y diseño de la solución','base');
+  lane(144,'Prototipo');bar(144,new Date(2026,9,20),new Date(2026,10,25),'Prototipo navegable y validación corta','blue');
+  lane(194,'Entrega');bar(194,new Date(2026,10,25),new Date(2026,11,12),'Concurso','dark');
+  lane(244,'Piloto');bar(244,new Date(2027,1,1),new Date(2027,2,31),'Fase 1: seguimiento en una sede','ok');
+  lane(294,'Fase 2');bar(294,new Date(2027,3,1),new Date(2027,4,1),'Capacidad, catálogo','base');
+  text(s,0,392,'Fuera de la zafra hay tiempo para capacitar; dentro de ella, nadie puede parar.',{size:10.5,fill:C.muted});
+})();
+
+document.querySelectorAll('.page').forEach((p,i)=>{const n=p.querySelector('.pn');if(n)n.textContent=(i+1)+' / '+document.querySelectorAll('.page').length});
+</script>
+</body>
+</html>
