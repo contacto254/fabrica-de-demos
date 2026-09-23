@@ -2,226 +2,241 @@
 <html lang="es-UY">
 <head>
 <meta charset="utf-8">
-<title>Propuesta · Romualdo &amp; Cía.</title>
+<title>Propuesta CustomERP · Romualdo &amp; Cía.</title>
 <style>
+@font-face{font-family:"IBM Plex Sans";font-weight:400;font-style:normal;src:url(fuentes/ibm-plex-sans-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-weight:400;font-style:italic;src:url(fuentes/ibm-plex-sans-latin-400-italic.woff2) format("woff2")}
+@font-face{font-family:"IBM Plex Sans";font-weight:600;font-style:normal;src:url(fuentes/ibm-plex-sans-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-weight:500;src:url(fuentes/jetbrains-mono-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"JetBrains Mono";font-weight:800;src:url(fuentes/jetbrains-mono-latin-800-normal.woff2) format("woff2")}
 @page{size:A4;margin:0}
-:root{--brand:#1F6B45;--deep:#154A30;--soft:#E3F1E8;--ink:#18261F;--ink2:#4B5C53;--ink3:#6F7F76;--line:#DFE6E0;--gold:#A8792B;--goldsoft:#F7EEDC}
+/* Marca CustomERP: rojo señal, tinta, papel y blanco */
+:root{--rojo:#EC3012;--tinta:#16150F;--papel:#F3EFE6;--blanco:#FFFFFF;--gris:#5E5A50;--linea:#D9D2C3}
 *{box-sizing:border-box}
-body{margin:0;font-family:"DejaVu Sans","Liberation Sans",Arial,sans-serif;color:var(--ink);font-size:10.2pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.page{width:210mm;height:297mm;padding:18mm 18mm 16mm;position:relative;page-break-after:always;overflow:hidden}
+body{margin:0;background:var(--papel);color:var(--tinta);font-family:"IBM Plex Sans",sans-serif;font-size:9.6pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{width:210mm;height:297mm;padding:16mm 18mm 18mm;position:relative;page-break-after:always;overflow:hidden;background:var(--papel)}
 .page:last-child{page-break-after:auto}
-h1{font-size:25pt;line-height:1.15;margin:0 0 10px;letter-spacing:-.5px}
-h2{font-size:15pt;margin:0 0 4px;color:var(--deep);letter-spacing:-.2px}
-h2+.lead{margin-top:0}
-h3{font-size:11pt;margin:16px 0 6px;color:var(--deep)}
-p{margin:0 0 9px}
-.lead{color:var(--ink2);font-size:10.5pt;margin-bottom:14px}
-.kicker{font-size:8pt;letter-spacing:1.6px;text-transform:uppercase;color:var(--brand);font-weight:bold;margin-bottom:6px}
-.foot{position:absolute;bottom:9mm;left:18mm;right:18mm;display:flex;justify-content:space-between;font-size:7.8pt;color:var(--ink3);border-top:1px solid var(--line);padding-top:6px}
-table{width:100%;border-collapse:collapse;font-size:8.8pt;line-height:1.4}
-th{text-align:left;font-size:7.8pt;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);border-bottom:1.5px solid var(--ink);padding:6px 7px}
-td{padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
-td b{color:var(--deep)}
-.cols{display:flex;gap:14px}
-.cols>div{flex:1}
-.box{border:1px solid var(--line);border-radius:10px;padding:11px 13px;margin-bottom:10px}
-.box.soft{background:var(--soft);border-color:transparent}
-.box.gold{background:var(--goldsoft);border-color:transparent}
-.box h4{margin:0 0 4px;font-size:10pt;color:var(--deep)}
-.box p{margin:0;color:var(--ink2);font-size:9.2pt}
-ul{margin:4px 0 8px;padding-left:16px}
-li{margin-bottom:3px}
-.tight li{font-size:9pt;margin-bottom:2px}
-.tight h3{margin-top:12px}
-.quote{border-left:3px solid var(--gold);padding:2px 0 2px 12px;color:var(--ink2);font-style:italic;margin:8px 0 12px}
-.num{font-size:22pt;font-weight:bold;color:var(--brand);line-height:1}
-.stat{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.stat span{display:block;font-size:8pt;color:var(--ink3);margin-top:4px}
-.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 14px}
-.flow div{background:var(--soft);color:var(--deep);border-radius:8px;padding:6px 9px;font-size:8.6pt;font-weight:bold}
-.flow i{width:14px;height:2px;background:var(--brand);display:inline-block;position:relative}
-.flow i:after{content:"";position:absolute;right:-1px;top:-3px;border:4px solid transparent;border-left:5px solid var(--brand);border-right:0}
-.tag{display:inline-block;font-size:7.8pt;font-weight:bold;border-radius:99px;padding:1px 7px;background:var(--soft);color:var(--deep)}
-.tag.g{background:var(--goldsoft);color:#7C5613}
+b,strong,h1,h2,h3,h4{font-weight:600}
+h1{font-size:34pt;line-height:1.05;margin:0 0 12px;letter-spacing:-.8px}
+h2{font-size:14.5pt;margin:18px 0 8px;letter-spacing:-.2px}
+h2:first-child{margin-top:0}
+h2 i{color:var(--rojo);font-style:normal}
+h4{margin:0 0 3px;font-size:10pt}
+p{margin:0 0 8px}
+.mono{font-family:"JetBrains Mono",monospace}
+.lbl{font-family:"JetBrains Mono",monospace;font-weight:500;font-size:7pt;letter-spacing:1.4px;text-transform:uppercase}
+.muted{color:var(--gris)}
+
+/* logotipo: "Custom" en Plex SemiBold + el módulo del isologo */
+.lt{font-weight:600;letter-spacing:-.3px;white-space:nowrap;display:inline-flex;align-items:flex-end;line-height:1}
+.lt .m{display:inline-block;position:relative;height:.86em;width:.875em;border-radius:.2em;background:var(--rojo);margin-left:.07em;margin-bottom:-.02em}
+.lt .m b{position:absolute;right:.42em;bottom:.32em;font-family:"JetBrains Mono",monospace;font-weight:800;font-size:.25em;line-height:1;color:var(--blanco);letter-spacing:0}
+.lt.inv{color:var(--blanco)}
+.lt.inv .m{background:var(--blanco)}
+.lt.inv .m b{color:var(--rojo)}
+
 /* portada */
-.cover{background:linear-gradient(155deg,#0F2A1D 0%,#154A30 55%,#1F6B45 100%);color:#fff;padding:22mm 20mm}
-.cover .kicker{color:#D9B46A}
-.cover h1{color:#fff;font-size:31pt;margin-top:40mm}
-.cover .lead{color:#CFE3D6;font-size:12pt;max-width:140mm}
-.cover .meta{position:absolute;left:20mm;right:20mm;bottom:22mm;display:flex;gap:24px;border-top:1px solid rgba(255,255,255,.2);padding-top:14px;font-size:9pt;color:#CFE3D6}
-.cover .meta b{display:block;color:#fff;font-size:10pt}
-.logo{display:flex;align-items:center;gap:12px}
-.logo b{font-size:14pt}
-.logo small{display:block;color:#A9C6B4;font-size:8pt;letter-spacing:1px}
-.link{display:inline-block;background:#fff;color:var(--deep);font-weight:bold;border-radius:8px;padding:8px 12px;margin-top:10px;font-size:11pt}
-.cover .link{margin-top:18px}
+.hero{background:var(--rojo);color:var(--blanco);margin:-16mm -18mm 0;padding:16mm 18mm 13mm}
+.hero .lt{font-size:34px}
+.hero h1{margin-top:22mm}
+.hero .sub{font-size:13pt;max-width:150mm;margin:0}
+.hero .meta{display:flex;gap:26px;margin-top:12mm;padding-top:10px;border-top:1.5px solid var(--blanco)}
+.hero .meta div{font-size:9pt}
+.hero .meta .lbl{display:block;margin-bottom:2px}
+
+/* cabecera y pie de las páginas interiores */
+.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5px solid var(--tinta);padding-bottom:9px;margin-bottom:18px}
+.head .lt{font-size:17px}
+.foot{position:absolute;left:18mm;right:18mm;bottom:9mm;display:flex;justify-content:space-between;border-top:1px solid var(--linea);padding-top:6px;font-size:7.6pt;color:var(--gris)}
+
+/* tablas */
+table{width:100%;border-collapse:collapse;font-size:8.8pt;line-height:1.42}
+th{background:var(--tinta);color:var(--blanco);text-align:left;padding:7px 9px;font-family:"JetBrains Mono",monospace;font-weight:500;font-size:6.8pt;letter-spacing:1.3px;text-transform:uppercase}
+td{padding:6px 9px;border-bottom:1px solid var(--linea);vertical-align:top}
+td:first-child{font-weight:600}
+td.n,th.n{text-align:right;font-family:"JetBrains Mono",monospace;font-weight:500}
+
+.cols{display:flex;gap:12px}
+.cols>div{flex:1}
+.box{border:1.5px solid var(--tinta);padding:10px 12px;margin-bottom:10px;background:var(--blanco)}
+.box p{margin:0;font-size:8.9pt}
+.box.r{border-color:var(--rojo)}
+ul{margin:4px 0 8px;padding-left:15px}
+li{margin-bottom:3px}
+.stat{flex:1;border-top:2px solid var(--tinta);padding-top:6px}
+.stat .num{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:20pt;line-height:1.1}
+.stat span{display:block;font-size:8.2pt;color:var(--gris);margin-top:2px}
+.link{display:inline-flex;align-items:center;gap:10px;background:var(--tinta);color:var(--blanco);padding:9px 14px;margin:4px 0 6px}
+.link .mono{font-weight:800;font-size:11pt}
+.link .lbl{color:#C9C3B6}
+.flow{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:8px 0 12px}
+.flow span{border:1.5px solid var(--tinta);background:var(--blanco);padding:4px 8px;font-size:8.2pt;font-weight:600}
+.flow em{font-style:normal;color:var(--rojo);font-family:"JetBrains Mono",monospace;font-weight:800}
+.chica{border:1.5px solid var(--tinta);padding:12px 16px;margin-top:6px}
+.chica h3{margin:0 0 6px;font-size:12pt}
+.firma{display:flex;align-items:center;gap:14px;margin-top:18px;padding-top:12px;border-top:1.5px solid var(--tinta)}
+.firma svg{width:68px;height:68px;flex:none}
 </style>
 </head>
 <body>
 
-<!-- 1. Portada -->
-<section class="page cover">
-  <div class="logo">
-    <svg width="46" height="46" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#1F6B45" stroke="#2F8A5C"/><path d="M11 29V11h9a5.5 5.5 0 0 1 0 11h-9m8 0 7 7" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M24 12.5c2.5-1 4.5-.8 6 .5" fill="none" stroke="#D9B46A" stroke-width="2" stroke-linecap="round"/></svg>
-    <div><b>Romualdo &amp; Cía.</b><small>NEGOCIOS RURALES · DESDE 1964</small></div>
-  </div>
-  <div class="kicker" style="margin-top:34mm">Propuesta · primera instancia</div>
-  <h1 style="margin-top:0">Un sistema comercial a la medida del escritorio: del WhatsApp al martillo y a la proforma</h1>
-  <p class="lead">CRM automatizado de lotes para Plaza Rural y remates particulares, con asignación de contactos por zona, formularios estandarizados, envío automático a compradores y proformas con las comisiones de cada agente.</p>
-  <div class="link">Demo navegable: romualdodemo.customerp.dev</div>
-  <div class="meta">
-    <div><b>Para</b>Ricardo Stewart, socio</div>
-    <div><b>Fecha</b>23 de setiembre de 2026</div>
-    <div><b>Preparado por</b>customERP</div>
-    <div><b>Estado</b>Borrador para conversar</div>
-  </div>
-</section>
-
-<!-- 2. Lo que escuchamos -->
+<!-- 1 -->
 <section class="page">
-  <div class="kicker">1 · Punto de partida</div>
-  <h2>Lo que nos pidieron</h2>
-  <p class="lead">En la reunión con Ricardo Stewart se dibujó el esquema del negocio tal como hoy funciona y lo que tendría que pasar solo. Lo pasamos en limpio, para que lo validen antes de cotizar.</p>
-
-  <div class="cols">
-    <div>
-      <div class="box soft"><h4>El centro es el lote</h4><p>Todo gira alrededor del lote de hacienda, que sale por dos caminos: <b>Plaza Rural</b> y los <b>remates particulares</b> del escritorio.</p></div>
-      <div class="box"><h4>Ordenar las ofertas</h4><p>Poder filtrar los lotes disponibles por <b>zona</b>, por <b>comprador</b> y por <b>categoría</b>, para saber en segundos qué ofrecerle a quién.</p></div>
-      <div class="box"><h4>Generar y centralizar leads</h4><p>Juntar los contactos que entran por WhatsApp, <b>asignarlos</b> a quien corresponde y ordenar el contacto comercial: del contacto en frío al cliente ya caliente.</p></div>
-    </div>
-    <div>
-      <div class="box"><h4>Formulario estandarizado por lote</h4><p>Completar siempre las mismas casillas: el <b>plato del negocio</b> y la <b>categoría con sus características</b> (terneros machos, hembras, vaca de invernada...). Con eso, armar el <b>PDF</b> y <b>enviarlo a los contactos de forma automatizada</b>.</p></div>
-      <div class="box gold"><h4>Proformas automáticas</h4><p>Que al cerrar el negocio se genere la proforma con kg, precio y condiciones, separando la <b>comisión del vendedor</b> y, si corresponde, la <b>del comprador</b>, cada una con su <b>agente</b>.</p></div>
-      <div class="box"><h4>Mejorar la web</h4><p>Lograr mayor llegada por ese canal: que romualdo.com.uy traiga consultas y negocios, no sólo que muestre la empresa.</p></div>
+  <div class="hero">
+    <span class="lt inv">Custom<span class="m"><b>ERP</b></span></span>
+    <h1>El sistema de<br>Romualdo &amp; Cía.</h1>
+    <p class="sub">Del WhatsApp al martillo y a la proforma. Qué te armamos y cómo lo hacemos.</p>
+    <div class="meta">
+      <div><span class="lbl">Para</span>Ricardo Stewart</div>
+      <div><span class="lbl">Fecha</span>23/09/2026</div>
+      <div><span class="lbl">Estado</span>Primera instancia</div>
     </div>
   </div>
 
-  <h3>En una frase</h3>
-  <div class="quote">Que ningún contacto se pierda, que cada lote se cargue una sola vez y bien, que le llegue a los compradores que lo buscan, y que la plata y las comisiones se calculen solas.</div>
+  <h2 style="margin-top:14px">Lo que nos pediste<i>.</i></h2>
+  <table>
+    <thead><tr><th style="width:30%">Pedido</th><th>Cómo lo resolvemos</th></tr></thead>
+    <tbody>
+      <tr><td>El lote en el centro</td><td>Cada lote se carga una vez y sale por Plaza Rural, por un remate particular o en venta directa, con su historia completa.</td></tr>
+      <tr><td>Ordenar las ofertas</td><td>Filtros por zona, por comprador y por categoría. Elegís un comprador y ves sólo lo que le sirve.</td></tr>
+      <tr><td>Centralizar los leads de WhatsApp</td><td>Una bandeja para WhatsApp, la web e Instagram. Cada contacto se asigna al representante de su zona y se sigue del contacto en frío al cliente caliente.</td></tr>
+      <tr><td>Formulario estandarizado por lote</td><td>Plato del negocio, categoría y características. Con el formulario completo sale la ficha en PDF y se manda sola a los compradores que buscan eso.</td></tr>
+      <tr><td>Proformas automáticas</td><td>Al bajar el martillo se arma la proforma con kg, precio y condiciones, y la comisión del vendedor y, si corresponde, la del comprador, cada una con su agente.</td></tr>
+      <tr><td>Mejorar la web</td><td>Catálogo de lotes publicado desde el sistema y un formulario "Vendé tu hacienda" que cae en la bandeja, ya asignado.</td></tr>
+    </tbody>
+  </table>
 
-  <h3>Qué nos llevamos del escritorio</h3>
-  <div class="cols">
-    <div class="stat"><div class="num">1964</div><span>Año en que Romualdo Rodríguez abre el escritorio en Florida, a cargo de las ferias de la Asociación Rural</span></div>
-    <div class="stat"><div class="num">14</div><span>Firmas integrantes que organizan el remate por pantalla de Plaza Rural, entre ellas Romualdo &amp; Cía.</span></div>
-    <div class="stat"><div class="num">8.369</div><span>Cabezas en el Remate 327, en 150 lotes y con 99,15% de colocación. El ternero promedió US$ 4,39 por kilo</span></div>
-  </div>
-  <p style="margin-top:12px;color:var(--ink2);font-size:9.2pt">Casa central en Av. Italia 6919 (Montevideo) y sucursal en Herrera 484 (Florida). Además de ganado trabajan exportación en pie, campos y lanares: el sistema está pensado para crecer hacia esas áreas. Los datos del Remate 327 salen del catálogo del 328.</p>
+  <h2>El demo ya está andando<i>.</i></h2>
+  <p>Armamos una versión navegable con el Remate 328 real: tus 10 lotes con su orden de venta y los resultados del 327 como referencia de precios. Los productores y compradores del resto del demo son de muestra, y todo se reinicia al recargar la página.</p>
+  <div class="link"><span class="lbl">Demo</span><span class="mono">romualdodemo.customerp.dev</span></div>
 
-  <div class="foot"><span>Romualdo &amp; Cía. · Propuesta de sistema comercial</span><span>2</span></div>
+  <div class="foot"><span>CustomERP · Sistemas de gestión a medida</span><span>Romualdo &amp; Cía. · 1 de 6</span></div>
 </section>
 
-<!-- 2b. Lo que ya conocemos -->
-<section class="page tight">
-  <div class="kicker">1 · Punto de partida</div>
-  <h2>Lo que ya sabemos de cómo trabajan</h2>
-  <p class="lead">Ricardo nos pasó el catálogo del Remate 328 (Plaza Angus, 24 y 25 de setiembre). Con él el sistema no inventa nada: copia la ficha del catálogo y aplica el reglamento solo.</p>
+<!-- 2 -->
+<section class="page">
+  <div class="head"><span class="lt">Custom<span class="m"></span></span><span class="lbl muted">Propuesta · Romualdo &amp; Cía.</span></div>
 
+  <h2>Lo que ya sabemos de cómo trabajan<i>.</i></h2>
+  <div class="cols" style="margin-bottom:14px">
+    <div class="stat"><div class="num">1964</div><span>Romualdo Rodríguez abre el escritorio en Florida</span></div>
+    <div class="stat"><div class="num">14</div><span>firmas organizan el remate por pantalla de Plaza Rural, entre ellas Romualdo &amp; Cía.</span></div>
+    <div class="stat"><div class="num">8.369</div><span>cabezas en el Remate 327, en 150 lotes, con 99,15% de colocación</span></div>
+  </div>
+  <p>Ricardo nos pasó el catálogo del Remate 328 (Plaza Angus, 24 y 25 de setiembre). Con eso el sistema no inventa nada: copia la ficha del catálogo y aplica el reglamento solo.</p>
   <div class="cols">
     <div>
-      <div class="box soft"><h4>El formulario del lote es la ficha del catálogo</h4><p>Lote, cabezas, kg, clase, estado y hora. Raza, edad, T. Nut y Ob. Nut. Mio mio, sabe comer ración y zona garrapata. Trazabilidad, pesada y sanidad. Destetados, al pie, enteros, castrados, mochos, astados, mochados y tocos. Observaciones, inspector, tipo de inspección y plazo.</p></div>
+      <div class="box"><h4>El formulario del lote es la ficha del catálogo</h4><p>Lote, cabezas, kg, clase, estado y hora. Raza, edad, T. Nut y Ob. Nut. Mio mio, sabe comer ración y zona garrapata. Trazabilidad, pesada y sanidad. Destetados, al pie, enteros, castrados, mochos, astados, mochados y tocos. Observaciones, inspector y plazo.</p></div>
       <div class="box"><h4>Lo que pide el Art. 4</h4><p>Propietario, establecimiento, ubicación, cantidad, categoría, fecha de filmación, peso y estado reproductivo. Si falta alguno, el lote no pasa a catálogo.</p></div>
     </div>
     <div>
-      <div class="box gold"><h4>Reglas que el sistema controla solo</h4><p>Mínimo de cabezas por lote (Art. 3). Qué se vende al kilo y qué por unidad (Art. 8). Destare según la distancia (Art. 11) y tolerancia de kilos (Art. 15). Retiro en 15 días y reclamos en 7. Preofertas de compradores autorizados (Art. 19). Plazos del BROU (Art. 16). Precio de martillo libre de IMEBA para el vendedor (Art. 18). Aviso de debida diligencia cuando un comprador pasa los US$ 150.000 en el año (Art. 23).</p></div>
+      <div class="box r"><h4>Reglas que el sistema controla solo</h4><p>Mínimo de cabezas por lote (Art. 3). Qué se vende al kilo y qué por unidad (Art. 8). Destare según la distancia (Art. 11) y tolerancia de kilos (Art. 15). Retiro en 15 días y reclamos en 7. Preofertas de compradores autorizados (Art. 19). Plazos del BROU (Art. 16). Precio de martillo libre de IMEBA para el vendedor (Art. 18). Aviso de debida diligencia cuando un comprador pasa los US$ 150.000 en el año (Art. 23).</p></div>
     </div>
   </div>
 
-  <h3>Los lotes del escritorio en el Remate 328, ya cargados en el demo</h3>
+  <h2>Tus lotes en el Remate 328<i>.</i></h2>
   <table>
-    <thead><tr><th>Nº</th><th>Establecimiento</th><th>Departamento</th><th>Categoría</th><th style="text-align:right">Cab.</th><th style="text-align:right">Kg</th><th>Hora</th></tr></thead>
+    <thead><tr><th>Nº</th><th>Establecimiento</th><th>Departamento</th><th>Categoría</th><th class="n">Cab.</th><th class="n">Kg</th><th>Hora</th></tr></thead>
     <tbody>
-      <tr><td>37</td><td>El Tero</td><td>Maldonado</td><td>Terneros</td><td style="text-align:right">59</td><td style="text-align:right">220</td><td>11:24</td></tr>
-      <tr><td>48</td><td>Cerco de Piedra</td><td>Rocha</td><td>Terneros</td><td style="text-align:right">84</td><td style="text-align:right">230</td><td>12:08</td></tr>
-      <tr><td>53</td><td>Gamezan</td><td>Florida</td><td>Terneros</td><td style="text-align:right">60</td><td style="text-align:right">245</td><td>12:28</td></tr>
-      <tr><td>122</td><td>El Saladero</td><td>Colonia</td><td>Novillos 2 a 3 años</td><td style="text-align:right">85</td><td style="text-align:right">395</td><td>jue 17:34</td></tr>
-      <tr><td>123</td><td>El Saladero</td><td>Colonia</td><td>Novillos 2 a 3 años</td><td style="text-align:right">66</td><td style="text-align:right">455</td><td>jue 17:38</td></tr>
-      <tr><td>126</td><td>El Saladero</td><td>Colonia</td><td>Novillos más de 3 años</td><td style="text-align:right">35</td><td style="text-align:right">440</td><td>jue 17:50</td></tr>
-      <tr><td>131</td><td>La Sabina</td><td>Durazno</td><td>Holando</td><td style="text-align:right">43</td><td style="text-align:right">136</td><td>jue 18:10</td></tr>
-      <tr><td>132</td><td>Silcafi</td><td>Florida</td><td>Holando</td><td style="text-align:right">68</td><td style="text-align:right">173</td><td>jue 18:14</td></tr>
-      <tr><td>133</td><td>El Caballito</td><td>Florida</td><td>Holando</td><td style="text-align:right">73</td><td style="text-align:right">175</td><td>jue 18:18</td></tr>
-      <tr><td>134</td><td>El Saladero</td><td>Colonia</td><td>Holando</td><td style="text-align:right">24</td><td style="text-align:right">334</td><td>jue 18:22</td></tr>
+      <tr><td class="mono">37</td><td>El Tero</td><td>Maldonado</td><td>Terneros</td><td class="n">59</td><td class="n">220</td><td class="mono">11:24</td></tr>
+      <tr><td class="mono">48</td><td>Cerco de Piedra</td><td>Rocha</td><td>Terneros</td><td class="n">84</td><td class="n">230</td><td class="mono">12:08</td></tr>
+      <tr><td class="mono">53</td><td>Gamezan</td><td>Florida</td><td>Terneros</td><td class="n">60</td><td class="n">245</td><td class="mono">12:28</td></tr>
+      <tr><td class="mono">122</td><td>El Saladero</td><td>Colonia</td><td>Novillos 2 a 3 años</td><td class="n">85</td><td class="n">395</td><td class="mono">jue 17:34</td></tr>
+      <tr><td class="mono">123</td><td>El Saladero</td><td>Colonia</td><td>Novillos 2 a 3 años</td><td class="n">66</td><td class="n">455</td><td class="mono">jue 17:38</td></tr>
+      <tr><td class="mono">126</td><td>El Saladero</td><td>Colonia</td><td>Novillos más de 3 años</td><td class="n">35</td><td class="n">440</td><td class="mono">jue 17:50</td></tr>
+      <tr><td class="mono">131</td><td>La Sabina</td><td>Durazno</td><td>Holando</td><td class="n">43</td><td class="n">136</td><td class="mono">jue 18:10</td></tr>
+      <tr><td class="mono">132</td><td>Silcafi</td><td>Florida</td><td>Holando</td><td class="n">68</td><td class="n">173</td><td class="mono">jue 18:14</td></tr>
+      <tr><td class="mono">133</td><td>El Caballito</td><td>Florida</td><td>Holando</td><td class="n">73</td><td class="n">175</td><td class="mono">jue 18:18</td></tr>
+      <tr><td class="mono">134</td><td>El Saladero</td><td>Colonia</td><td>Holando</td><td class="n">24</td><td class="n">334</td><td class="mono">jue 18:22</td></tr>
     </tbody>
   </table>
-  <p style="font-size:8.6pt;color:var(--ink3);margin-top:8px">Lotes 37, 48 y 53 con la ficha completa del catálogo. El resto, con los datos del orden de venta del jueves 24.</p>
-  <div class="foot"><span>Romualdo &amp; Cía. · Propuesta de sistema comercial</span><span>3</span></div>
+  <p class="muted" style="font-size:8.2pt;margin-top:6px">Los lotes 37, 48 y 53 están con la ficha completa del catálogo. El resto, con los datos del orden de venta del jueves 24.</p>
+
+  <div class="foot"><span>CustomERP · Sistemas de gestión a medida</span><span>Romualdo &amp; Cía. · 2 de 6</span></div>
 </section>
 
-<!-- 3. La solución -->
+<!-- 3 -->
 <section class="page">
-  <div class="kicker">2 · La solución</div>
-  <h2>Un solo sistema, del primer mensaje a la comisión liquidada</h2>
-  <p class="lead" style="margin-bottom:6px">Cada pedido del esquema tiene un módulo. Todos comparten los mismos datos: lo que se carga en uno aparece en los demás.</p>
+  <div class="head"><span class="lt">Custom<span class="m"></span></span><span class="lbl muted">Propuesta · Romualdo &amp; Cía.</span></div>
 
-  <div class="flow" style="margin:6px 0 10px">
-    <div>WhatsApp y web</div><i></i><div>Asignación por zona</div><i></i><div>Embudo</div><i></i><div>Formulario</div><i></i><div>Ficha PDF</div><i></i><div>Envío</div><i></i><div>Martillo</div><i></i><div>Proforma</div><i></i><div>Cobranza</div><i></i><div>Comisiones</div>
-  </div>
-
+  <h2>Lo que te armamos<i>.</i></h2>
+  <div class="flow"><span>WhatsApp y web</span><em>&gt;</em><span>Asignación por zona</span><em>&gt;</em><span>Embudo</span><em>&gt;</em><span>Formulario</span><em>&gt;</em><span>Ficha PDF</span><em>&gt;</em><span>Envío</span><em>&gt;</em><span>Martillo</span><em>&gt;</em><span>Proforma</span><em>&gt;</em><span>Cobranza</span><em>&gt;</em><span>Comisiones</span></div>
   <table>
-    <thead><tr><th style="width:19%">Módulo</th><th>Qué resuelve</th><th style="width:37%">Qué pasa solo</th></tr></thead>
+    <thead><tr><th style="width:20%">Módulo</th><th>Qué resuelve</th><th style="width:36%">Qué pasa solo</th></tr></thead>
     <tbody>
-      <tr><td><b>Bandeja WhatsApp</b></td><td>WhatsApp, formularios de la web e Instagram en una sola bandeja compartida, con historial por contacto.</td><td>Cada contacto nuevo se asigna al representante de su departamento. Respuesta automática fuera de hora.</td></tr>
-      <tr><td><b>Contacto comercial</b></td><td>Tablero por etapas: en frío, ya caliente, revisación, lote cargado, vendido.</td><td>Al llegar a "lote cargado" se abre el lote en borrador con los datos del productor.</td></tr>
-      <tr><td><b>Productores y compradores</b></td><td>Ficha con establecimiento, DICOSE, zona, agente y temperatura. El comprador guarda qué categorías busca y en qué zonas opera.</td><td>El perfil del comprador decide qué lotes le llegan.</td></tr>
-      <tr><td><b>Lotes</b></td><td>Formulario con los campos de la ficha del catálogo de Plaza Rural, más el plato del negocio: canal, remate, plazo, balanza y destare, destino.</td><td>Campos según la categoría. Controla mínimos de cabezas y datos obligatorios del reglamento. No pasa a catálogo si falta algo.</td></tr>
-      <tr><td><b>Ficha PDF y envío</b></td><td>La ficha del lote sale armada con la imagen del escritorio.</td><td>Se manda por WhatsApp y mail a los compradores que buscan esa categoría en esa zona.</td></tr>
-      <tr><td><b>Ofertas y filtros</b></td><td>Toda la hacienda disponible, agrupada por zona, categoría, remate o agente, con un mapa de cabezas por zona.</td><td>Elegís un comprador y la lista se reduce a lo que le sirve. Un botón y se lo mandás todo junto.</td></tr>
-      <tr><td><b>Remates</b></td><td>Plaza Rural y remates particulares: orden de venta con hora de cada lote, inspector y preofertas.</td><td>Catálogo imprimible y exportable, enviado a cada comprador con sus lotes primero.</td></tr>
-      <tr><td><b>Proformas y comisiones</b></td><td>Liquidación al vendedor, cuenta al comprador y reparto de comisiones: comisión vendedor y, si corresponde, comisión comprador, cada una con su agente.</td><td>Se genera al bajar el martillo y se envía a las dos partes. Usa la tabla de comisiones del escritorio.</td></tr>
-      <tr><td><b>Cobranza</b></td><td>Lo que falta cobrar y quién lo administra (en Plaza Rural, el BROU), y lo que se le paga a cada productor.</td><td>Alertas de vencimiento. Al acreditarse el cobro, la liquidación del productor queda lista para pagar.</td></tr>
-      <tr><td><b>Web y reportes</b></td><td>Catálogo de lotes en romualdo.com.uy, formulario "Vendé tu hacienda" y tablero de indicadores.</td><td>El lote se publica al entrar a catálogo. El formulario cae en la bandeja, ya asignado.</td></tr>
+      <tr><td>Bandeja WhatsApp</td><td>WhatsApp, formularios de la web e Instagram en una sola bandeja compartida, con historial por contacto.</td><td>Cada contacto nuevo se asigna al representante de su departamento. Respuesta automática fuera de hora.</td></tr>
+      <tr><td>Contacto comercial</td><td>Tablero por etapas: en frío, ya caliente, revisación, lote cargado, vendido.</td><td>Al llegar a "lote cargado" se abre el lote en borrador con los datos del productor.</td></tr>
+      <tr><td>Productores y compradores</td><td>Ficha con establecimiento, DICOSE, zona, agente y temperatura. El comprador guarda qué busca y dónde opera.</td><td>El perfil del comprador decide qué lotes le llegan.</td></tr>
+      <tr><td>Lotes</td><td>Formulario con los campos de la ficha del catálogo de Plaza Rural, más el plato del negocio: canal, remate, plazo, balanza y destare, destino.</td><td>Campos según la categoría. Controla mínimos de cabezas y datos obligatorios del reglamento.</td></tr>
+      <tr><td>Ficha PDF y envío</td><td>La ficha del lote sale con el formato del catálogo.</td><td>Se manda por WhatsApp y mail a los compradores que buscan esa categoría en esa zona.</td></tr>
+      <tr><td>Ofertas y filtros</td><td>Toda la hacienda disponible, agrupada por zona, categoría, remate o agente, con un cuadro de cabezas por zona.</td><td>Elegís un comprador y la lista se reduce a lo que le sirve. Un botón y se lo mandás todo junto.</td></tr>
+      <tr><td>Remates</td><td>Plaza Rural y remates particulares: orden de venta con hora de cada lote, inspector y preofertas.</td><td>Catálogo imprimible y exportable, enviado a cada comprador con sus lotes primero.</td></tr>
+      <tr><td>Proformas y comisiones</td><td>Liquidación al vendedor, cuenta al comprador y reparto de comisiones con la parte de cada agente.</td><td>Se genera al bajar el martillo y se envía a las dos partes, con la tabla de comisiones del escritorio.</td></tr>
+      <tr><td>Cobranza</td><td>Lo que falta cobrar y quién lo administra (en Plaza Rural, el BROU), y lo que se le paga a cada productor.</td><td>Alertas de vencimiento. Al acreditarse el cobro, la liquidación del productor queda lista para pagar.</td></tr>
+      <tr><td>Web y reportes</td><td>Catálogo de lotes en romualdo.com.uy, formulario "Vendé tu hacienda" y tablero de indicadores.</td><td>El lote se publica al entrar a catálogo. El formulario cae en la bandeja, ya asignado.</td></tr>
     </tbody>
   </table>
-  <div class="foot"><span>Romualdo &amp; Cía. · Propuesta de sistema comercial</span><span>4</span></div>
+
+  <h2>Lo que no entra en esta etapa<i>.</i></h2>
+  <p>Lo dejamos afuera a propósito para no estirar la entrega. Se puede sumar más adelante:</p>
+  <ul>
+    <li>Exportación de ganado en pie, campos e inmuebles.</li>
+    <li>Facturación electrónica: la proforma ordena el negocio, pero no reemplaza la factura.</li>
+    <li>Conexión automática con los sistemas de Plaza Rural, si ellos la habilitan.</li>
+  </ul>
+
+  <div class="foot"><span>CustomERP · Sistemas de gestión a medida</span><span>Romualdo &amp; Cía. · 3 de 6</span></div>
 </section>
 
-<!-- 4. Proforma y comisiones + demo -->
+<!-- 4 -->
 <section class="page">
-  <div class="kicker">3 · El corazón del pedido</div>
-  <h2>Cómo se arma una proforma</h2>
-  <p class="lead">Es la parte del esquema que más tiempo ahorra y donde más errores se evitan. Así queda armada:</p>
+  <div class="head"><span class="lt">Custom<span class="m"></span></span><span class="lbl muted">Propuesta · Romualdo &amp; Cía.</span></div>
 
-  <div class="cols" style="align-items:stretch">
-    <div class="box gold"><h4>Comisión vendedor</h4><p>Sobre el importe de la hacienda. Una parte va al agente que trajo al productor.</p></div>
-    <div class="box soft" style="text-align:center"><h4>Lote vendido</h4><p style="font-size:10pt;color:var(--ink)"><b>kg x precio</b></p><p>más plazo, balanza, destare y condiciones del lote</p></div>
-    <div class="box" style="background:#E3EEF7;border-color:transparent"><h4>Comisión comprador, si corresponde</h4><p>Con el agente que atiende a ese comprador, que puede ser otro distinto. Se activa o no según cómo trabaje el escritorio.</p></div>
+  <h2>Cómo se arma una proforma<i>.</i></h2>
+  <p>Es la parte del esquema que más tiempo ahorra y donde más errores se evitan.</p>
+  <div class="cols">
+    <div class="box"><span class="lbl muted">Lado vendedor</span><h4 style="margin-top:4px">Comisión vendedor</h4><p>Sobre el importe de la hacienda. Una parte va al agente que trajo al productor.</p></div>
+    <div class="box r"><span class="lbl" style="color:var(--rojo)">El lote vendido</span><h4 style="margin-top:4px">kg x precio</h4><p>Más plazo, balanza, destare y las condiciones de cada lote.</p></div>
+    <div class="box"><span class="lbl muted">Lado comprador</span><h4 style="margin-top:4px">Comisión comprador, si corresponde</h4><p>Con el agente que atiende a ese comprador, que puede ser otro. Se activa o no según cómo trabaje el escritorio.</p></div>
   </div>
   <ul>
     <li>El <b>productor</b> recibe su liquidación: importe de la hacienda menos la comisión del escritorio e impuestos. En Plaza Rural el precio de martillo es libre de IMEBA para el vendedor (Art. 18).</li>
     <li>El <b>comprador</b> recibe su cuenta con el plazo que eligió. En Plaza Rural la operación la administra el BROU: contado, 90, 120 o hasta 180 días con crédito.</li>
     <li>Cada <b>agente</b> ve su parte de cada lado, con el porcentaje que tenga acordado.</li>
   </ul>
-  <p style="font-size:9pt;color:var(--ink3)">El sistema no trae porcentajes cargados: se cargan los del escritorio (pueden ser distintos para Plaza Rural y para los remates particulares) y todo se recalcula solo. En el demo figuran como "a cargar" y se pueden probar en vivo desde Comisiones.</p>
+  <p class="muted" style="font-size:8.6pt">El sistema no trae porcentajes cargados: se cargan los del escritorio, que pueden ser distintos para Plaza Rural y para los remates particulares, y todo se recalcula solo. En el demo figuran como "a cargar" y se pueden probar en vivo desde Comisiones.</p>
 
-  <h3>El demo ya está andando</h3>
-  <p>Armamos una versión navegable con el Remate 328 real: los 10 lotes del escritorio con su orden de venta, y los resultados del 327 como referencia de precios. Los productores y compradores del resto del demo son de muestra, y todo se reinicia al recargar la página.</p>
-  <div class="link" style="background:var(--brand);color:#fff">romualdodemo.customerp.dev</div>
-  <h3>Qué probar primero</h3>
+  <h2>Qué probar primero en el demo<i>.</i></h2>
   <div class="cols">
-    <div class="box"><h4>1 · Bandeja WhatsApp</h4><p>Entra un mensaje nuevo cada tanto y se asigna solo al representante de la zona. Desde ahí se carga el lote con el formulario.</p></div>
-    <div class="box"><h4>2 · Un lote y su envío</h4><p>Abrí el lote 53 de Gamezan en el Remate 328: la ficha PDF sale igual a la del catálogo y se manda a los compradores que le sirven.</p></div>
+    <div class="box"><span class="lbl" style="color:var(--rojo)">01</span><h4>Remate 328</h4><p>En Remates, "Simular remate": cada martillo arma su proforma sola, con las preofertas cargadas.</p></div>
+    <div class="box"><span class="lbl" style="color:var(--rojo)">02</span><h4>Lote 53 de Gamezan</h4><p>La ficha en PDF sale igual a la del catálogo y se manda a los compradores que le sirven.</p></div>
   </div>
   <div class="cols">
-    <div class="box"><h4>3 · Simular el remate</h4><p>En Remates, Plaza Rural 328, "Simular remate": cada martillo genera su proforma sola.</p></div>
-    <div class="box"><h4>4 · Comisiones y cobranza</h4><p>Cargá un porcentaje de prueba en Comisiones y mirá cómo se recalculan las proformas, el reparto por agente y la cobranza.</p></div>
+    <div class="box"><span class="lbl" style="color:var(--rojo)">03</span><h4>Bandeja WhatsApp</h4><p>Entra un mensaje nuevo cada tanto y se asigna solo por zona. Desde ahí se carga el lote con el formulario.</p></div>
+    <div class="box"><span class="lbl" style="color:var(--rojo)">04</span><h4>Comisiones</h4><p>Cargá un porcentaje de prueba y mirá cómo se recalculan las proformas, el reparto por agente y la cobranza.</p></div>
   </div>
-  <div class="foot"><span>Romualdo &amp; Cía. · Propuesta de sistema comercial</span><span>5</span></div>
+  <div class="link" style="margin-top:6px"><span class="lbl">Demo</span><span class="mono">romualdodemo.customerp.dev</span></div>
+
+  <div class="foot"><span>CustomERP · Sistemas de gestión a medida</span><span>Romualdo &amp; Cía. · 4 de 6</span></div>
 </section>
 
-<!-- 5. Etapas, pasos -->
-<section class="page tight">
-  <div class="kicker">4 · Cómo lo llevamos adelante</div>
-  <h2>Por etapas, empezando por lo que más duele</h2>
-  <p class="lead">Cada etapa se usa apenas termina. No hace falta esperar al final para empezar a ver resultados.</p>
+<!-- 5 -->
+<section class="page">
+  <div class="head"><span class="lt">Custom<span class="m"></span></span><span class="lbl muted">Propuesta · Romualdo &amp; Cía.</span></div>
+
+  <h2>Cómo lo hacemos<i>.</i></h2>
+  <p>Por etapas, empezando por lo que más duele. Cada etapa se usa apenas termina.</p>
   <table>
-    <thead><tr><th style="width:22%">Etapa</th><th>Qué incluye</th><th style="width:18%">Plazo estimado</th></tr></thead>
+    <thead><tr><th style="width:25%">Etapa</th><th>Qué incluye</th></tr></thead>
     <tbody>
-      <tr><td><b>1 · Contactos y lotes</b><br><span class="tag">arranque</span></td><td>Bandeja de WhatsApp con asignación por zona, productores y compradores, contacto comercial, lotes con formulario estandarizado, ficha PDF y envío automatizado a compradores. Migración de las planillas actuales.</td><td>5 a 6 semanas</td></tr>
-      <tr><td><b>2 · Remates y plata</b></td><td>Remates de Plaza Rural y particulares, catálogo, martillo, proformas automáticas, comisiones por agente y cobranza a compradores y productores.</td><td>4 semanas</td></tr>
-      <tr><td><b>3 · Web y reportes</b><br><span class="tag g">mayor llegada</span></td><td>Catálogo de lotes publicado desde el sistema en romualdo.com.uy, formulario "Vendé tu hacienda", alertas por categoría para compradores, resultados de remates y tablero de indicadores.</td><td>3 semanas</td></tr>
+      <tr><td>1 · Contactos y lotes</td><td>Bandeja de WhatsApp con asignación por zona, productores y compradores, contacto comercial, lotes con el formulario del catálogo, ficha PDF y envío automático a compradores. Migración de las planillas actuales.</td></tr>
+      <tr><td>2 · Remates y plata</td><td>Plaza Rural y remates particulares, orden de venta, preofertas, martillo, proformas automáticas, comisiones por agente y cobranza.</td></tr>
+      <tr><td>3 · Web y reportes</td><td>Catálogo de lotes en romualdo.com.uy publicado desde el sistema, formulario "Vendé tu hacienda", alertas por categoría para compradores y tablero de indicadores.</td></tr>
     </tbody>
   </table>
+  <p style="margin-top:8px">Los plazos y el costo de cada etapa van en la propuesta económica, después del relevamiento.</p>
 
-  <h3>Lo que necesitamos del escritorio</h3>
+  <h2>Lo que necesitamos de ustedes<i>.</i></h2>
   <ul>
     <li>El número de WhatsApp que usan hoy, para conectarlo a la API oficial de WhatsApp Business. Meta cobra aparte por conversación; lo estimamos juntos según el volumen.</li>
     <li>Las planillas o sistemas actuales de productores, compradores y lotes, para migrarlos.</li>
@@ -229,30 +244,67 @@ li{margin-bottom:3px}
     <li>Acceso a quien administra romualdo.com.uy para sumar el catálogo y los formularios.</li>
   </ul>
 
-  <h3>Para la próxima reunión</h3>
+  <h2>Para la próxima reunión<i>.</i></h2>
   <div class="cols">
+    <div><ul>
+      <li>Comisiones: ¿se cobra sólo al vendedor o también al comprador? ¿Cambia entre Plaza Rural y los remates particulares, o por cliente?</li>
+      <li>¿Cómo se reparte la comisión con cada representante? ¿Hay agentes que cobran de un solo lado?</li>
+      <li>¿Cuántas personas contestan WhatsApp hoy, y con cuántos números?</li>
+      <li>¿Cómo cargan hoy los lotes en Plaza Rural?</li>
+    </ul></div>
+    <div><ul>
+      <li>¿Qué gastos e impuestos aparecen hoy en la liquidación del productor en los remates particulares?</li>
+      <li>Volumen aproximado: cabezas por año, lotes por remate, contactos por semana.</li>
+      <li>¿Exportación en pie, campos y lanares entran en la primera etapa o después?</li>
+      <li>¿Quién más tiene que ver el sistema antes de decidir?</li>
+    </ul></div>
+  </div>
+
+  <div class="foot"><span>CustomERP · Sistemas de gestión a medida</span><span>Romualdo &amp; Cía. · 5 de 6</span></div>
+</section>
+
+<!-- 6 -->
+<section class="page">
+  <div class="head"><span class="lt">Custom<span class="m"></span></span><span class="lbl muted">Propuesta · Romualdo &amp; Cía.</span></div>
+
+  <h2>Próximos pasos<i>.</i></h2>
+  <table>
+    <thead><tr><th style="width:25%">Paso</th><th>Qué pasa</th></tr></thead>
+    <tbody>
+      <tr><td>1 · Recorrer el demo</td><td>Lo miran con el equipo y nos marcan qué sobra, qué falta y qué se hace distinto.</td></tr>
+      <tr><td>2 · Relevamiento</td><td>Una reunión para las preguntas de la página anterior, con las planillas y las proformas de hoy sobre la mesa.</td></tr>
+      <tr><td>3 · Propuesta económica</td><td>Alcance cerrado por etapa, con plazos, costo de implementación y mensualidad.</td></tr>
+      <tr><td>4 · Arranque</td><td>Empezamos por la etapa 1.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Confidencialidad<i>.</i></h2>
+  <p>Toda la información que nos compartas es de uso exclusivo de este negocio y de la puesta en marcha de tu sistema. No la compartimos ni la usamos con otras personas, empresas o aplicaciones, ni de ninguna otra manera. Ni mientras trabajamos juntos ni después.</p>
+  <p>Y al revés: el sistema por dentro, cómo está construido y la documentación que te entreguemos son confidenciales y no se comparten con terceros.</p>
+
+  <div class="chica">
+    <h3>La letra chica, que acá es grande</h3>
+    <ul style="margin:0">
+      <li><b>Los datos son tuyos.</b> Si algún día te vas, te los llevás exportados y sin costo.</li>
+      <li><b>Todo lo que no está en la lista de arriba</b> lo cotizamos antes. Nunca te va a llegar una hora que no aprobaste.</li>
+      <li><b>Nada de números inventados.</b> Comisiones, gastos y plazos salen de lo que usa el escritorio, no de un ejemplo nuestro.</li>
+    </ul>
+  </div>
+
+  <div class="firma">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <rect width="200" height="200" rx="52" fill="#EC3012"/>
+      <path d="M131.55 54.95 A55 55 0 1 0 131.55 145.05" fill="none" stroke="#FFFFFF" stroke-width="30"/>
+      <rect x="125" y="71" width="59" height="58" rx="14" fill="#FFFFFF"/>
+      <text x="177" y="122" text-anchor="end" font-family="JetBrains Mono" font-weight="800" font-size="20" fill="#EC3012">ERP</text>
+    </svg>
     <div>
-      <ul>
-        <li>Comisiones: ¿se cobra sólo al vendedor o también al comprador? ¿Cambia entre Plaza Rural y los remates particulares, o por cliente?</li>
-        <li>¿Cómo se reparte la comisión con cada representante? ¿Hay agentes que cobran de un solo lado?</li>
-        <li>¿Cuántas personas contestan WhatsApp hoy, y con cuántos números?</li>
-        <li>¿Cómo cargan hoy los lotes en Plaza Rural? ¿Hay que integrarse o alcanza con exportar el catálogo?</li>
-      </ul>
-    </div>
-    <div>
-      <ul>
-        <li>¿Qué gastos e impuestos aparecen hoy en la liquidación del productor en los remates particulares?</li>
-        <li>Volumen aproximado: cabezas por año, lotes por remate, contactos por semana.</li>
-        <li>¿Exportación en pie, campos y lanares entran en la primera etapa o después?</li>
-        <li>¿Quién más tiene que ver el sistema antes de decidir?</li>
-      </ul>
+      <b style="font-size:11pt">Guillermo Stewart</b>
+      <div class="muted">CustomERP · sales@customerp.dev · 093 836 535</div>
     </div>
   </div>
 
-  <h3>Próximos pasos</h3>
-  <div class="flow"><div>1 · Recorrer el demo con el equipo</div><i></i><div>2 · Reunión de relevamiento</div><i></i><div>3 · Propuesta económica cerrada</div><i></i><div>4 · Arranque de la etapa 1</div></div>
-  <p style="color:var(--ink2)">La propuesta económica se arma después del relevamiento, con el alcance ya validado: un valor por etapa de implementación y un abono mensual que cubre alojamiento, soporte y mejoras chicas.</p>
-  <div class="foot"><span>Romualdo &amp; Cía. · Propuesta de sistema comercial</span><span>6</span></div>
+  <div class="foot"><span>CustomERP · Sistemas de gestión a medida</span><span>Romualdo &amp; Cía. · 6 de 6</span></div>
 </section>
 </body>
 </html>
