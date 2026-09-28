@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Propuesta customERP · PG Mercado de Carnes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:0}
+:root{--lienzo:#0f0e0c;--sup:#181715;--sup2:#211f1d;--tinta:#f3efe9;--sec:#a8a19a;--rojo:#ec3013;--rojo-t:#c7280f;--rojo-claro:#ff6a4d;--papel:#F6F3EE;--noche:#16150f;--gris:#6f6860;--linea:#E3DDD5}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;font-family:Geist,system-ui,sans-serif;color:var(--noche);font-size:10.5pt;line-height:1.5}
+.page{width:210mm;height:297mm;position:relative;overflow:hidden;page-break-after:always;background:var(--papel);padding:20mm 18mm 18mm}
+.page:last-child{page-break-after:auto}
+.dark{background:var(--lienzo);color:var(--tinta)}
+h1,h2,h3{font-family:Archivo,sans-serif;margin:0;letter-spacing:-.02em}
+h2{font-size:25pt;font-weight:800;line-height:1.08;margin-bottom:5mm}
+h3{font-size:12.5pt;font-weight:700;margin-bottom:1.5mm}
+p{margin:0 0 3mm}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:8pt;letter-spacing:.14em;text-transform:uppercase;color:var(--rojo-t);font-weight:700;margin-bottom:4mm;display:flex;align-items:center;gap:3mm}
+.dark .eyebrow{color:var(--rojo-claro)}
+.eyebrow::before{content:"";width:7mm;height:1.5px;background:currentColor}
+.lead{font-size:12.5pt;color:var(--gris);max-width:150mm;margin-bottom:8mm}
+.dark .lead{color:var(--sec)}
+.foot{position:absolute;left:18mm;right:18mm;bottom:10mm;display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:7.5pt;color:#9b948c;letter-spacing:.06em}
+.mark{display:inline-flex;align-items:center;gap:1.5mm;font-family:Archivo,sans-serif;font-weight:800;font-size:11pt;color:var(--noche);letter-spacing:-.02em}
+.mark i{font-style:normal;background:var(--rojo);color:#fff;border-radius:2mm;padding:.6mm 1.6mm;font-size:8pt;letter-spacing:.02em}
+/* portada */
+.cover{padding:22mm 20mm}
+.cover .logo{width:62mm}
+.cover h1{font-size:44pt;font-weight:900;line-height:1;margin:48mm 0 8mm;letter-spacing:-.035em}
+.cover h1 em{font-style:normal;color:var(--rojo)}
+.cover .para{position:absolute;left:20mm;right:20mm;bottom:22mm;display:grid;grid-template-columns:1fr 1fr;gap:10mm;border-top:1px solid #2b2926;padding-top:7mm}
+.cover .para small{display:block;font-family:"JetBrains Mono",monospace;font-size:7.5pt;letter-spacing:.12em;text-transform:uppercase;color:#8a837c;margin-bottom:2mm}
+.cover .para b{font-size:12pt;font-weight:600}
+.url{display:inline-flex;align-items:center;gap:3mm;border:1px solid #2b2926;background:var(--sup);border-radius:3mm;padding:3mm 4.5mm;font-family:"JetBrains Mono",monospace;font-size:10pt;color:var(--tinta)}
+.url::before{content:"";width:2.5mm;height:2.5mm;border-radius:50%;background:#3ecf7a}
+.glow{position:absolute;right:-40mm;top:-30mm;width:150mm;height:150mm;border-radius:50%;background:radial-gradient(circle,rgba(236,48,19,.28),rgba(236,48,19,0) 65%)}
+/* bloques */
+.pains{display:grid;grid-template-columns:1fr;gap:3.5mm}
+.pain{display:grid;grid-template-columns:62mm 1fr;gap:6mm;background:#fff;border:1px solid var(--linea);border-radius:4mm;padding:4.5mm 5mm;align-items:start}
+.pain .q{font-family:Archivo;font-weight:700;font-size:11pt;line-height:1.25}
+.pain .q small{display:block;font-family:"JetBrains Mono",monospace;font-weight:500;font-size:7pt;letter-spacing:.1em;color:#9b948c;margin-bottom:1.5mm;text-transform:uppercase}
+.pain .a{color:#3b3631;font-size:10pt}
+.pain .a b{color:var(--noche)}
+.shot{width:100%;border-radius:3mm;border:1px solid var(--linea);box-shadow:0 6mm 14mm -8mm rgba(22,21,15,.35);display:block}
+.dark .shot{border-color:#2b2926;box-shadow:0 8mm 20mm -8mm rgba(0,0,0,.8)}
+.shot.c1{height:76mm;object-fit:cover;object-position:top left}.shot.c2{height:92mm;object-fit:cover;object-position:top left}
+.cap{font-size:8.5pt;color:#9b948c;margin-top:2.5mm;font-family:"JetBrains Mono",monospace;letter-spacing:.02em}
+.mods{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-top:6mm}
+.mod{background:var(--sup);border:1px solid #2b2926;border-radius:3mm;padding:3.5mm 4mm}
+.mod b{display:block;font-family:Archivo;font-size:10pt;margin-bottom:.8mm}
+.mod span{color:var(--sec);font-size:8.5pt;line-height:1.35;display:block}
+.mod.soon{border-style:dashed}
+.mod .tag{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:6.5pt;background:var(--rojo);color:#fff;border-radius:1mm;padding:.3mm 1.2mm;margin-left:1.5mm;vertical-align:1px}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:2.5mm;margin:2mm 0 7mm}
+.st{background:#fff;border:1px solid var(--linea);border-radius:3mm;padding:3.5mm;position:relative}
+.st .n{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:8pt;color:var(--rojo-t)}
+.st b{display:block;font-family:Archivo;font-size:9.5pt;line-height:1.2;margin:1.5mm 0 1mm}
+.st span{font-size:8pt;color:var(--gris);line-height:1.35;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:7mm}
+.feat{margin-bottom:9mm}
+.feat ul{margin:2mm 0 0;padding:0;list-style:none}
+.feat li{padding:1.4mm 0 1.4mm 5mm;position:relative;font-size:9.8pt;color:#3b3631}
+.feat li::before{content:"";position:absolute;left:0;top:3.3mm;width:2mm;height:2mm;border-radius:.5mm;background:var(--rojo)}
+.box{background:#fff;border:1px solid var(--linea);border-radius:4mm;padding:5mm 6mm}
+.box.red{background:var(--noche);color:var(--tinta);border:0}
+.box h3{margin-bottom:3mm}
+.tl{display:grid;grid-template-columns:22mm 1fr;gap:0 5mm}
+.tl .w{font-family:"JetBrains Mono",monospace;font-size:8.5pt;font-weight:700;color:var(--rojo-t);padding:3mm 0;border-top:1px solid var(--linea)}
+.tl .d{padding:3mm 0;border-top:1px solid var(--linea);font-size:9.8pt}
+.tl .d b{font-family:Archivo}
+.pill{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:7pt;letter-spacing:.08em;text-transform:uppercase;border:1px solid currentColor;border-radius:10mm;padding:.5mm 2.2mm;color:var(--rojo-t);margin-bottom:3mm}
+.big{font-family:Archivo;font-weight:900;font-size:32pt;letter-spacing:-.03em;line-height:1.02}
+.big em{font-style:normal;color:var(--rojo)}
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-top:12mm}
+.contact div{border:1px solid #2b2926;border-radius:3mm;padding:5mm;background:var(--sup)}
+.contact small{display:block;font-family:"JetBrains Mono",monospace;font-size:7.5pt;letter-spacing:.12em;text-transform:uppercase;color:#8a837c;margin-bottom:2mm}
+.contact b{font-size:13pt;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- 1 · Portada -->
+<section class="page dark cover">
+  <div class="glow"></div>
+  <img class="logo" src="cerp/logo.png" alt="customERP">
+  <h1>El sistema de gestión de <em>PG Mercado de Carnes</em>, hecho a su medida.</h1>
+  <p class="lead" style="font-size:13.5pt;max-width:140mm">Ventas, caja, facturas, márgenes y descuentos Santander en un solo lugar. Para que el día a día del local sea más simple y no se pierda nada.</p>
+  <div class="url">pgmercadodemo.customerp.dev</div>
+  <div class="para">
+    <div><small>Preparado para</small><b>PG Mercado de Carnes</b><br><span style="color:#a8a19a">Av. Gral. José María Paz 1425 · Punta Gorda</span></div>
+    <div><small>Propuesta</small><b>Setiembre de 2026</b><br><span style="color:#a8a19a">Fase 1: gestión del local · Fase 2: delivery</span></div>
+  </div>
+</section>
+
+<!-- 2 · Lo que nos contaste -->
+<section class="page">
+  <div class="eyebrow">01 · Lo que nos contaste</div>
+  <h2>Un local lindo, con la información desparramada.</h2>
+  <p class="lead">PG Mercado vende cortes premium, pollos de campo, preparados y un almacén selecto. No despostan ni cortan en el local: compran bien y venden bien. Lo que falta es tener todo ordenado en un solo sistema.</p>
+  <div class="pains">
+    <div class="pain"><div class="q"><small>Hoy</small>Las ventas se anotan en una planilla aparte</div><div class="a"><b>Planilla de ventas automática.</b> Cada venta entra sola, con fecha, hora, productos, medio de pago, descuento, quién la hizo y el margen. Se filtra en un clic y se descarga a Excel.</div></div>
+    <div class="pain"><div class="q"><small>Hoy</small>El POS y el sistema no se hablan</div><div class="a"><b>Integración con el POS Getnet.</b> Lo que se cobra con tarjeta entra al ERP sin tipear nada. Al cerrar la caja, el lote del POS se compara solo con lo que registró el sistema.</div></div>
+    <div class="pain"><div class="q"><small>Hoy</small>Las facturas llevan tiempo</div><div class="a"><b>Facturación electrónica automática.</b> Al cobrar se emite el e-Ticket o la e-Factura con RUT, se envía a DGI y, si el cliente quiere, le llega por WhatsApp.</div></div>
+    <div class="pain"><div class="q"><small>Hoy</small>Los descuentos Santander se calculan a mano</div><div class="a"><b>Promos que se aplican solas.</b> La cajera elige con qué paga el cliente y el sistema sabe qué descuento corresponde según la tarjeta y el día, con su tope. También lleva la cuenta del reintegro del banco.</div></div>
+    <div class="pain"><div class="q"><small>Hoy</small>No está claro cuánto deja cada corte</div><div class="a"><b>Márgenes reales.</b> Costo, precio y margen de cada producto, descontando las promos y sumando el reintegro. Cuando el frigorífico sube un costo, el sistema avisa.</div></div>
+    <div class="pain"><div class="q"><small>Hoy</small>Abrir y cerrar caja depende de la memoria</div><div class="a"><b>Caja con arqueo.</b> Apertura con fondo, retiros con motivo y cierre en dos minutos. Todo queda registrado a nombre de quien lo hizo y nada se puede borrar.</div></div>
+  </div>
+  <div class="foot"><span class="mark">custom<i>ERP</i></span><span>Propuesta · PG Mercado de Carnes · 2</span></div>
+</section>
+
+<!-- 3 · El sistema -->
+<section class="page dark">
+  <div class="eyebrow">02 · El sistema</div>
+  <h2>Todo el local en una pantalla.</h2>
+  <p class="lead">Con los colores de PG Mercado, su lista de precios y su equipo adentro. Se usa desde la computadora de la caja, una tablet o el celular del dueño.</p>
+  <img class="shot" src="shots/inicio.png">
+  <div class="cap">Inicio: lo vendido hoy, el margen, las promos activas y las ventas que llegan del POS en vivo.</div>
+  <div class="mods">
+    <div class="mod"><b>Vender</b><span>Cobro en un paso, con bandejas por peso y descuento automático.</span></div>
+    <div class="mod"><b>Caja</b><span>Apertura, retiros, cierre y arqueo por turno.</span></div>
+    <div class="mod"><b>Planilla de ventas</b><span>Todas las ventas, con filtros y descarga a Excel.</span></div>
+    <div class="mod"><b>Márgenes</b><span>Por producto y por categoría, con simulador de precios.</span></div>
+    <div class="mod"><b>Facturación</b><span>e-Ticket y e-Factura DGI automáticos.</span></div>
+    <div class="mod"><b>Descuentos Santander</b><span>Reglas por tarjeta y día, topes y reintegros.</span></div>
+    <div class="mod"><b>Productos y compras</b><span>Precios, costos y facturas de proveedores.</span></div>
+    <div class="mod"><b>Equipo y clientes</b><span>Permisos por persona y clientes frecuentes.</span></div>
+    <div class="mod soon"><b>Delivery<span class="tag">FASE 2</span></b><span>Pedidos por WhatsApp, reparto y link de pago.</span></div>
+  </div>
+  <div class="foot"><span class="mark" style="color:var(--tinta)">custom<i>ERP</i></span><span>Propuesta · PG Mercado de Carnes · 3</span></div>
+</section>
+
+<!-- 4 · Cobrar en un paso -->
+<section class="page">
+  <div class="eyebrow">03 · Un cobro, de punta a punta</div>
+  <h2>La cajera cobra. El sistema hace todo lo demás.</h2>
+  <p class="lead">Menos pasos para el equipo, menos errores y cero anotaciones a mano.</p>
+  <div class="flow">
+    <div class="st"><div class="n">01</div><b>Carga la bandeja</b><span>Toca el producto o escanea la etiqueta. El peso viene de la etiqueta.</span></div>
+    <div class="st"><div class="n">02</div><b>Elige la tarjeta</b><span>Si es Santander, el descuento del día se aplica solo.</span></div>
+    <div class="st"><div class="n">03</div><b>Cobra en el POS</b><span>El monto viaja al POS Getnet. No hay que tipearlo.</span></div>
+    <div class="st"><div class="n">04</div><b>Sale la factura</b><span>e-Ticket aceptado por DGI en segundos.</span></div>
+    <div class="st"><div class="n">05</div><b>Queda registrado</b><span>Planilla, caja, margen y stock, al instante.</span></div>
+  </div>
+  <img class="shot" src="shots/vender.png">
+  <div class="cap">Pantalla de venta: 1,24 kg de picaña, un Tannat Bouza y chimichurri, pagados con Santander Crédito y con el descuento del día aplicado.</div>
+  <div class="foot"><span class="mark">custom<i>ERP</i></span><span>Propuesta · PG Mercado de Carnes · 4</span></div>
+</section>
+
+<!-- 5 · Santander + caja -->
+<section class="page">
+  <div class="eyebrow">04 · Descuentos Santander y caja</div>
+  <h2>Las promos, claras. La caja, cerrada sin sorpresas.</h2>
+  <div class="two" style="margin-bottom:6mm">
+    <div><h3>Descuentos Santander sin cuentas a mano</h3><p style="color:#3b3631;font-size:9.8pt">Se carga cada promoción una sola vez: tarjeta, porcentaje, días, tope y qué parte pone el banco. Desde ahí se aplica sola en caja. Si hay dos promos el mismo día, toma la mejor para el cliente. A fin de mes, el reporte de reintegros va directo al contador.</p></div>
+    <div><h3>Abrir y cerrar caja, sin que se pierda nada</h3><p style="color:#3b3631;font-size:9.8pt">Cada turno abre con su fondo y su responsable. Los retiros quedan con motivo. Al cerrar, el sistema compara las tarjetas con el lote del POS y el efectivo con lo contado. Si hay diferencia, queda registrada y al dueño le llega el resumen.</p></div>
+  </div>
+  <img src="shots/santander.png" class="shot c1" style="margin-bottom:5mm">
+  <img class="shot c1" src="shots/caja.png" style="object-position:center 30%">
+  <div class="cap">Arriba: promociones por tarjeta y día. Abajo: cierre de caja con el lote Getnet conciliado.</div>
+  <div class="foot"><span class="mark">custom<i>ERP</i></span><span>Propuesta · PG Mercado de Carnes · 5</span></div>
+</section>
+
+<!-- 6 · Planilla + márgenes -->
+<section class="page">
+  <div class="eyebrow">05 · Números</div>
+  <h2>Saber cuánto se vende y cuánto queda.</h2>
+  <p class="lead">La planilla que hoy se arma a mano pasa a armarse sola. Y el margen deja de ser una sensación.</p>
+  <img class="shot c2" src="shots/planilla.png" style="margin-bottom:5mm">
+  <img class="shot c2" src="shots/margenes.png">
+  <div class="cap">Arriba: planilla de ventas con filtros por medio de pago y cajero. Abajo: margen real por producto, después de las promos.</div>
+  <div class="foot"><span class="mark">custom<i>ERP</i></span><span>Propuesta · PG Mercado de Carnes · 6</span></div>
+</section>
+
+<!-- 7 · Alcance y plan -->
+<section class="page">
+  <div class="eyebrow">06 · Alcance y plan de trabajo</div>
+  <h2>Qué incluye y cómo lo ponemos en marcha.</h2>
+  <div class="two">
+    <div>
+      <div class="feat"><span class="pill">Fase 1 · Gestión del local</span>
+        <ul><li>Venta por peso y por unidad, con etiquetas de bandeja</li><li>Integración con el POS Getnet</li><li>Descuentos Santander automáticos, con topes y reintegros</li><li>Facturación electrónica DGI (e-Ticket y e-Factura)</li><li>Apertura, retiros, cierre y arqueo de caja</li><li>Planilla de ventas con descarga a Excel</li><li>Márgenes por producto y categoría</li><li>Productos, precios, compras y proveedores</li><li>Usuarios con permisos: caja, encargado y dueño</li><li>Resumen diario por WhatsApp y mail</li><li>Carga inicial de productos y precios</li><li>Capacitación al equipo en el local</li></ul></div>
+      <div class="feat"><span class="pill">Fase 2 · Delivery</span>
+        <ul><li>Pedidos por WhatsApp e Instagram dentro del sistema</li><li>Seguimiento del reparto y aviso al cliente</li><li>Cobro con link de pago y promo Santander</li></ul></div>
+    </div>
+    <div>
+      <div class="box" style="margin-bottom:6mm"><h3>Cronograma de la fase 1</h3>
+        <div class="tl">
+          <div class="w">Semana 1</div><div class="d"><b>Relevamiento.</b> Productos, precios, promos vigentes y cómo se trabaja hoy en caja.</div>
+          <div class="w">Semana 2–3</div><div class="d"><b>Construcción.</b> El sistema con la marca de PG Mercado. Conexión con el POS y con la facturación electrónica.</div>
+          <div class="w">Semana 4</div><div class="d"><b>Prueba en el local.</b> Una semana en paralelo con la forma actual, ajustando detalles.</div>
+          <div class="w">Semana 5</div><div class="d"><b>Arranque.</b> Capacitación al equipo y puesta en marcha.</div>
+        </div></div>
+      <div class="box"><h3>Qué necesitamos de ustedes</h3>
+        <ul style="margin:0;padding-left:4.5mm;font-size:9.5pt;color:#3b3631;line-height:1.7"><li>Lista de productos con precios y costos actuales</li><li>Datos del POS Getnet y de la cuenta Santander</li><li>Condiciones de cada promoción Santander</li><li>Proveedor de facturación electrónica actual, si lo hay</li><li>Una persona del equipo como referente</li></ul></div>
+    </div>
+  </div>
+  <div class="foot"><span class="mark">custom<i>ERP</i></span><span>Propuesta · PG Mercado de Carnes · 7</span></div>
+</section>
+
+<!-- 8 · Cierre -->
+<section class="page dark">
+  <div class="glow" style="top:auto;bottom:-50mm;right:-30mm"></div>
+  <div class="eyebrow">07 · Por qué customERP</div>
+  <div class="big" style="margin-bottom:10mm">No es un sistema enlatado.<br>Es <em>el de PG Mercado.</em></div>
+  <div class="mods" style="grid-template-columns:1fr 1fr;gap:4mm">
+    <div class="mod"><b>Hecho a medida</b><span>Lo programamos para cómo trabaja el local. No hay que cambiar la forma de trabajar para que entre en el sistema.</span></div>
+    <div class="mod"><b>Crece con el negocio</b><span>Un módulo nuevo, un reporte o una conexión con lo que ya usan. El delivery es el próximo paso.</span></div>
+    <div class="mod"><b>Con su marca</b><span>Su logo, sus colores y su propia dirección: pgmercado.customerp.dev</span></div>
+    <div class="mod"><b>Los datos son suyos</b><span>Viven en una base solo de PG Mercado y se los llevan cuando quieran, sin costo.</span></div>
+  </div>
+  <div style="margin-top:14mm">
+    <h3 style="font-size:15pt;margin-bottom:3mm">Probalo ahora</h3>
+    <p style="color:var(--sec);max-width:150mm">La demo tiene los productos y las promos del local. Se puede vender, cerrar la caja, cambiar precios y ver cómo cambian los márgenes. Nada de lo que se toque ahí afecta a nada real.</p>
+    <div class="url" style="margin-top:3mm">pgmercadodemo.customerp.dev</div>
+  </div>
+  <div class="contact">
+    <div><small>WhatsApp</small><b>+598 93 836 535</b></div>
+    <div><small>Web</small><b>customerp.dev</b></div>
+  </div>
+  <img src="cerp/logo.png" style="position:absolute;left:18mm;bottom:16mm;width:42mm">
+</section>
+
+</body>
+</html>

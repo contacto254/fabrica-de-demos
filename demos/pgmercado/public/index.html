@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PG Mercado de Carnes · Sistema de gestión</title>
+<title>PG Mercado de Carnes · Gestión</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F7F3EE; --panel:#FFFFFF; --ink:#2A1A17; --ink-2:#6B5550; --ink-3:#A8958F;
   --line:#EBE2DA; --brand:#8E1F1F; --brand-deep:#5E1212; --brand-soft:#F6E6E3;
-  --gold:#B8893B; --gold-soft:#F7EEDC;
+  --gold:#B8893B; --gold-soft:#F7EEDC; --san:#EC0000; --san-soft:#FDE8E8;
   --ok:#2F8A5B; --ok-soft:#E2F2E9; --warn:#D9962B; --warn-soft:#FBF0DA; --bad:#C9433B; --bad-soft:#FBE4E2;
   --r:10px; --r-lg:16px;
 }
@@ -18,54 +18,65 @@
 html,body{margin:0;height:100%}
 body{font-family:Manrope,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
 button,input,select,textarea{font:inherit;color:inherit}
+button:disabled{opacity:.45;cursor:not-allowed}
 .ic{width:1.15em;height:1.15em;flex:none;vertical-align:-.15em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .app{display:grid;grid-template-columns:236px 1fr;height:100vh}
 aside{background:var(--brand-deep);color:#F3E6E1;display:flex;flex-direction:column;padding:18px 12px;overflow:auto}
-.logo{display:flex;align-items:center;gap:10px;padding:4px 8px 18px}
+.logo{display:flex;align-items:center;gap:10px;padding:4px 8px 16px}
 .logo b{display:block;font-size:15px;letter-spacing:.3px}
 .logo small{display:block;font-size:11px;color:#D9B9AF;letter-spacing:1.5px;text-transform:uppercase}
 .navg{font-size:10.5px;text-transform:uppercase;letter-spacing:1.4px;color:#C29A90;margin:14px 10px 6px}
 .nav{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:#F3E6E1;text-align:left;font-weight:600}
 .nav:hover{background:rgba(255,255,255,.07)}
 .nav.on{background:#fff;color:var(--brand-deep)}
-.nav .cnt{margin-left:auto;background:var(--gold);color:#fff;border-radius:20px;font-size:11px;padding:1px 7px}
+.nav .cnt{margin-left:auto;background:var(--gold);color:#fff;border-radius:20px;font-size:10.5px;padding:1px 7px}
 .side-foot{margin-top:auto;padding:12px 10px 4px;font-size:12px;color:#D9B9AF;border-top:1px solid rgba(255,255,255,.12)}
+.side-foot .row{margin-top:6px}
 main{display:flex;flex-direction:column;min-width:0;overflow:hidden}
-header{display:flex;align-items:center;gap:12px;padding:14px 24px;background:var(--panel);border-bottom:1px solid var(--line)}
+header{display:flex;align-items:center;gap:12px;padding:12px 24px;background:var(--panel);border-bottom:1px solid var(--line)}
 header h1{font-size:19px;margin:0;font-weight:800}
 header .sub{color:var(--ink-3);font-size:12.5px}
-.search{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:var(--r);padding:7px 12px;color:var(--ink-3);cursor:pointer;min-width:230px;background:var(--bg)}
+.cajastate{margin-left:auto;display:flex;align-items:center;gap:8px;border-radius:30px;padding:6px 12px 6px 10px;font-weight:700;font-size:12.5px;cursor:pointer;border:1px solid var(--line)}
+.cajastate .dot{width:9px;height:9px;border-radius:50%}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:var(--r);padding:7px 12px;color:var(--ink-3);cursor:pointer;min-width:210px;background:var(--bg)}
 .search kbd{margin-left:auto;font-size:11px;border:1px solid var(--line);border-radius:5px;padding:0 5px;background:#fff}
-.user{display:flex;align-items:center;gap:8px;font-weight:600}
+.user{display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer}
 .av{width:32px;height:32px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:800;font-size:12px;flex:none}
 .content{padding:20px 24px 40px;overflow:auto;flex:1}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
 .grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:14px}
 .grid2e{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}
 .card h3{margin:0 0 12px;font-size:14.5px;display:flex;align-items:center;gap:8px}
 .card h3 .act{margin-left:auto}
 .kpi .lab{color:var(--ink-2);font-size:12.5px;display:flex;align-items:center;gap:6px}
-.kpi .val{font-size:26px;font-weight:800;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.kpi .val{font-size:25px;font-weight:800;margin:6px 0 2px;font-variant-numeric:tabular-nums}
 .kpi .d{font-size:12px;color:var(--ok);font-weight:700}
-.kpi .d.neg{color:var(--bad)}
+.kpi .d.neg{color:var(--bad)}.kpi .d.n{color:var(--ink-3)}
+.tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:700}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
+th.s{cursor:pointer}th.s:hover{color:var(--ink)}
 td{padding:10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 tr:last-child td{border-bottom:0}
 tr.cl{cursor:pointer}
 tr.cl:hover td{background:#FBF8F5}
-.num{text-align:right}
+tr.tot td{font-weight:800;background:#FBF8F5;border-top:2px solid var(--line)}
+tr.flash td{animation:fl 2.4s}
+@keyframes fl{0%{background:var(--gold-soft)}100%{background:transparent}}
+.num{text-align:right;white-space:nowrap}
 .muted{color:var(--ink-2)}
 .tiny{font-size:12px;color:var(--ink-3)}
 .pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap}
-.p-ok{background:var(--ok-soft);color:var(--ok)}.p-warn{background:var(--warn-soft);color:#9A6412}.p-bad{background:var(--bad-soft);color:var(--bad)}.p-br{background:var(--brand-soft);color:var(--brand)}.p-gold{background:var(--gold-soft);color:#8A6425}.p-n{background:#F1ECE7;color:var(--ink-2)}
-.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:var(--r);padding:8px 13px;cursor:pointer;font-weight:700;font-size:13px}
-.btn:hover{border-color:var(--ink-3)}
+.p-ok{background:var(--ok-soft);color:var(--ok)}.p-warn{background:var(--warn-soft);color:#9A6412}.p-bad{background:var(--bad-soft);color:var(--bad)}.p-br{background:var(--brand-soft);color:var(--brand)}.p-gold{background:var(--gold-soft);color:#8A6425}.p-n{background:#F1ECE7;color:var(--ink-2)}.p-san{background:var(--san-soft);color:var(--san)}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:var(--r);padding:8px 13px;cursor:pointer;font-weight:700;font-size:13px;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--ink-3)}
 .btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
-.btn.pri:hover{background:var(--brand-deep)}
+.btn.pri:hover:not(:disabled){background:var(--brand-deep)}
+.btn.big{padding:13px 16px;font-size:15px;justify-content:center}
 .btn.sm{padding:5px 9px;font-size:12px}
-.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
 .tab{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 13px;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--ink-2)}
 .tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .bar{height:8px;background:#F1ECE7;border-radius:6px;overflow:hidden}
@@ -73,24 +84,22 @@ tr.cl:hover td{background:#FBF8F5}
 .row{display:flex;align-items:center;gap:10px}
 .list-it{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
 .list-it:last-child{border-bottom:0}
-.kanban{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start}
-.col{background:#EFE8E1;border-radius:var(--r-lg);padding:10px;min-height:300px}
-.col.over{outline:2px dashed var(--brand)}
-.col h4{margin:4px 6px 10px;font-size:13px;display:flex;justify-content:space-between}
-.tk{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;cursor:grab}
-.tk:active{cursor:grabbing}
-.tk b{display:block;margin-bottom:3px}
-.tk .ft{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-.pos{display:grid;grid-template-columns:1fr 360px;gap:14px}
-.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.pos{display:grid;grid-template-columns:1fr 380px;gap:14px;align-items:start}
+.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .prod{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;text-align:left}
 .prod:hover{border-color:var(--brand);box-shadow:0 2px 10px rgba(94,18,18,.08)}
-.prod .cat{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.8px}
-.prod b{display:block;margin:4px 0}
+.prod .cat{font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.8px}
+.prod b{display:block;margin:4px 0;line-height:1.25}
 .prod .pr{color:var(--brand);font-weight:800}
 .ticket{position:sticky;top:0}
 .tline{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
-.total{display:flex;justify-content:space-between;font-size:22px;font-weight:800;margin:14px 0}
+.sumline{display:flex;justify-content:space-between;padding:4px 0}
+.total{display:flex;justify-content:space-between;font-size:24px;font-weight:800;margin:10px 0 12px}
+.pays{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.pay{border:1.5px solid var(--line);background:#fff;border-radius:var(--r);padding:9px 10px;cursor:pointer;text-align:left;font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:8px}
+.pay.on{border-color:var(--brand);background:var(--brand-soft)}
+.pay .sq{width:22px;height:16px;border-radius:3px;flex:none}
+.promo{background:var(--san-soft);border:1px solid #F7C4C4;color:#9E0B0B;border-radius:var(--r);padding:9px 11px;font-size:12.5px;font-weight:700;margin-bottom:10px;display:flex;gap:8px;align-items:center}
 .empty{color:var(--ink-3);text-align:center;padding:30px 0}
 .chart{display:flex;align-items:flex-end;gap:8px;height:170px;padding-top:10px}
 .chart .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
@@ -98,7 +107,8 @@ tr.cl:hover td{background:#FBF8F5}
 .chart .c i.alt{background:var(--gold)}
 .chart .c span{font-size:11px;color:var(--ink-3)}
 .overlay{position:fixed;inset:0;background:rgba(42,26,23,.42);display:grid;place-items:center;z-index:50;padding:20px}
-.modal{background:#fff;border-radius:var(--r-lg);width:min(560px,100%);max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal{background:#fff;border-radius:var(--r-lg);width:min(560px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal.wide{width:min(720px,100%)}
 .modal .mh{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line)}
 .modal .mh h2{margin:0;font-size:17px}
 .modal .mb{padding:18px 20px}
@@ -107,49 +117,71 @@ tr.cl:hover td{background:#FBF8F5}
 label.f{display:block;font-size:12px;font-weight:700;color:var(--ink-2);margin:0 0 12px}
 label.f input,label.f select,label.f textarea{display:block;width:100%;margin-top:5px;border:1px solid var(--line);border-radius:var(--r);padding:9px 11px;background:#fff}
 label.f input:focus,label.f select:focus{outline:2px solid var(--brand-soft);border-color:var(--brand)}
+.inp{border:1px solid var(--line);border-radius:var(--r);padding:7px 11px;background:#fff}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:12px 16px;border-radius:var(--r);display:flex;gap:10px;align-items:center;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.2);animation:up .25s}
+.toasts{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:60}
+.toast{background:var(--ink);color:#fff;padding:12px 16px;border-radius:var(--r);display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.2);animation:up .25s;max-width:380px}
+.toast.pos{background:#1F3B2C}
 @keyframes up{from{transform:translateY(10px);opacity:0}}
 .kres{border-bottom:1px solid var(--line);padding:10px 14px;cursor:pointer;display:flex;gap:10px;align-items:center}
-.kres:hover,.kres.sel{background:var(--brand-soft)}
-.wa{background:#EAF6EE;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:13px}
-.wa.me{background:#FFF;border:1px solid var(--line);margin-left:40px}
-.stat-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line)}
+.kres:hover{background:var(--brand-soft)}
+.stat-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
 .stat-row:last-child{border:0}
-.hero{background:linear-gradient(120deg,var(--brand-deep),var(--brand));color:#fff;border-radius:var(--r-lg);padding:20px 22px;margin-bottom:14px;display:flex;align-items:center;gap:20px}
+.hero{background:linear-gradient(120deg,var(--brand-deep),var(--brand));color:#fff;border-radius:var(--r-lg);padding:20px 22px;margin-bottom:14px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 .hero h2{margin:0 0 4px;font-size:20px}
 .hero p{margin:0;color:#F1D6CF}
-.hero .btn{margin-left:auto}
-.temp{font-size:30px;font-weight:800}
-@media (max-width:1100px){.grid4{grid-template-columns:repeat(2,1fr)}.grid2,.grid2e,.pos{grid-template-columns:1fr}.kanban{grid-template-columns:repeat(2,1fr)}}
+.hero .btn{margin-left:auto;color:var(--ink)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--ok)}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.sw{width:38px;height:22px;border-radius:20px;background:#D9CFC7;position:relative;cursor:pointer;border:0;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.sw.on{background:var(--ok)}.sw.on::after{left:19px}
+.cardrule{border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;gap:14px;align-items:center;margin-bottom:10px}
+.cardimg{width:64px;height:42px;border-radius:7px;background:linear-gradient(135deg,#EC0000,#9E0000);position:relative;flex:none}
+.cardimg.sel{background:linear-gradient(135deg,#2B2B2B,#000)}
+.cardimg.deb{background:linear-gradient(135deg,#FF4A4A,#C80000)}
+.cardimg::after{content:"";position:absolute;left:8px;top:14px;width:12px;height:9px;border-radius:2px;background:#E8C36A}
+.cfe{border:1px solid var(--line);border-radius:12px;padding:18px;font-size:13px}
+.cfe .h{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:10px;margin-bottom:10px}
+.soon{background:repeating-linear-gradient(135deg,#fff,#fff 12px,#FBF8F5 12px,#FBF8F5 24px)}
+.step{display:flex;gap:12px;padding:10px 0}
+.step .n{width:28px;height:28px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-weight:800;display:grid;place-items:center;flex:none}
+@media (max-width:1100px){.grid4{grid-template-columns:repeat(2,1fr)}.grid3,.grid2,.grid2e,.pos{grid-template-columns:1fr}.search{display:none}}
 </style>
 </head>
 <body>
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
   <symbol id="i-inicio" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></symbol>
   <symbol id="i-caja" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M7 7V4h10v3M3 12h18M10 16h4"/></symbol>
-  <symbol id="i-moto" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6l-3-7H8M15 6h3l3 8M12 10h5"/></symbol>
-  <symbol id="i-pack" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2l2.5 11h11L21 7H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></symbol>
+  <symbol id="i-sheet" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></symbol>
+  <symbol id="i-pct" viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></symbol>
   <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></symbol>
-  <symbol id="i-frio" viewBox="0 0 24 24"><path d="M12 2v20M4 6l16 12M20 6 4 18"/><path d="M9 3l3 3 3-3M9 21l3-3 3 3"/></symbol>
-  <symbol id="i-cuchillo" viewBox="0 0 24 24"><path d="M3 21 15 9l4-4c1 1 1 4-1 6l-6 6"/><path d="M8 16l-3 3"/></symbol>
-  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.6 3.5 6"/></symbol>
   <symbol id="i-camion" viewBox="0 0 24 24"><path d="M2 6h12v10H2zM14 10h4l4 3v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
-  <symbol id="i-plata" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.6 3.5 6"/></symbol>
+  <symbol id="i-team" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.5"/><path d="M5 21c.5-4.5 3.2-7 7-7s6.5 2.5 7 7"/></symbol>
   <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
-  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-moto" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6l-3-7H8M15 6h3l3 8M12 10h5"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
-  <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
   <symbol id="i-up" viewBox="0 0 24 24"><path d="m4 16 6-6 4 4 6-7"/><path d="M15 7h5v5"/></symbol>
-  <symbol id="i-wine" viewBox="0 0 24 24"><path d="M8 3h8l-.5 6a3.5 3.5 0 0 1-7 0z"/><path d="M12 13v8M8 21h8"/></symbol>
-  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v14M6 12l6 6 6-6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-unlock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/></symbol>
+  <symbol id="i-pos" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M9 6h6v4H9zM9 14h.01M12 14h.01M15 14h.01M9 17h.01M12 17h.01M15 17h.01"/></symbol>
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
 </svg>
 
 <div class="app">
@@ -159,297 +191,467 @@ label.f input:focus,label.f select:focus{outline:2px solid var(--brand-soft);bor
       <div><b>PG Mercado</b><small>de Carnes</small></div>
     </div>
     <div id="nav"></div>
-    <div class="side-foot"><div class="row"><svg class="ic"><use href="#i-pin"/></svg>Av. Gral. Paz 1425</div><div style="margin-top:6px" class="row"><svg class="ic"><use href="#i-clock"/></svg><span id="abierto">Abierto hasta las 21:00</span></div></div>
+    <div class="side-foot"><div class="row"><svg class="ic"><use href="#i-pin"/></svg>Av. Gral. Paz 1425</div><div class="row"><svg class="ic"><use href="#i-pos"/></svg><span>POS Getnet conectado</span></div></div>
   </aside>
   <main>
     <header>
       <div><h1 id="title">Inicio</h1><div class="sub" id="subtitle"></div></div>
-      <div class="search" id="openK"><svg class="ic"><use href="#i-search"/></svg>Buscar cortes, clientes, pedidos<kbd>Ctrl K</kbd></div>
-      <div class="user"><div class="av">MR</div><div><div>Martín Rodríguez</div><div class="tiny">Encargado</div></div></div>
+      <div class="cajastate" id="cajastate"></div>
+      <div class="search" id="openK"><svg class="ic"><use href="#i-search"/></svg>Buscar<kbd>Ctrl K</kbd></div>
+      <div class="user" id="userbtn"></div>
     </header>
     <div class="content" id="view"></div>
   </main>
 </div>
 <div id="layer"></div>
+<div class="toasts" id="toasts"></div>
 
 <script>
-// ---------------- Datos ----------------
+// ================= Utilidades =================
 const $ = s => document.querySelector(s);
 const fmt = n => '$ ' + Math.round(n).toLocaleString('es-UY');
-const kg = n => n.toLocaleString('es-UY',{minimumFractionDigits:1,maximumFractionDigits:2}) + ' kg';
-const ico = (id, st='') => `<svg class="ic" ${st}><use href="#i-${id}"/></svg>`;
+const kgf = n => n.toLocaleString('es-UY',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' kg';
+const pct = n => n.toLocaleString('es-UY',{maximumFractionDigits:1}) + '%';
+const ico = id => `<svg class="ic"><use href="#i-${id}"/></svg>`;
+const ini = n => n.split(' ').map(x=>x[0]).slice(0,2).join('');
+const hhmm = d => d.toTimeString().slice(0,5);
+let seed = 7; const rnd = () => (seed = (seed*9301+49297)%233280)/233280;
+const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'];
+const HOY = new Date();
+const fechaCorta = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
 
+// ================= Datos =================
 const productos = [
-  {id:1,n:'Picaña',c:'Vacuno premium',u:'kg',p:1090,costo:640,st:18.4,min:8},
-  {id:2,n:'Tomahawk Master Beef',c:'Vacuno premium',u:'kg',p:1390,costo:820,st:6.2,min:8},
-  {id:3,n:'Colita de cuadril',c:'Vacuno premium',u:'kg',p:790,costo:470,st:14.1,min:6},
-  {id:4,n:'Bife angosto',c:'Vacuno premium',u:'kg',p:850,costo:510,st:21.5,min:10},
-  {id:5,n:'Entrecot',c:'Vacuno premium',u:'kg',p:920,costo:545,st:12.8,min:8},
-  {id:6,n:'Asado de tira',c:'Vacuno',u:'kg',p:590,costo:350,st:34.0,min:15},
-  {id:7,n:'Vacío',c:'Vacuno',u:'kg',p:720,costo:430,st:16.3,min:8},
-  {id:8,n:'Entraña',c:'Vacuno premium',u:'kg',p:980,costo:600,st:3.1,min:4},
-  {id:9,n:'Pollo de campo entero',c:'Granja',u:'u',p:520,costo:310,st:22,min:10},
-  {id:10,n:'Suprema de pollo de campo',c:'Granja',u:'kg',p:560,costo:330,st:9.4,min:5},
-  {id:11,n:'Milanesa de carne casera',c:'Preparados',u:'kg',p:640,costo:360,st:11.2,min:6},
-  {id:12,n:'Milanesa de pollo casera',c:'Preparados',u:'kg',p:540,costo:300,st:8.7,min:6},
-  {id:13,n:'Chorizo parrillero',c:'Preparados',u:'kg',p:420,costo:230,st:14.0,min:6},
-  {id:14,n:'Morcilla dulce',c:'Preparados',u:'kg',p:380,costo:200,st:5.5,min:3},
-  {id:15,n:'Tannat Bouza 2021',c:'Almacén',u:'u',p:1290,costo:820,st:14,min:6},
-  {id:16,n:'Garzón Tannat Reserva',c:'Almacén',u:'u',p:890,costo:560,st:4,min:6},
-  {id:17,n:'Aceite de oliva Colinas de Garzón 500ml',c:'Almacén',u:'u',p:790,costo:480,st:19,min:6},
-  {id:18,n:'Sal parrillera entrefina',c:'Almacén',u:'u',p:190,costo:90,st:31,min:10},
-  {id:19,n:'Chimichurri de la casa',c:'Almacén',u:'u',p:320,costo:120,st:12,min:8},
+  {id:1,n:'Picaña',c:'Cortes premium',u:'kg',p:1090,costo:690,st:14.2},
+  {id:2,n:'Tomahawk Master Beef',c:'Cortes premium',u:'kg',p:1390,costo:905,st:9.6},
+  {id:3,n:'Colita de cuadril',c:'Cortes premium',u:'kg',p:790,costo:520,st:11.8},
+  {id:4,n:'Bife angosto',c:'Cortes premium',u:'kg',p:850,costo:560,st:16.4},
+  {id:5,n:'Ojo de bife',c:'Cortes premium',u:'kg',p:990,costo:640,st:8.1},
+  {id:6,n:'Entraña',c:'Cortes premium',u:'kg',p:980,costo:700,st:4.3},
+  {id:7,n:'Lomo',c:'Cortes premium',u:'kg',p:1190,costo:830,st:6.7},
+  {id:8,n:'Vacío',c:'Parrilla',u:'kg',p:720,costo:470,st:12.9},
+  {id:9,n:'Asado de tira',c:'Parrilla',u:'kg',p:590,costo:395,st:22.5},
+  {id:10,n:'Chorizo parrillero',c:'Parrilla',u:'kg',p:420,costo:250,st:10.2},
+  {id:11,n:'Pollo de campo entero',c:'Granja',u:'u',p:520,costo:330,st:18},
+  {id:12,n:'Suprema de pollo de campo',c:'Granja',u:'kg',p:560,costo:350,st:7.4},
+  {id:13,n:'Milanesa de carne',c:'Preparados',u:'kg',p:640,costo:410,st:9.8},
+  {id:14,n:'Milanesa de pollo',c:'Preparados',u:'kg',p:540,costo:340,st:8.3},
+  {id:15,n:'Hamburguesa de la casa x4',c:'Preparados',u:'u',p:390,costo:230,st:24},
+  {id:16,n:'Tannat Bouza 2021',c:'Vinos',u:'u',p:1290,costo:840,st:12},
+  {id:17,n:'Garzón Tannat Reserva',c:'Vinos',u:'u',p:890,costo:590,st:15},
+  {id:18,n:'Pisano Río de los Pájaros',c:'Vinos',u:'u',p:640,costo:420,st:20},
+  {id:19,n:'Aceite de oliva Colinas de Garzón',c:'Almacén',u:'u',p:790,costo:500,st:17},
+  {id:20,n:'Sal parrillera entrefina',c:'Almacén',u:'u',p:190,costo:95,st:30},
+  {id:21,n:'Chimichurri de la casa',c:'Almacén',u:'u',p:320,costo:140,st:14},
+  {id:22,n:'Carbón de quebracho 4 kg',c:'Almacén',u:'u',p:360,costo:230,st:25},
+];
+const P = id => productos.find(p=>p.id===id);
+
+const TARJETAS = {
+  'san-cred':{n:'Santander Crédito',tipo:'Crédito',san:true,col:'#EC0000'},
+  'san-deb':{n:'Santander Débito',tipo:'Débito',san:true,col:'#FF4A4A'},
+  'san-sel':{n:'Santander Select',tipo:'Crédito',san:true,col:'#111'},
+  'otra-cred':{n:'Otra tarjeta crédito',tipo:'Crédito',san:false,col:'#6B5550'},
+  'otra-deb':{n:'Otra tarjeta débito',tipo:'Débito',san:false,col:'#A8958F'},
+  'efectivo':{n:'Efectivo',tipo:'Efectivo',san:false,col:'#2F8A5B'},
+};
+let reglas = [
+  {id:1,t:'san-cred',n:'Jueves y viernes de parrilla',pc:20,dias:[4,5],tope:2000,banco:50,on:true},
+  {id:2,t:'san-deb',n:'Débito de lunes a miércoles',pc:15,dias:[1,2,3],tope:1000,banco:50,on:true},
+  {id:3,t:'san-sel',n:'Sábados Select',pc:25,dias:[6],tope:3000,banco:60,on:true},
+  {id:4,t:'san-cred',n:'Todos los días, clientes Santander',pc:10,dias:[0,1,2,3,4,5,6],tope:1500,banco:50,on:true},
+  {id:5,t:'san-sel',n:'Todos los días, Select',pc:15,dias:[0,1,2,3,4,5,6],tope:2500,banco:50,on:true},
+];
+function reglaPara(tar, dow){
+  const rs = reglas.filter(r=>r.on && r.t===tar && r.dias.includes(dow));
+  return rs.sort((a,b)=>b.pc-a.pc)[0] || null;
+}
+function descuentoDe(tar, bruto, dow){
+  const r = reglaPara(tar, dow); if(!r) return {r:null,d:0};
+  return {r, d:Math.min(Math.round(bruto*r.pc/100), r.tope)};
+}
+
+const EMPLEADOS = [
+  {n:'Camila Núñez',rol:'Caja · turno mañana'},
+  {n:'Nicolás Ferreira',rol:'Caja · turno tarde'},
+  {n:'Sofía Méndez',rol:'Atención y reposición'},
+];
+let usuario = 'Camila Núñez';
+
+// Ventas: histórico de 7 días + hoy
+let ventas = [];
+let nroCFE = 48120;
+function armarVenta(fecha, cajero, tar, items, origen){
+  const bruto = Math.round(items.reduce((a,i)=>a+i.q*i.p,0));
+  const {r,d} = descuentoDe(tar, bruto, fecha.getDay());
+  const costo = items.reduce((a,i)=>a+i.q*P(i.id).costo,0);
+  const total = bruto - d;
+  const banco = r ? Math.round(d*r.banco/100) : 0;
+  const cfeTipo = total > 25000 ? 'e-Factura' : 'e-Ticket';
+  return {id:++nroCFE, fecha, cajero, tar, items, bruto, desc:d, regla:r?r.n:'', banco, total, costo, margen:total+banco-costo, origen, cfe:cfeTipo+' A '+nroCFE, estado:'Aceptado DGI'};
+}
+function itemsAzar(){
+  const n = 1 + Math.floor(rnd()*3), it = [];
+  for(let k=0;k<n;k++){const p = productos[Math.floor(rnd()*productos.length)]; if(it.find(i=>i.id===p.id)) continue;
+    const q = p.u==='kg' ? Math.round((0.6+rnd()*1.6)*100)/100 : 1+Math.floor(rnd()*2); it.push({id:p.id,n:p.n,u:p.u,q,p:p.p});}
+  return it;
+}
+const TARS = ['san-cred','san-cred','san-deb','san-deb','san-sel','otra-cred','otra-cred','otra-deb','efectivo'];
+for(let dd=7; dd>=0; dd--){
+  const base = new Date(HOY); base.setDate(HOY.getDate()-dd);
+  const dow = base.getDay();
+  const nv = dd===0 ? 14 : (dow===5||dow===6 ? 58 : dow===0 ? 22 : 36) + Math.floor(rnd()*8);
+  const hIni = dow===0||dow===6 ? 10 : 9, hFin = dd===0 ? Math.max(hIni+1, Math.min(HOY.getHours(), 20)) : (dow===0?14:dow>=4?21:20);
+  for(let k=0;k<nv;k++){
+    const f = new Date(base); f.setHours(hIni + Math.floor(rnd()*(hFin-hIni)), Math.floor(rnd()*60), 0, 0);
+    if(dd===0 && f>HOY) f.setTime(HOY.getTime() - Math.floor(rnd()*3600000));
+    const caj = f.getHours()<15 ? 'Camila Núñez' : 'Nicolás Ferreira';
+    ventas.push(armarVenta(f, caj, TARS[Math.floor(rnd()*TARS.length)], itemsAzar(), rnd()<.8?'POS Getnet':'Mostrador'));
+  }
+}
+ventas.sort((a,b)=>b.fecha-a.fecha);
+const esHoy = v => v.fecha.toDateString()===HOY.toDateString();
+
+let caja = {abierta:true, fondo:5000, desde:(()=>{const d=new Date(HOY);d.setHours(9,0,0,0);return d})(), cajero:'Camila Núñez', retiros:[], movs:[]};
+caja.movs.push({h:caja.desde,t:'Apertura de caja',d:'Fondo '+fmt(5000)+' · Camila Núñez',tipo:'ap'});
+ventas.filter(v=>esHoy(v)&&v.fecha>=caja.desde).reverse().forEach(v=>caja.movs.push({h:v.fecha,t:'Venta '+v.cfe,d:TARJETAS[v.tar].n+' · '+v.origen,m:v.total}));
+let cierres = [];
+for(let dd=6; dd>=1; dd--){const f=new Date(HOY);f.setDate(HOY.getDate()-dd);const vs=ventas.filter(v=>v.fecha.toDateString()===f.toDateString());
+  cierres.push({fecha:f,cajero:'Nicolás Ferreira',ventas:vs.length,total:vs.reduce((a,v)=>a+v.total,0),dif:dd===4?-120:0});}
+
+const proveedores = [
+  {n:'Frigorífico Las Moras',rub:'Cortes al vacío',ult:'Hoy 07:40',saldo:148600,cond:'15 días'},
+  {n:'Granja Los Aromos',rub:'Pollos de campo',ult:'Ayer',saldo:18900,cond:'Contado'},
+  {n:'Elaborados Don Julio',rub:'Milanesas y hamburguesas',ult:'Ayer',saldo:22400,cond:'7 días'},
+  {n:'Bodega Bouza',rub:'Vinos',ult:'Hace 9 días',saldo:31200,cond:'30 días'},
+  {n:'Agroindustrial Garzón',rub:'Vinos y aceites',ult:'Hace 12 días',saldo:0,cond:'30 días'},
 ];
 const clientes = [
-  {id:1,n:'Florencia Castro',b:'Punta Gorda',t:'098 412 330',comp:34,tot:186400,ult:'Hoy',pref:'Picaña, Tannat',tipo:'Frecuente'},
-  {id:2,n:'Juan Pedro Ferrés',b:'Carrasco',t:'099 105 772',comp:21,tot:142300,ult:'Ayer',pref:'Tomahawk',tipo:'Parrillero'},
-  {id:3,n:'Restaurante Lo de Pepe',b:'Malvín',t:'2600 4411',comp:48,tot:612900,ult:'Hoy',pref:'Vacío, entraña',tipo:'Cuenta corriente'},
-  {id:4,n:'Valentina Pereyra',b:'Punta Gorda',t:'094 887 120',comp:12,tot:48600,ult:'Hace 4 días',pref:'Milanesas',tipo:'Frecuente'},
-  {id:5,n:'Diego Albanell',b:'Carrasco Norte',t:'091 553 890',comp:9,tot:71200,ult:'Hace 6 días',pref:'Packs parrilleros',tipo:'Parrillero'},
-  {id:6,n:'Club Náutico Punta Gorda',b:'Punta Gorda',t:'2613 9020',comp:15,tot:284500,ult:'Hace 3 días',pref:'Asado de tira',tipo:'Cuenta corriente'},
-  {id:7,n:'Sofía Márquez',b:'Malvín Norte',t:'092 330 441',comp:7,tot:22800,ult:'Hace 12 días',pref:'Pollo de campo',tipo:'Ocasional'},
-  {id:8,n:'Martina Olivera',b:'Punta Gorda',t:'098 221 650',comp:27,tot:119400,ult:'Hoy',pref:'Colita de cuadril',tipo:'Frecuente'},
-  {id:9,n:'Gonzalo Techera',b:'Buceo',t:'099 670 318',comp:5,tot:31500,ult:'Hace 21 días',pref:'Bife angosto',tipo:'Ocasional'},
-  {id:10,n:'Lucía Bentancor',b:'Carrasco',t:'097 145 902',comp:18,tot:96700,ult:'Ayer',pref:'Entrecot, vinos',tipo:'Frecuente'},
+  {n:'Florencia Castro',b:'Punta Gorda',t:'098 412 330',comp:34,tot:186400,ult:'Hoy',pref:'Picaña, Tannat',tar:'Santander Select'},
+  {n:'Juan Pedro Ferrés',b:'Carrasco',t:'099 105 772',comp:21,tot:142300,ult:'Ayer',pref:'Tomahawk',tar:'Santander Crédito'},
+  {n:'Martina Olivera',b:'Punta Gorda',t:'098 221 650',comp:27,tot:119400,ult:'Hoy',pref:'Colita de cuadril',tar:'Santander Débito'},
+  {n:'Club Náutico Punta Gorda',b:'Punta Gorda',t:'2613 9020',comp:15,tot:284500,ult:'Hace 3 días',pref:'Asado de tira',tar:'e-Factura con RUT'},
+  {n:'Lucía Bentancor',b:'Carrasco',t:'097 145 902',comp:18,tot:96700,ult:'Ayer',pref:'Ojo de bife, vinos',tar:'Otra tarjeta'},
+  {n:'Diego Albanell',b:'Carrasco Norte',t:'091 553 890',comp:9,tot:71200,ult:'Hace 6 días',pref:'Lomo, Bouza',tar:'Santander Crédito'},
+  {n:'Valentina Pereyra',b:'Punta Gorda',t:'094 887 120',comp:12,tot:48600,ult:'Hace 4 días',pref:'Milanesas',tar:'Santander Débito'},
 ];
-let pedidos = [
-  {id:1284,cli:'Florencia Castro',b:'Punta Gorda',items:'1,2 kg picaña · 1 Tannat Bouza',tot:2598,est:'nuevo',canal:'WhatsApp',hora:'10:42'},
-  {id:1285,cli:'Juan Pedro Ferrés',b:'Carrasco',items:'Pack Tomahawk para 6',tot:7890,est:'nuevo',canal:'Instagram',hora:'10:55'},
-  {id:1281,cli:'Restaurante Lo de Pepe',b:'Malvín',items:'8 kg vacío · 4 kg entraña',tot:9680,est:'prep',canal:'Teléfono',hora:'09:30'},
-  {id:1282,cli:'Martina Olivera',b:'Punta Gorda',items:'1,5 kg colita · 2 kg milanesas',tot:2465,est:'prep',canal:'WhatsApp',hora:'09:48'},
-  {id:1279,cli:'Lucía Bentancor',b:'Carrasco',items:'Pack Parrillero Punta Gorda',tot:4950,est:'camino',canal:'WhatsApp',hora:'09:05'},
-  {id:1276,cli:'Valentina Pereyra',b:'Punta Gorda',items:'2 pollos de campo',tot:1040,est:'entregado',canal:'WhatsApp',hora:'08:58'},
-  {id:1277,cli:'Club Náutico Punta Gorda',b:'Punta Gorda',items:'15 kg asado de tira · 5 kg chorizo',tot:10950,est:'entregado',canal:'Teléfono',hora:'09:00'},
-];
-const packs = [
-  {n:'Pack Parrillero Punta Gorda',d:'Asado de tira 1,5 kg · vacío 1 kg · chorizo 0,5 kg · morcilla · chimichurri',p:4950,pers:'4 a 5 personas',v:38},
-  {n:'Pack Tomahawk para 6',d:'2 Tomahawk Master Beef · picaña 1 kg · sal parrillera · Tannat Bouza',p:7890,pers:'6 personas',v:22},
-  {n:'Pack Semana Milanesas',d:'1,5 kg milanesa de carne · 1,5 kg milanesa de pollo',p:1690,pers:'Familia',v:61},
-  {n:'Pack Premium Cortes Finos',d:'Bife angosto 1 kg · entrecot 1 kg · colita de cuadril 1 kg · aceite de oliva',p:3290,pers:'4 personas',v:17},
-];
-let encargos = [
-  {cli:'Juan Pedro Ferrés',para:'Sáb 27/09 12:00',det:'Pack Tomahawk para 6 + 2 kg entraña',sena:3000,tot:9850,est:'Señado'},
-  {cli:'Club Náutico Punta Gorda',para:'Sáb 27/09 10:00',det:'30 kg asado de tira · 10 kg chorizo · 5 kg morcilla',sena:0,tot:23800,est:'Cuenta corriente'},
-  {cli:'Diego Albanell',para:'Dom 28/09 11:00',det:'Picaña entera 1,8 kg · 3 Garzón Reserva',sena:1500,tot:4632,est:'Señado'},
-  {cli:'Florencia Castro',para:'Vie 26/09 19:00',det:'Pack Premium Cortes Finos',sena:0,tot:3290,est:'A confirmar'},
-];
-const proveedores = [
-  {n:'Frigorífico Las Moras',rub:'Medias reses y cortes al vacío',ult:'Hoy 06:30',saldo:184500,cond:'15 días'},
-  {n:'Granja Los Aromos (Canelones)',rub:'Pollos de campo',ult:'Ayer',saldo:22400,cond:'Contado'},
-  {n:'Bodega Bouza',rub:'Vinos',ult:'Hace 10 días',saldo:38700,cond:'30 días'},
-  {n:'Agroindustrial Garzón',rub:'Aceites y vinos',ult:'Hace 14 días',saldo:0,cond:'30 días'},
-  {n:'Distribuidora Condimentos del Este',rub:'Condimentos y sales',ult:'Hace 7 días',saldo:6300,cond:'Contado'},
-];
-const lotes = [
-  {lote:'LM-2609-A',d:'Media res novillo Hereford',ing:'25/09',kg:112,temp:1.8,venc:'02/10',rend:null},
-  {lote:'LM-2309-B',d:'Media res novillo Angus',ing:'23/09',kg:118,temp:2.1,venc:'30/09',rend:72.4},
-  {lote:'LM-2309-V',d:'Cortes al vacío (picaña, entraña)',ing:'23/09',kg:34,temp:1.5,venc:'14/10',rend:98.0},
-  {lote:'GA-2409',d:'Pollos de campo (40 u)',ing:'24/09',kg:88,temp:2.4,venc:'29/09',rend:null},
-];
-let ventasHoy = [
-  {h:'09:12',d:'Picaña 1,1 kg · chimichurri',m:'Débito',t:1519},{h:'09:40',d:'Milanesa de carne 2 kg',m:'Crédito',t:1280},
-  {h:'10:05',d:'Pollo de campo x2 · suprema 1 kg',m:'Débito',t:1600},{h:'10:21',d:'Bife angosto 1,4 kg · Tannat Bouza',m:'Crédito',t:2480},
-  {h:'10:48',d:'Asado de tira 2,5 kg · chorizo 1 kg',m:'Débito',t:1895},
-];
-let carrito = [];
-let view = 'inicio';
-let filtroCat = 'Todos';
 
-// ---------------- Navegación ----------------
+let carrito = [], pago = 'san-cred', filtroCat = 'Todos', view = 'inicio';
+let planilla = {rango:'hoy', medio:'todos', cajero:'todos', q:''};
+let margenOrden = 'margen';
+
+// ================= Navegación =================
 const NAV = [
-  ['Día a día',[['inicio','Inicio','inicio'],['mostrador','Mostrador','caja'],['pedidos','Pedidos y delivery','moto'],['encargos','Encargos y packs','pack']]],
-  ['Mercadería',[['catalogo','Cortes y precios','tag'],['camara','Cámara y lotes','frio'],['desposte','Desposte','cuchillo'],['compras','Proveedores','camion']]],
-  ['Clientes y plata',[['clientes','Clientes','users'],['caja','Caja y facturación','plata'],['reportes','Reportes','chart']]],
+  ['Día a día',[['inicio','Inicio','inicio'],['vender','Vender','cart'],['caja','Caja','caja'],['planilla','Planilla de ventas','sheet']]],
+  ['Números',[['margenes','Márgenes','pct'],['facturas','Facturación','doc'],['santander','Descuentos Santander','card'],['reportes','Reportes','chart']]],
+  ['Mercadería',[['productos','Productos y precios','tag'],['compras','Compras','camion']]],
+  ['Gente',[['clientes','Clientes','users'],['equipo','Equipo','team']]],
+  ['Próximamente',[['delivery','Delivery','moto']]],
   ['',[['config','Configuración','gear']]],
 ];
-const TITLES = {inicio:['Inicio','Jueves 25 de setiembre · Punta Gorda'],mostrador:['Mostrador','Venta por kilo y por unidad'],pedidos:['Pedidos y delivery','WhatsApp, Instagram y teléfono en un solo lugar'],encargos:['Encargos y packs','Pedidos para el fin de semana y packs armados'],catalogo:['Cortes y precios','Precio por kilo, costo y margen'],camara:['Cámara y lotes','Stock, temperatura y vencimientos'],desposte:['Desposte','Rendimiento de cada media res'],compras:['Proveedores','Compras y saldos a pagar'],clientes:['Clientes','Quién compra, qué y cada cuánto'],caja:['Caja y facturación','Cobros con tarjeta y e-factura'],reportes:['Reportes','Cómo viene el mes'],config:['Configuración','Datos del local']};
-
+const TITLES = {
+  inicio:['Inicio',''],vender:['Vender','Cobrá en un paso: el descuento y la factura salen solos'],caja:['Caja','Apertura, cierre y todo lo que pasó en el turno'],
+  planilla:['Planilla de ventas','Cada venta, de dónde vino y cómo se pagó'],margenes:['Márgenes','Cuánto te deja cada producto de verdad'],
+  facturas:['Facturación','Comprobantes electrónicos emitidos automáticamente'],santander:['Descuentos Santander','Las promos se aplican solas según la tarjeta y el día'],
+  reportes:['Reportes','Cómo viene el mes'],productos:['Productos y precios','Precio, costo y stock en una sola lista'],compras:['Compras','Lo que le comprás a cada proveedor'],
+  clientes:['Clientes','Quién compra y qué'],equipo:['Equipo','Quién vendió qué y en qué turno'],delivery:['Delivery','Fase 2 del proyecto'],config:['Configuración','Datos del local y conexiones'],
+};
 function renderNav(){
-  const nuevos = pedidos.filter(p=>p.est==='nuevo').length;
-  $('#nav').innerHTML = NAV.map(([g,items])=>(g?`<div class="navg">${g}</div>`:'<div style="height:12px"></div>')+items.map(([k,l,i])=>`<button class="nav ${view===k?'on':''}" data-go="${k}">${ico(i)}${l}${k==='pedidos'&&nuevos?`<span class="cnt">${nuevos}</span>`:''}</button>`).join('')).join('');
+  $('#nav').innerHTML = NAV.map(([g,items])=>(g?`<div class="navg">${g}</div>`:'<div style="height:12px"></div>')+items.map(([k,l,i])=>`<button class="nav ${view===k?'on':''}" data-go="${k}">${ico(i)}${l}${k==='vender'&&carrito.length?`<span class="cnt">${carrito.length}</span>`:''}${k==='delivery'?'<span class="cnt">Pronto</span>':''}</button>`).join('')).join('');
 }
-function go(v){view=v;renderNav();$('#title').textContent=TITLES[v][0];$('#subtitle').textContent=TITLES[v][1];VIEWS[v]();$('.content').scrollTop=0;}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){go(b.dataset.go);closeModal();}});
+function renderHeader(){
+  const cs = $('#cajastate');
+  cs.innerHTML = caja.abierta ? `<span class="dot" style="background:var(--ok)"></span>Caja abierta · ${caja.cajero.split(' ')[0]} desde ${hhmm(caja.desde)}` : `<span class="dot" style="background:var(--bad)"></span>Caja cerrada · tocá para abrir`;
+  cs.style.background = caja.abierta ? 'var(--ok-soft)' : 'var(--bad-soft)';
+  cs.style.color = caja.abierta ? 'var(--ok)' : 'var(--bad)';
+  $('#userbtn').innerHTML = `<div class="av">${ini(usuario)}</div><div><div>${usuario}</div><div class="tiny">${(EMPLEADOS.find(e=>e.n===usuario)||{rol:'Dueño'}).rol}</div></div>`;
+}
+function go(v){view=v;renderNav();renderHeader();$('#title').textContent=TITLES[v][0];$('#subtitle').textContent=TITLES[v][1]||(DIAS[HOY.getDay()]+' '+HOY.getDate()+' de '+MESES[HOY.getMonth()]+' · Punta Gorda');VIEWS[v]();}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){closeModal();go(b.dataset.go);}});
+$('#cajastate').onclick = () => caja.abierta ? go('caja') : abrirCaja();
+$('#userbtn').onclick = cambiarUsuario;
 
-// ---------------- Utilidades UI ----------------
-function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=ico('check')+msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600);}
-function modal(title,body,foot){$('#layer').innerHTML=`<div class="overlay" id="ov"><div class="modal"><div class="mh"><h2>${title}</h2><button class="x" data-close>${ico('x')}</button></div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:''}</div></div>`;}
+function toast(msg,cls=''){const t=document.createElement('div');t.className='toast '+cls;t.innerHTML=ico(cls==='pos'?'pos':'check')+'<span>'+msg+'</span>';$('#toasts').appendChild(t);setTimeout(()=>t.remove(),3800);}
+function modal(title,body,foot,wide){$('#layer').innerHTML=`<div class="overlay" id="ov"><div class="modal ${wide?'wide':''}"><div class="mh"><h2>${title}</h2><button class="x" data-close>${ico('x')}</button></div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:''}</div></div>`;}
 function closeModal(){$('#layer').innerHTML='';}
 document.addEventListener('click',e=>{if(e.target.id==='ov'||e.target.closest('[data-close]'))closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openK();}});
-const estPill = e => ({nuevo:'<span class="pill p-br">Nuevo</span>',prep:'<span class="pill p-warn">Preparando</span>',camino:'<span class="pill p-gold">En camino</span>',entregado:'<span class="pill p-ok">Entregado</span>'}[e]);
-const chart = (vals,labels,alt) => `<div class="chart">${vals.map((v,i)=>`<div class="c"><i class="${alt&&alt.includes(i)?'alt':''}" style="height:${v/Math.max(...vals)*100}%" title="${fmt(v)}"></i><span>${labels[i]}</span></div>`).join('')}</div>`;
+const chart = (vals,labels,alt) => {const mx=Math.max(...vals,1);return `<div class="chart">${vals.map((v,i)=>`<div class="c"><i class="${alt&&alt.includes(i)?'alt':''}" style="height:${v/mx*100}%" title="${fmt(v)}"></i><span>${labels[i]}</span></div>`).join('')}</div>`;};
+const tarPill = t => {const x=TARJETAS[t];return `<span class="pill ${x.san?'p-san':t==='efectivo'?'p-ok':'p-n'}">${x.n}</span>`;};
+const sum = (arr,f) => arr.reduce((a,x)=>a+f(x),0);
 
-// ---------------- Vistas ----------------
+// ================= Vistas =================
 const VIEWS = {};
+
 VIEWS.inicio = () => {
-  const vendido = ventasHoy.reduce((a,b)=>a+b.t,0)+pedidos.filter(p=>p.est==='entregado').reduce((a,b)=>a+b.tot,0);
-  const bajos = productos.filter(p=>p.st<p.min);
+  const vh = ventas.filter(esHoy), tot = sum(vh,v=>v.total), mg = sum(vh,v=>v.margen), desc = sum(vh,v=>v.desc), san = vh.filter(v=>TARJETAS[v.tar].san);
+  const reglasHoy = reglas.filter(r=>r.on&&r.dias.includes(HOY.getDay()));
+  const horas=[9,10,11,12,13,14,15,16,17,18,19,20]; const porHora = horas.map(h=>sum(vh.filter(v=>v.fecha.getHours()===h),v=>v.total));
   $('#view').innerHTML = `
-  <div class="hero"><div><h2>Buen día, Martín.</h2><p>Hoy tenés ${pedidos.filter(p=>p.est!=='entregado').length} pedidos abiertos, ${encargos.length} encargos para el fin de semana y ${bajos.length} cortes por reponer.</p></div><button class="btn" data-go="mostrador">${ico('caja')}Abrir mostrador</button></div>
+  <div class="hero"><div><h2>Buen día, ${usuario.split(' ')[0]}.</h2><p>${caja.abierta?`La caja está abierta desde las ${hhmm(caja.desde)}. Las ventas del POS Getnet entran solas a la planilla.`:'La caja está cerrada. Abrila para empezar a vender.'}</p></div>${caja.abierta?`<button class="btn" data-go="vender">${ico('cart')}Nueva venta</button>`:`<button class="btn" onclick="abrirCaja()">${ico('unlock')}Abrir caja</button>`}</div>
   <div class="grid4">
-    <div class="card kpi"><div class="lab">${ico('plata')}Vendido hoy</div><div class="val">${fmt(vendido)}</div><div class="d">+14% contra el jueves pasado</div></div>
-    <div class="card kpi"><div class="lab">${ico('cuchillo')}Kilos despachados</div><div class="val">68,4 kg</div><div class="d">Picaña lidera con 9,2 kg</div></div>
-    <div class="card kpi"><div class="lab">${ico('moto')}Pedidos delivery</div><div class="val">${pedidos.length}</div><div class="d">${pedidos.filter(p=>p.canal==='WhatsApp').length} por WhatsApp</div></div>
-    <div class="card kpi"><div class="lab">${ico('up')}Ticket promedio</div><div class="val">${fmt(2140)}</div><div class="d neg">-3% contra la semana pasada</div></div>
+    <div class="card kpi"><div class="lab">${ico('caja')}Vendido hoy</div><div class="val">${fmt(tot)}</div><div class="d">${vh.length} ventas · ticket ${fmt(tot/Math.max(vh.length,1))}</div></div>
+    <div class="card kpi"><div class="lab">${ico('pct')}Margen de hoy</div><div class="val">${pct(mg/Math.max(tot,1)*100)}</div><div class="d">${fmt(mg)} de ganancia bruta</div></div>
+    <div class="card kpi"><div class="lab">${ico('card')}Descuentos Santander hoy</div><div class="val">${fmt(desc)}</div><div class="d n">${fmt(sum(vh,v=>v.banco))} los pone el banco</div></div>
+    <div class="card kpi"><div class="lab">${ico('doc')}Facturas emitidas</div><div class="val">${vh.length}</div><div class="d">Todas aceptadas por DGI</div></div>
   </div>
   <div class="grid2">
-    <div class="card"><h3>${ico('chart')}Ventas por hora<span class="act tiny">Hoy · en dorado, horario pico</span></h3>${chart([3200,6100,8900,7400,4200,3100,2800,5900,9800,12400,8100,6200],['9','10','11','12','13','14','15','16','17','18','19','20'],[8,9])}</div>
-    <div class="card"><h3>${ico('alert')}Para reponer<button class="btn sm act" data-go="camara">Ver cámara</button></h3>
-      ${bajos.map(p=>`<div class="list-it"><div style="flex:1"><b>${p.n}</b><div class="tiny">Quedan ${p.u==='kg'?kg(p.st):p.st+' u'} · mínimo ${p.min}</div></div><button class="btn sm" onclick="pedirProv(${p.id})">Pedir</button></div>`).join('')}
-    </div>
+    <div class="card"><h3>${ico('chart')}Ventas por hora<span class="act live"><i></i>En vivo desde el POS</span></h3>${chart(porHora,horas.map(String),[porHora.indexOf(Math.max(...porHora))])}</div>
+    <div class="card"><h3>${ico('card')}Promos Santander activas hoy<button class="btn sm act" data-go="santander">Ver todas</button></h3>
+      ${reglasHoy.length?reglasHoy.map(r=>`<div class="list-it"><div class="cardimg ${r.t==='san-sel'?'sel':r.t==='san-deb'?'deb':''}" style="width:44px;height:30px"></div><div style="flex:1"><b>${r.pc}% · ${TARJETAS[r.t].n}</b><div class="tiny">${r.n} · tope ${fmt(r.tope)}</div></div></div>`).join(''):'<div class="empty">Hoy no hay promos activas</div>'}
+      <div class="tiny" style="margin-top:8px">${san.length} de ${vh.length} ventas de hoy fueron con Santander.</div></div>
   </div>
   <div class="grid2e">
-    <div class="card"><h3>${ico('moto')}Pedidos abiertos<button class="btn sm act" data-go="pedidos">Ver todos</button></h3>
-      <table>${pedidos.filter(p=>p.est!=='entregado').map(p=>`<tr class="cl" onclick="verPedido(${p.id})"><td><b>#${p.id}</b><div class="tiny">${p.hora} · ${p.canal}</div></td><td>${p.cli}<div class="tiny">${p.b}</div></td><td>${estPill(p.est)}</td><td class="num">${fmt(p.tot)}</td></tr>`).join('')}</table></div>
-    <div class="card"><h3>${ico('pack')}Encargos del fin de semana<button class="btn sm act" data-go="encargos">Ver encargos</button></h3>
-      ${encargos.map(e=>`<div class="list-it"><div class="av">${e.cli.split(' ').map(x=>x[0]).slice(0,2).join('')}</div><div style="flex:1"><b>${e.cli}</b><div class="tiny">${e.para} · ${e.det}</div></div><span class="pill ${e.est==='Señado'?'p-ok':e.est==='A confirmar'?'p-warn':'p-n'}">${e.est}</span></div>`).join('')}</div>
+    <div class="card"><h3>${ico('sheet')}Últimas ventas<button class="btn sm act" data-go="planilla">Ver planilla</button></h3><div class="tw"><table>${vh.slice(0,6).map(v=>`<tr class="cl" onclick="verVenta(${v.id})"><td>${hhmm(v.fecha)}</td><td>${v.items.map(i=>i.n).join(', ')}</td><td>${tarPill(v.tar)}</td><td class="num"><b>${fmt(v.total)}</b></td></tr>`).join('')}</table></div></div>
+    <div class="card"><h3>${ico('pct')}Lo que más te deja hoy</h3>${topMargen(vh).slice(0,5).map(([n,m,t])=>`<div style="margin-bottom:11px"><div class="row" style="justify-content:space-between"><span>${n}</span><b>${fmt(m)} <span class="tiny">${pct(m/t*100)}</span></b></div><div class="bar"><i style="width:${m/((topMargen(vh)[0]||[0,1])[1])*100}%"></i></div></div>`).join('')}</div>
   </div>`;
 };
+function topMargen(vs){const m={};vs.forEach(v=>{const f=v.total/v.bruto;v.items.forEach(i=>{const x=m[i.n]||(m[i.n]=[i.n,0,0]);x[1]+=i.q*i.p*f-i.q*P(i.id).costo;x[2]+=i.q*i.p*f;});});return Object.values(m).sort((a,b)=>b[1]-a[1]);}
 
-VIEWS.mostrador = () => {
+// ---------- Vender ----------
+VIEWS.vender = () => {
+  if(!caja.abierta){$('#view').innerHTML=`<div class="card empty" style="padding:60px">${ico('lock')}<h3 style="justify-content:center;margin-top:10px">La caja está cerrada</h3><p class="muted">Para vender, primero abrí la caja con el fondo inicial.</p><button class="btn pri" onclick="abrirCaja()">${ico('unlock')}Abrir caja</button></div>`;return;}
   const cats = ['Todos',...new Set(productos.map(p=>p.c))];
   const lista = productos.filter(p=>filtroCat==='Todos'||p.c===filtroCat);
-  const tot = carrito.reduce((a,b)=>a+b.q*b.p,0);
+  const bruto = sum(carrito,c=>c.q*c.p), {r,d} = descuentoDe(pago,bruto,HOY.getDay()), tot = bruto-d;
+  const promosHoy = Object.keys(TARJETAS).filter(t=>reglaPara(t,HOY.getDay()));
   $('#view').innerHTML = `<div class="pos"><div>
-    <div class="tabs">${cats.map(c=>`<button class="tab ${c===filtroCat?'on':''}" onclick="filtroCat='${c}';VIEWS.mostrador()">${c}</button>`).join('')}</div>
-    <div class="prods">${lista.map(p=>`<button class="prod" onclick="agregar(${p.id})"><div class="cat">${p.c}</div><b>${p.n}</b><div class="pr">${fmt(p.p)} / ${p.u}</div><div class="tiny">Stock ${p.u==='kg'?kg(p.st):p.st+' u'}</div></button>`).join('')}</div>
+    <div class="tabs">${cats.map(c=>`<button class="tab ${c===filtroCat?'on':''}" onclick="filtroCat='${c}';VIEWS.vender()">${c}</button>`).join('')}</div>
+    <div class="prods">${lista.map(p=>`<button class="prod" onclick="agregar(${p.id})"><div class="cat">${p.c}</div><b>${p.n}</b><div class="pr">${fmt(p.p)} / ${p.u}</div><div class="tiny">${p.u==='kg'?'Bandeja al vacío':'Por unidad'}</div></button>`).join('')}</div>
   </div>
-  <div class="card ticket"><h3>${ico('doc')}Venta en curso<span class="act tiny">Mostrador 1</span></h3>
-    ${carrito.length?carrito.map((c,i)=>`<div class="tline"><div><b>${c.n}</b><div class="tiny">${c.u==='kg'?kg(c.q):c.q+' u'} x ${fmt(c.p)}</div></div><div class="row"><b>${fmt(c.q*c.p)}</b><button class="x" onclick="carrito.splice(${i},1);VIEWS.mostrador()">${ico('trash')}</button></div></div>`).join(''):'<div class="empty">Tocá un corte para agregarlo.<br>Los cortes por kilo toman el peso de la balanza.</div>'}
+  <div class="card ticket"><h3>${ico('cart')}Venta en curso<span class="act tiny">${usuario.split(' ')[0]} · Caja 1</span></h3>
+    ${carrito.length?carrito.map((c,i)=>`<div class="tline"><div><b>${c.n}</b><div class="tiny">${c.u==='kg'?kgf(c.q):c.q+' u'} x ${fmt(c.p)}</div></div><div class="row"><b>${fmt(c.q*c.p)}</b><button class="x" onclick="carrito.splice(${i},1);renderNav();VIEWS.vender()">${ico('trash')}</button></div></div>`).join(''):'<div class="empty">Tocá un producto o escaneá la etiqueta de la bandeja.</div>'}
+    <div style="margin:14px 0 8px" class="tiny">¿Con qué paga?</div>
+    <div class="pays">${Object.entries(TARJETAS).map(([k,t])=>`<button class="pay ${pago===k?'on':''}" onclick="pago='${k}';VIEWS.vender()"><span class="sq" style="background:${t.col}"></span>${t.n}${promosHoy.includes(k)?` <span class="pill p-san" style="margin-left:auto;padding:0 6px">${reglaPara(k,HOY.getDay()).pc}%</span>`:''}</button>`).join('')}</div>
+    ${r?`<div class="promo">${ico('pct')}<span>${r.pc}% ${r.n}. Se aplica solo. Tope ${fmt(r.tope)}.</span></div>`:''}
+    <div class="sumline"><span class="muted">Subtotal</span><span>${fmt(bruto)}</span></div>
+    ${d?`<div class="sumline" style="color:var(--san);font-weight:700"><span>Descuento ${TARJETAS[pago].n}</span><span>- ${fmt(d)}</span></div>`:''}
     <div class="total"><span>Total</span><span>${fmt(tot)}</span></div>
-    <div class="frow"><button class="btn pri" ${carrito.length?'':'disabled'} onclick="cobrar('Débito')">${ico('plata')}Débito</button><button class="btn pri" ${carrito.length?'':'disabled'} onclick="cobrar('Crédito')">${ico('plata')}Crédito</button></div>
-    <div class="tiny" style="margin-top:10px">Se emite e-ticket DGI automáticamente al cobrar.</div>
+    <button class="btn pri big" style="width:100%" ${carrito.length?'':'disabled'} onclick="cobrar()">${ico(pago==='efectivo'?'caja':'pos')}${pago==='efectivo'?'Cobrar en efectivo':'Enviar al POS Getnet'}</button>
+    <div class="tiny" style="margin-top:10px;text-align:center">Al cobrar se emite el comprobante DGI y la venta entra a la planilla.</div>
   </div></div>`;
 };
 function agregar(id){
-  const p=productos.find(x=>x.id===id);
-  if(p.u==='u'){const ex=carrito.find(c=>c.id===id);ex?ex.q++:carrito.push({...p,q:1});VIEWS.mostrador();return;}
-  const peso=(Math.round((0.6+Math.random()*1.2)*100)/100).toFixed(2);
-  modal('Pesar '+p.n,`<p class="muted">La balanza marca el peso. Podés corregirlo a mano.</p><label class="f">Peso en kg<input id="peso" type="number" step="0.01" value="${peso}"></label><div class="stat-row"><span>Precio por kilo</span><b>${fmt(p.p)}</b></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="confirmPeso(${id})">Agregar</button>`);
-  setTimeout(()=>{const i=$('#peso');i.focus();i.select();},50);
+  const p=P(id);
+  if(p.u==='u'){const ex=carrito.find(c=>c.id===id);ex?ex.q++:carrito.push({id,n:p.n,u:p.u,q:1,p:p.p});renderNav();VIEWS.vender();return;}
+  const peso=(Math.round((0.7+Math.random()*1.1)*100)/100).toFixed(2);
+  modal('Bandeja de '+p.n,`<p class="muted" style="margin-top:0">El peso se lee de la etiqueta de la bandeja. Si hace falta, lo corregís a mano.</p><label class="f">Peso de la bandeja (kg)<input id="peso" type="number" step="0.01" value="${peso}"></label><div class="stat-row"><span>Precio por kilo</span><b>${fmt(p.p)}</b></div><div class="stat-row"><span>Importe</span><b id="imp">${fmt(peso*p.p)}</b></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="confirmPeso(${id})">Agregar</button>`);
+  setTimeout(()=>{const i=$('#peso');i.focus();i.select();i.oninput=()=>$('#imp').textContent=fmt((parseFloat(i.value)||0)*p.p);i.onkeydown=e=>{if(e.key==='Enter')confirmPeso(id)};},50);
 }
-function confirmPeso(id){const p=productos.find(x=>x.id===id);const q=parseFloat($('#peso').value)||0;if(q<=0)return;carrito.push({...p,q});closeModal();VIEWS.mostrador();}
-function cobrar(m){
-  const tot=carrito.reduce((a,b)=>a+b.q*b.p,0);
-  carrito.forEach(c=>{const p=productos.find(x=>x.id===c.id);p.st=Math.max(0,Math.round((p.st-c.q)*10)/10);});
-  const now=new Date();ventasHoy.push({h:now.toTimeString().slice(0,5),d:carrito.map(c=>c.n).join(' · '),m,t:tot});
-  carrito=[];VIEWS.mostrador();toast(`Cobrado ${fmt(tot)} con ${m}. e-Ticket emitido.`);
+function confirmPeso(id){const p=P(id);const q=parseFloat($('#peso').value)||0;if(q<=0)return;carrito.push({id,n:p.n,u:p.u,q,p:p.p});closeModal();renderNav();VIEWS.vender();}
+function cobrar(){
+  if(pago==='efectivo'){finalizar('Mostrador');return;}
+  const bruto=sum(carrito,c=>c.q*c.p),{d}=descuentoDe(pago,bruto,HOY.getDay());
+  modal('Cobrando en el POS',`<div style="text-align:center;padding:10px 0"><div style="font-size:30px;font-weight:800">${fmt(bruto-d)}</div><p class="muted">Enviado al POS Getnet. El cliente pasa la tarjeta.</p><div class="live" style="justify-content:center"><i></i>Esperando aprobación</div></div>`);
+  setTimeout(()=>{closeModal();finalizar('POS Getnet');},1400);
+}
+function finalizar(origen){
+  carrito.forEach(c=>{const p=P(c.id);p.st=Math.max(0,Math.round((p.st-c.q)*100)/100);});
+  const v=armarVenta(new Date(),usuario,pago,carrito.map(c=>({...c})),origen);ventas.unshift(v);
+  caja.movs.push({h:v.fecha,t:'Venta '+v.cfe,d:TARJETAS[v.tar].n+(v.desc?' · desc. '+fmt(v.desc):''),tipo:'v',m:v.total});
+  carrito=[];renderNav();VIEWS.vender();
+  modal('Venta registrada',`<div style="text-align:center"><div style="width:54px;height:54px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;margin:0 auto 10px;font-size:26px">${ico('check')}</div><div style="font-size:26px;font-weight:800">${fmt(v.total)}</div><p class="muted">${TARJETAS[v.tar].n}${v.desc?' · ahorró '+fmt(v.desc):''}</p></div>
+  <div class="stat-row"><span>Comprobante</span><b>${v.cfe} · aceptado DGI</b></div><div class="stat-row"><span>Planilla de ventas</span><b style="color:var(--ok)">Cargada</b></div><div class="stat-row"><span>Stock</span><b style="color:var(--ok)">Descontado</b></div><div class="stat-row"><span>Margen de esta venta</span><b>${fmt(v.margen)} (${pct(v.margen/(v.total+v.banco)*100)})</b></div>`,
+  `<button class="btn" onclick="verCFE(${v.id})">${ico('doc')}Ver comprobante</button><button class="btn pri" data-close>Nueva venta</button>`);
 }
 
-VIEWS.pedidos = () => {
-  const cols=[['nuevo','Nuevos'],['prep','Preparando'],['camino','En camino'],['entregado','Entregados']];
-  $('#view').innerHTML = `<div class="row" style="margin-bottom:14px"><span class="muted">Arrastrá las tarjetas para cambiar el estado. El cliente recibe el aviso por WhatsApp.</span><button class="btn pri" style="margin-left:auto" onclick="nuevoPedido()">${ico('plus')}Nuevo pedido</button></div>
-  <div class="kanban">${cols.map(([k,l])=>`<div class="col" data-col="${k}"><h4>${l}<span class="tiny">${pedidos.filter(p=>p.est===k).length}</span></h4>${pedidos.filter(p=>p.est===k).map(p=>`<div class="tk" draggable="true" data-id="${p.id}" onclick="verPedido(${p.id})"><b>#${p.id} · ${p.cli}</b><div class="tiny">${p.items}</div><div class="ft"><span class="pill p-n">${ico('msg')}${p.canal}</span><b>${fmt(p.tot)}</b></div></div>`).join('')}</div>`).join('')}</div>`;
-  document.querySelectorAll('.tk').forEach(t=>t.addEventListener('dragstart',e=>e.dataTransfer.setData('text',t.dataset.id)));
-  document.querySelectorAll('.col').forEach(c=>{
-    c.addEventListener('dragover',e=>{e.preventDefault();c.classList.add('over');});
-    c.addEventListener('dragleave',()=>c.classList.remove('over'));
-    c.addEventListener('drop',e=>{e.preventDefault();const p=pedidos.find(x=>x.id==e.dataTransfer.getData('text'));if(p&&p.est!==c.dataset.col){p.est=c.dataset.col;renderNav();VIEWS.pedidos();toast(`Pedido #${p.id}: se avisó a ${p.cli.split(' ')[0]} por WhatsApp`);}});
-  });
-};
-function verPedido(id){
-  const p=pedidos.find(x=>x.id===id);const sig={nuevo:'prep',prep:'camino',camino:'entregado'}[p.est];
-  const lab={prep:'Pasar a preparación',camino:'Enviar con el repartidor',entregado:'Marcar entregado'}[sig];
-  modal(`Pedido #${p.id}`,`<div class="row" style="margin-bottom:12px">${estPill(p.est)}<span class="tiny">Entró ${p.hora} por ${p.canal}</span></div>
-  <div class="stat-row"><span>Cliente</span><b>${p.cli}</b></div><div class="stat-row"><span>Entrega</span><b>${p.b}</b></div><div class="stat-row"><span>Detalle</span><b>${p.items}</b></div><div class="stat-row"><span>Total</span><b>${fmt(p.tot)}</b></div>
-  <h4 style="margin:16px 0 8px">Conversación</h4><div class="wa">Hola! Me mandan ${p.items.toLowerCase()} para hoy? Pago con débito al recibir.</div><div class="wa me">Hola ${p.cli.split(' ')[0]}! Sí, te lo preparamos y te avisamos cuando sale. Gracias por elegirnos.</div>`,
-  `<button class="btn" data-close>Cerrar</button>${sig?`<button class="btn pri" onclick="avanzar(${id},'${sig}')">${lab}</button>`:''}`);
-}
-function avanzar(id,e){const p=pedidos.find(x=>x.id===id);p.est=e;closeModal();renderNav();VIEWS[view]();toast(`Pedido #${id} actualizado. Aviso enviado por WhatsApp.`);}
-function nuevoPedido(){
-  modal('Nuevo pedido',`<label class="f">Cliente<select id="npc">${clientes.map(c=>`<option>${c.n}</option>`).join('')}</select></label>
-  <div class="frow"><label class="f">Canal<select id="npcan"><option>WhatsApp</option><option>Instagram</option><option>Teléfono</option><option>Mostrador</option></select></label><label class="f">Total<input id="npt" type="number" value="2500"></label></div>
-  <label class="f">Detalle<input id="npd" value="1 kg picaña · 1 kg chorizo"></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarPedido()">Crear pedido</button>`);
-}
-function guardarPedido(){const c=clientes.find(x=>x.n===$('#npc').value);const id=Math.max(...pedidos.map(p=>p.id))+1;pedidos.unshift({id,cli:c.n,b:c.b,items:$('#npd').value,tot:+$('#npt').value||0,est:'nuevo',canal:$('#npcan').value,hora:new Date().toTimeString().slice(0,5)});closeModal();renderNav();VIEWS[view]();toast(`Pedido #${id} creado`);}
-
-VIEWS.encargos = () => {
-  $('#view').innerHTML = `<div class="card" style="margin-bottom:14px"><h3>${ico('clock')}Encargos<button class="btn pri sm act" onclick="nuevoEncargo()">${ico('plus')}Nuevo encargo</button></h3>
-  <table><tr><th>Cliente</th><th>Para</th><th>Detalle</th><th>Estado</th><th class="num">Seña</th><th class="num">Total</th></tr>${encargos.map((e,i)=>`<tr class="cl" onclick="verEncargo(${i})"><td><b>${e.cli}</b></td><td>${e.para}</td><td class="muted">${e.det}</td><td><span class="pill ${e.est==='Señado'?'p-ok':e.est==='A confirmar'?'p-warn':'p-n'}">${e.est}</span></td><td class="num">${e.sena?fmt(e.sena):'—'}</td><td class="num"><b>${fmt(e.tot)}</b></td></tr>`).join('')}</table></div>
-  <div class="grid2e">${packs.map((p,i)=>`<div class="card"><h3>${ico('pack')}${p.n}<span class="pill p-gold act">${p.pers}</span></h3><p class="muted" style="margin:0 0 12px">${p.d}</p><div class="row"><b style="font-size:20px">${fmt(p.p)}</b><span class="tiny">${p.v} vendidos este mes</span><button class="btn sm" style="margin-left:auto" onclick="encargarPack(${i})">Encargar</button></div></div>`).join('')}</div>`;
-};
-function verEncargo(i){const e=encargos[i];modal('Encargo de '+e.cli,`<div class="stat-row"><span>Para</span><b>${e.para}</b></div><div class="stat-row"><span>Detalle</span><b>${e.det}</b></div><div class="stat-row"><span>Seña</span><b>${e.sena?fmt(e.sena):'Sin seña'}</b></div><div class="stat-row"><span>Saldo a cobrar</span><b>${fmt(e.tot-e.sena)}</b></div>`,`<button class="btn" data-close>Cerrar</button>${e.est!=='Señado'?`<button class="btn pri" onclick="encargos[${i}].est='Señado';encargos[${i}].sena=Math.round(encargos[${i}].tot*0.3);closeModal();VIEWS[view]();toast('Seña registrada y confirmación enviada')">Registrar seña 30%</button>`:''}`);}
-function encargarPack(i){nuevoEncargo(packs[i]);}
-function nuevoEncargo(pk){
-  modal('Nuevo encargo',`<label class="f">Cliente<select id="nec">${clientes.map(c=>`<option>${c.n}</option>`).join('')}</select></label><label class="f">Para cuándo<input id="nep" value="Sáb 27/09 12:00"></label><label class="f">Detalle<input id="ned" value="${pk?pk.n:'2 kg picaña · 1 kg chorizo'}"></label><label class="f">Total<input id="net" type="number" value="${pk?pk.p:3000}"></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarEncargo()">Guardar encargo</button>`);
-}
-function guardarEncargo(){encargos.unshift({cli:$('#nec').value,para:$('#nep').value,det:$('#ned').value,sena:0,tot:+$('#net').value||0,est:'A confirmar'});closeModal();go('encargos');toast('Encargo guardado');}
-
-VIEWS.catalogo = () => {
-  $('#view').innerHTML = `<div class="card"><h3>${ico('tag')}Lista de precios<span class="act tiny">Tocá un producto para cambiar el precio</span></h3>
-  <table><tr><th>Producto</th><th>Categoría</th><th class="num">Costo</th><th class="num">Precio</th><th class="num">Margen</th><th>Stock</th></tr>
-  ${productos.map(p=>{const m=(p.p-p.costo)/p.p*100;return `<tr class="cl" onclick="editPrecio(${p.id})"><td><b>${p.n}</b></td><td class="muted">${p.c}</td><td class="num">${fmt(p.costo)}</td><td class="num"><b>${fmt(p.p)}</b> <span class="tiny">/${p.u}</span></td><td class="num"><span class="pill ${m>40?'p-ok':m>35?'p-warn':'p-bad'}">${m.toFixed(0)}%</span></td><td>${p.st<p.min?'<span class="pill p-bad">Bajo</span>':'<span class="pill p-ok">OK</span>'}</td></tr>`}).join('')}</table></div>`;
-};
-function editPrecio(id){const p=productos.find(x=>x.id===id);modal('Precio de '+p.n,`<div class="frow"><label class="f">Costo<input value="${p.costo}" disabled></label><label class="f">Precio de venta<input id="np" type="number" value="${p.p}"></label></div><p class="tiny">El nuevo precio se actualiza en el mostrador y en la lista que se manda por WhatsApp.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarPrecio(${id})">Guardar</button>`);}
-function guardarPrecio(id){const p=productos.find(x=>x.id===id);p.p=+$('#np').value||p.p;closeModal();VIEWS.catalogo();toast('Precio actualizado: '+p.n);}
-
-VIEWS.camara = () => {
-  $('#view').innerHTML = `<div class="grid4">
-   <div class="card kpi"><div class="lab">${ico('frio')}Cámara 1 (carnes)</div><div class="temp">1,8 °C</div><div class="d">Dentro de rango</div></div>
-   <div class="card kpi"><div class="lab">${ico('frio')}Cámara 2 (granja)</div><div class="temp">2,4 °C</div><div class="d">Dentro de rango</div></div>
-   <div class="card kpi"><div class="lab">${ico('frio')}Exhibidora</div><div class="temp">3,9 °C</div><div class="d neg">Cerca del límite</div></div>
-   <div class="card kpi"><div class="lab">${ico('cuchillo')}Stock valorizado</div><div class="val">${fmt(productos.reduce((a,p)=>a+p.st*p.costo,0))}</div><div class="d">al costo</div></div></div>
-  <div class="card" style="margin-bottom:14px"><h3>${ico('pack')}Lotes en cámara</h3><table><tr><th>Lote</th><th>Descripción</th><th>Ingreso</th><th class="num">Kilos</th><th>Vence</th><th>Trazabilidad</th></tr>${lotes.map(l=>`<tr><td><b>${l.lote}</b></td><td>${l.d}</td><td>${l.ing}</td><td class="num">${l.kg} kg</td><td>${l.venc}</td><td><span class="pill p-ok">INAC ok</span></td></tr>`).join('')}</table></div>
-  <div class="card"><h3>${ico('tag')}Stock por producto</h3><table><tr><th>Producto</th><th class="num">Stock</th><th style="width:35%">Nivel</th><th></th></tr>${productos.map(p=>`<tr><td>${p.n}</td><td class="num">${p.u==='kg'?kg(p.st):p.st+' u'}</td><td><div class="bar"><i style="width:${Math.min(100,p.st/(p.min*3)*100)}%;${p.st<p.min?'background:var(--bad)':''}"></i></div></td><td class="num">${p.st<p.min?`<button class="btn sm" onclick="pedirProv(${p.id})">Reponer</button>`:''}</td></tr>`).join('')}</table></div>`;
-};
-function pedirProv(id){const p=productos.find(x=>x.id===id);const prov=p.c==='Granja'?'Granja Los Aromos (Canelones)':p.c==='Almacén'?'Bodega Bouza':'Frigorífico Las Moras';
-  modal('Pedido a proveedor',`<div class="stat-row"><span>Proveedor</span><b>${prov}</b></div><label class="f" style="margin-top:12px">Cantidad de ${p.n} (${p.u})<input id="cq" type="number" value="${p.min*2}"></label><p class="tiny">Se envía por WhatsApp al proveedor y queda registrado en compras.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="recibir(${id})">Enviar pedido</button>`);}
-function recibir(id){const p=productos.find(x=>x.id===id);p.st+=+$('#cq').value||0;closeModal();VIEWS[view]();toast('Pedido enviado. Stock de '+p.n+' actualizado al recibir.');}
-
-VIEWS.desposte = () => {
-  const cortes=[['Asado de tira',14.2],['Vacío',6.1],['Bife angosto',7.8],['Entrecot',5.9],['Picaña',1.9],['Colita de cuadril',2.4],['Entraña',1.1],['Carne para milanesa',11.6],['Carne picada',12.3],['Hueso y grasa',26.0]];
-  $('#view').innerHTML = `<div class="grid2"><div class="card"><h3>${ico('cuchillo')}Media res LM-2309-B · Novillo Angus · 118 kg</h3><table><tr><th>Corte</th><th class="num">Kilos</th><th class="num">% de la media</th><th class="num">Valor a precio de venta</th></tr>${cortes.map(([n,k])=>{const pr=(productos.find(p=>p.n===n)||{p:n==='Carne picada'?420:n==='Carne para milanesa'?560:0}).p;return `<tr><td>${n}</td><td class="num">${kg(k)}</td><td class="num">${(k/118*100).toFixed(1)}%</td><td class="num">${pr?fmt(pr*k):'—'}</td></tr>`}).join('')}</table></div>
-  <div class="card"><h3>${ico('up')}Resultado del desposte</h3><div class="stat-row"><span>Costo de la media res</span><b>${fmt(118*298)}</b></div><div class="stat-row"><span>Rendimiento vendible</span><b>72,4%</b></div><div class="stat-row"><span>Valor de venta estimado</span><b>${fmt(63900)}</b></div><div class="stat-row"><span>Ganancia bruta</span><b style="color:var(--ok)">${fmt(63900-118*298)}</b></div><p class="tiny" style="margin-top:14px">Comparado con la media res anterior (Hereford), este lote rindió 1,8 puntos más.</p><button class="btn pri" style="margin-top:8px" onclick="nuevoDesposte()">${ico('plus')}Registrar nuevo desposte</button></div></div>`;
-};
-function nuevoDesposte(){modal('Nuevo desposte',`<label class="f">Lote<select><option>LM-2609-A · Media res Hereford · 112 kg</option></select></label><label class="f">Carnicero<select><option>Hernán Suárez</option><option>Pablo Giménez</option></select></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="closeModal();toast('Desposte iniciado. Cargá los kilos a medida que salen los cortes.')">Empezar</button>`);}
-
-VIEWS.compras = () => {
-  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('plata')}A pagar</div><div class="val">${fmt(proveedores.reduce((a,p)=>a+p.saldo,0))}</div><div class="d neg">${fmt(184500)} vence el 03/10</div></div><div class="card kpi"><div class="lab">${ico('camion')}Compras del mes</div><div class="val">${fmt(1284000)}</div><div class="d">18 facturas</div></div><div class="card kpi"><div class="lab">${ico('cuchillo')}Precio kilo media res</div><div class="val">${fmt(298)}</div><div class="d neg">+2,1% en el mes</div></div><div class="card kpi"><div class="lab">${ico('users')}Proveedores activos</div><div class="val">${proveedores.length}</div><div class="d">Todos al día</div></div></div>
-  <div class="card"><h3>${ico('camion')}Proveedores</h3><table><tr><th>Proveedor</th><th>Rubro</th><th>Última entrega</th><th>Condición</th><th class="num">Saldo</th><th></th></tr>${proveedores.map((p,i)=>`<tr><td><b>${p.n}</b></td><td class="muted">${p.rub}</td><td>${p.ult}</td><td>${p.cond}</td><td class="num">${p.saldo?fmt(p.saldo):'<span class="pill p-ok">Al día</span>'}</td><td class="num">${p.saldo?`<button class="btn sm" onclick="pagar(${i})">Pagar</button>`:''}</td></tr>`).join('')}</table></div>`;
-};
-function pagar(i){const p=proveedores[i];modal('Pagar a '+p.n,`<div class="stat-row"><span>Saldo</span><b>${fmt(p.saldo)}</b></div><label class="f" style="margin-top:12px">Medio<select><option>Transferencia BROU</option><option>Transferencia Itaú</option><option>Cheque diferido</option></select></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="proveedores[${i}].saldo=0;closeModal();VIEWS.compras();toast('Pago registrado')">Registrar pago</button>`);}
-
-VIEWS.clientes = () => {
-  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('users')}Clientes</div><div class="val">1.284</div><div class="d">+46 este mes</div></div><div class="card kpi"><div class="lab">${ico('pin')}De Punta Gorda</div><div class="val">52%</div><div class="d">Carrasco 28% · Malvín 14%</div></div><div class="card kpi"><div class="lab">${ico('up')}Vuelven en 30 días</div><div class="val">67%</div><div class="d">+5 puntos</div></div><div class="card kpi"><div class="lab">${ico('alert')}Hace un mes que no vienen</div><div class="val">38</div><div class="d neg">Mandales una promo</div></div></div>
-  <div class="card"><h3>${ico('users')}Clientes<button class="btn pri sm act" onclick="promo()">${ico('msg')}Mandar promo del finde</button></h3><table><tr><th>Cliente</th><th>Barrio</th><th>Tipo</th><th>Prefiere</th><th class="num">Compras</th><th class="num">Total</th><th>Última</th></tr>${clientes.map(c=>`<tr class="cl" onclick="verCliente(${c.id})"><td><div class="row"><div class="av">${c.n.split(' ').map(x=>x[0]).slice(0,2).join('')}</div><b>${c.n}</b></div></td><td>${c.b}</td><td><span class="pill ${c.tipo==='Cuenta corriente'?'p-gold':c.tipo==='Ocasional'?'p-n':'p-br'}">${c.tipo}</span></td><td class="muted">${c.pref}</td><td class="num">${c.comp}</td><td class="num">${fmt(c.tot)}</td><td>${c.ult}</td></tr>`).join('')}</table></div>`;
-};
-function verCliente(id){const c=clientes.find(x=>x.id===id);modal(c.n,`<div class="row" style="margin-bottom:12px"><div class="av">${c.n.split(' ').map(x=>x[0]).slice(0,2).join('')}</div><div><b>${c.b}</b><div class="tiny">${c.t}</div></div><span class="pill p-br" style="margin-left:auto">${c.tipo}</span></div>
-  <div class="stat-row"><span>Compras</span><b>${c.comp}</b></div><div class="stat-row"><span>Total gastado</span><b>${fmt(c.tot)}</b></div><div class="stat-row"><span>Ticket promedio</span><b>${fmt(c.tot/c.comp)}</b></div><div class="stat-row"><span>Siempre lleva</span><b>${c.pref}</b></div><div class="stat-row"><span>Última compra</span><b>${c.ult}</b></div>`,`<button class="btn" data-close>Cerrar</button><button class="btn pri" onclick="closeModal();toast('Mensaje enviado por WhatsApp a ${c.n.split(' ')[0]}')">${ico('msg')}Escribir por WhatsApp</button>`);}
-function promo(){modal('Promo del fin de semana',`<label class="f">Mensaje<textarea rows="4">Hola! Este finde en PG Mercado de Carnes: Pack Parrillero Punta Gorda a $ 4.950 y 10% en Tannat Bouza llevando picaña. Encargalo por acá y te lo llevamos.</textarea></label><label class="f">Enviar a<select><option>Clientes parrilleros (214)</option><option>Todos los clientes (1.284)</option><option>No vienen hace un mes (38)</option></select></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="closeModal();toast('Promo programada por WhatsApp para el viernes 10:00')">Programar envío</button>`);}
-
+// ---------- Caja ----------
 VIEWS.caja = () => {
-  const deb=ventasHoy.filter(v=>v.m==='Débito').reduce((a,b)=>a+b.t,0),cre=ventasHoy.filter(v=>v.m==='Crédito').reduce((a,b)=>a+b.t,0);
-  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('plata')}Caja del día</div><div class="val">${fmt(deb+cre)}</div><div class="d">${ventasHoy.length} tickets en mostrador</div></div><div class="card kpi"><div class="lab">${ico('plata')}Débito</div><div class="val">${fmt(deb)}</div><div class="d">Visa Débito, Maestro</div></div><div class="card kpi"><div class="lab">${ico('plata')}Crédito</div><div class="val">${fmt(cre)}</div><div class="d">Visa, Master, OCA</div></div><div class="card kpi"><div class="lab">${ico('doc')}e-Facturas DGI</div><div class="val">${ventasHoy.length+4}</div><div class="d">Todas aceptadas</div></div></div>
-  <div class="card"><h3>${ico('doc')}Movimientos de hoy<button class="btn pri sm act" onclick="cierre()">Cerrar caja</button></h3><table><tr><th>Hora</th><th>Detalle</th><th>Medio</th><th>Comprobante</th><th class="num">Importe</th></tr>${ventasHoy.slice().reverse().map((v,i)=>`<tr><td>${v.h}</td><td>${v.d}</td><td><span class="pill p-n">${v.m}</span></td><td class="muted">e-Ticket A ${48210+ventasHoy.length-i}</td><td class="num"><b>${fmt(v.t)}</b></td></tr>`).join('')}</table></div>`;
+  const vt = ventas.filter(v=>esHoy(v)&&v.fecha>=caja.desde);
+  const ef = sum(vt.filter(v=>v.tar==='efectivo'),v=>v.total), tj = sum(vt.filter(v=>v.tar!=='efectivo'),v=>v.total), ret = sum(caja.retiros,r=>r.m);
+  $('#view').innerHTML = `
+  <div class="hero" style="background:${caja.abierta?'linear-gradient(120deg,#1F4D36,#2F8A5B)':'linear-gradient(120deg,var(--brand-deep),var(--brand))'}"><div><h2>${caja.abierta?'Caja abierta':'Caja cerrada'}</h2><p>${caja.abierta?`Abrió ${caja.cajero} a las ${hhmm(caja.desde)} con ${fmt(caja.fondo)} de fondo.`:'Para empezar el turno, abrí la caja con el fondo inicial.'}</p></div>
+  ${caja.abierta?`<div class="row" style="margin-left:auto"><button class="btn" onclick="retiro()">${ico('down')}Retiro de efectivo</button><button class="btn" onclick="cerrarCaja()">${ico('lock')}Cerrar caja</button></div>`:`<button class="btn" onclick="abrirCaja()">${ico('unlock')}Abrir caja</button>`}</div>
+  ${caja.abierta?`<div class="grid4">
+    <div class="card kpi"><div class="lab">${ico('caja')}Ventas del turno</div><div class="val">${fmt(ef+tj)}</div><div class="d n">${vt.length} ventas</div></div>
+    <div class="card kpi"><div class="lab">${ico('pos')}Tarjetas (POS Getnet)</div><div class="val">${fmt(tj)}</div><div class="d">Se concilia sola con el lote</div></div>
+    <div class="card kpi"><div class="lab">${ico('caja')}Efectivo esperado</div><div class="val">${fmt(caja.fondo+ef-ret)}</div><div class="d n">Fondo + ventas - retiros</div></div>
+    <div class="card kpi"><div class="lab">${ico('down')}Retiros</div><div class="val">${fmt(ret)}</div><div class="d n">${caja.retiros.length} en el turno</div></div></div>`:''}
+  <div class="grid2e">
+    <div class="card"><h3>${ico('clock')}Movimientos del turno<span class="act tiny">No se puede borrar nada: todo queda registrado</span></h3><div class="tw" style="max-height:420px;overflow:auto"><table>${[...caja.movs].reverse().slice(0,40).map(m=>`<tr><td class="tiny">${hhmm(m.h)}</td><td><b>${m.t}</b><div class="tiny">${m.d}</div></td><td class="num">${m.m?fmt(m.m):''}</td></tr>`).join('')||'<tr><td class="empty">Sin movimientos</td></tr>'}</table></div></div>
+    <div class="card"><h3>${ico('lock')}Cierres anteriores</h3><table><tr><th>Día</th><th>Cerró</th><th class="num">Ventas</th><th class="num">Total</th><th>Arqueo</th></tr>${[...cierres].reverse().map(c=>`<tr><td>${DIAS[c.fecha.getDay()].slice(0,3)} ${fechaCorta(c.fecha)}</td><td>${c.cajero.split(' ')[0]}</td><td class="num">${c.ventas}</td><td class="num">${fmt(c.total)}</td><td>${c.dif?`<span class="pill p-warn">${fmt(c.dif)}</span>`:'<span class="pill p-ok">Cuadra</span>'}</td></tr>`).join('')}</table></div>
+  </div>`;
 };
-function cierre(){modal('Cierre de caja',`<div class="stat-row"><span>Total del sistema</span><b>${fmt(ventasHoy.reduce((a,b)=>a+b.t,0))}</b></div><label class="f" style="margin-top:12px">Total según lote del POS<input value="${ventasHoy.reduce((a,b)=>a+b.t,0)}"></label><p class="tiny">Coincide con el POS. No hay diferencias.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="closeModal();toast('Caja cerrada. Resumen enviado al mail del dueño.')">Confirmar cierre</button>`);}
+function abrirCaja(){
+  modal('Abrir caja',`<label class="f">¿Quién abre?<select id="acaj">${EMPLEADOS.map(e=>`<option ${e.n===usuario?'selected':''}>${e.n}</option>`).join('')}</select></label><label class="f">Fondo inicial en efectivo<input id="afondo" type="number" value="5000"></label><p class="tiny">Desde este momento todas las ventas, retiros y anulaciones quedan a nombre de quien abrió.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="confirmarApertura()">${ico('unlock')}Abrir caja</button>`);
+}
+function confirmarApertura(){caja={abierta:true,fondo:+$('#afondo').value||0,desde:new Date(),cajero:$('#acaj').value,retiros:[],movs:[]};usuario=caja.cajero;caja.movs.push({h:caja.desde,t:'Apertura de caja',d:'Fondo '+fmt(caja.fondo)+' · '+caja.cajero,tipo:'ap'});closeModal();go(view==='inicio'||view==='vender'?view:'caja');toast('Caja abierta por '+caja.cajero.split(' ')[0]);}
+function retiro(){modal('Retiro de efectivo',`<label class="f">Monto<input id="rm" type="number" value="3000"></label><label class="f">Motivo<select id="rmot"><option>Pago a proveedor</option><option>Depósito en banco</option><option>Gastos del local</option></select></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="confirmarRetiro()">Registrar retiro</button>`);}
+function confirmarRetiro(){const m=+$('#rm').value||0;caja.retiros.push({m});caja.movs.push({h:new Date(),t:'Retiro de efectivo',d:$('#rmot').value+' · '+usuario,m:-m});closeModal();VIEWS.caja();toast('Retiro registrado');}
+function cerrarCaja(){
+  const vt = ventas.filter(v=>esHoy(v)&&v.fecha>=caja.desde), ef = sum(vt.filter(v=>v.tar==='efectivo'),v=>v.total), tj = sum(vt.filter(v=>v.tar!=='efectivo'),v=>v.total), esp = caja.fondo+ef-sum(caja.retiros,r=>r.m);
+  const porT = Object.keys(TARJETAS).filter(t=>t!=='efectivo').map(t=>[t,sum(vt.filter(v=>v.tar===t),v=>v.total)]).filter(x=>x[1]);
+  modal('Cerrar caja',`<h4 style="margin:0 0 8px">Tarjetas</h4>${porT.map(([t,m])=>`<div class="stat-row"><span>${TARJETAS[t].n}</span><b>${fmt(m)}</b></div>`).join('')}<div class="stat-row"><span><b>Lote POS Getnet</b></span><span class="pill p-ok">${ico('check')}Coincide: ${fmt(tj)}</span></div>
+  <h4 style="margin:16px 0 8px">Efectivo</h4><div class="stat-row"><span>Esperado en el cajón</span><b>${fmt(esp)}</b></div><label class="f" style="margin-top:10px">Contado<input id="contado" type="number" value="${esp}"></label><div id="dif" class="promo" style="background:var(--ok-soft);color:var(--ok);border-color:#BFE3CE">${ico('check')}La caja cuadra.</div>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="confirmarCierre(${esp},${ef+tj},${vt.length})">${ico('lock')}Cerrar y mandar resumen</button>`);
+  $('#contado').oninput=()=>{const d=(+$('#contado').value||0)-esp,x=$('#dif');if(!d){x.style.background='var(--ok-soft)';x.style.color='var(--ok)';x.innerHTML=ico('check')+'La caja cuadra.';}else{x.style.background='var(--warn-soft)';x.style.color='#9A6412';x.innerHTML=ico('alert')+(d<0?'Faltan ':'Sobran ')+fmt(Math.abs(d))+'. Queda registrado a nombre de '+caja.cajero.split(' ')[0]+'.';}};
+}
+function confirmarCierre(esp,tot,n){const d=(+$('#contado').value||0)-esp;cierres.push({fecha:new Date(),cajero:caja.cajero,ventas:n,total:tot,dif:d});caja.abierta=false;caja.movs.push({h:new Date(),t:'Cierre de caja',d:(d?'Diferencia '+fmt(d):'Cuadra')+' · '+usuario});closeModal();go('caja');toast('Caja cerrada. El resumen le llegó al dueño por WhatsApp y mail.');}
 
+// ---------- Planilla ----------
+function ventasFiltradas(){
+  const desde=new Date(HOY);desde.setHours(0,0,0,0);if(planilla.rango==='7')desde.setDate(desde.getDate()-7);
+  return ventas.filter(v=>v.fecha>=desde&&(planilla.medio==='todos'||(planilla.medio==='santander'?TARJETAS[v.tar].san:v.tar===planilla.medio))&&(planilla.cajero==='todos'||v.cajero===planilla.cajero)&&(!planilla.q||(v.items.map(i=>i.n).join(' ')+' '+v.cfe).toLowerCase().includes(planilla.q.toLowerCase())));
+}
+VIEWS.planilla = () => {
+  const vs = ventasFiltradas();
+  $('#view').innerHTML = `<div class="tabs">
+    <button class="tab ${planilla.rango==='hoy'?'on':''}" onclick="planilla.rango='hoy';VIEWS.planilla()">Hoy</button><button class="tab ${planilla.rango==='7'?'on':''}" onclick="planilla.rango='7';VIEWS.planilla()">Últimos 7 días</button>
+    <select class="inp" onchange="planilla.medio=this.value;VIEWS.planilla()"><option value="todos">Todos los medios</option><option value="santander" ${planilla.medio==='santander'?'selected':''}>Solo Santander</option>${Object.entries(TARJETAS).map(([k,t])=>`<option value="${k}" ${planilla.medio===k?'selected':''}>${t.n}</option>`).join('')}</select>
+    <select class="inp" onchange="planilla.cajero=this.value;VIEWS.planilla()"><option value="todos">Todo el equipo</option>${EMPLEADOS.slice(0,2).map(e=>`<option ${planilla.cajero===e.n?'selected':''}>${e.n}</option>`).join('')}</select>
+    <input class="inp" id="pq" placeholder="Buscar producto o comprobante" value="${planilla.q}" style="min-width:220px">
+    <button class="btn" style="margin-left:auto" onclick="exportar()">${ico('down')}Descargar Excel</button></div>
+  <div class="grid4"><div class="card kpi"><div class="lab">Ventas</div><div class="val">${vs.length}</div></div><div class="card kpi"><div class="lab">Total cobrado</div><div class="val">${fmt(sum(vs,v=>v.total))}</div></div><div class="card kpi"><div class="lab">Descuentos dados</div><div class="val">${fmt(sum(vs,v=>v.desc))}</div><div class="d n">${fmt(sum(vs,v=>v.banco))} a cargo del banco</div></div><div class="card kpi"><div class="lab">Margen</div><div class="val">${fmt(sum(vs,v=>v.margen))}</div><div class="d">${pct(sum(vs,v=>v.margen)/Math.max(sum(vs,v=>v.total+v.banco),1)*100)}</div></div></div>
+  <div class="card"><div class="tw"><table><tr><th>Fecha</th><th>Hora</th><th>Productos</th><th>Medio de pago</th><th>Origen</th><th>Vendió</th><th class="num">Subtotal</th><th class="num">Descuento</th><th class="num">Total</th><th class="num">Margen</th><th>Comprobante</th></tr>
+  ${vs.slice(0,150).map((v,i)=>`<tr class="cl ${i===0&&v.fresh?'flash':''}" onclick="verVenta(${v.id})"><td>${fechaCorta(v.fecha)}</td><td>${hhmm(v.fecha)}</td><td style="max-width:260px">${v.items.map(i=>i.n).join(', ')}</td><td>${tarPill(v.tar)}</td><td class="tiny">${v.origen}</td><td>${v.cajero.split(' ')[0]}</td><td class="num">${fmt(v.bruto)}</td><td class="num" style="color:var(--san)">${v.desc?'- '+fmt(v.desc):'—'}</td><td class="num"><b>${fmt(v.total)}</b></td><td class="num">${fmt(v.margen)}</td><td class="tiny">${v.cfe}</td></tr>`).join('')}
+  <tr class="tot"><td colspan="6">Totales (${vs.length} ventas)</td><td class="num">${fmt(sum(vs,v=>v.bruto))}</td><td class="num">- ${fmt(sum(vs,v=>v.desc))}</td><td class="num">${fmt(sum(vs,v=>v.total))}</td><td class="num">${fmt(sum(vs,v=>v.margen))}</td><td></td></tr></table></div>${vs.length>150?'<p class="tiny">Se muestran las primeras 150. El Excel trae todas.</p>':''}</div>`;
+  const q=$('#pq');q.oninput=()=>{planilla.q=q.value;const pos=q.selectionStart;VIEWS.planilla();const n=$('#pq');n.focus();n.setSelectionRange(pos,pos);};
+};
+function exportar(){
+  const vs=ventasFiltradas();const rows=[['Fecha','Hora','Productos','Medio de pago','Origen','Vendió','Subtotal','Descuento','Total','Margen','Comprobante']].concat(vs.map(v=>[fechaCorta(v.fecha),hhmm(v.fecha),v.items.map(i=>i.n).join(' + '),TARJETAS[v.tar].n,v.origen,v.cajero,Math.round(v.bruto),v.desc,Math.round(v.total),Math.round(v.margen),v.cfe]));
+  const csv='﻿'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='ventas-pg-mercado.csv';document.body.appendChild(a);a.click();a.remove();toast('Planilla descargada ('+vs.length+' ventas)');
+}
+function verVenta(id){const v=ventas.find(x=>x.id===id);modal('Venta · '+v.cfe,`<div class="row" style="margin-bottom:10px">${tarPill(v.tar)}<span class="tiny">${fechaCorta(v.fecha)} ${hhmm(v.fecha)} · ${v.origen} · ${v.cajero}</span></div>
+  ${v.items.map(i=>`<div class="tline"><span>${i.n} <span class="tiny">${i.u==='kg'?kgf(i.q):i.q+' u'}</span></span><b>${fmt(i.q*i.p)}</b></div>`).join('')}
+  <div class="stat-row" style="margin-top:8px"><span>Subtotal</span><b>${fmt(v.bruto)}</b></div>${v.desc?`<div class="stat-row"><span>Descuento (${v.regla})</span><b style="color:var(--san)">- ${fmt(v.desc)}</b></div><div class="stat-row"><span>Reintegro del banco</span><b>${fmt(v.banco)}</b></div>`:''}<div class="stat-row"><span>Total cobrado</span><b>${fmt(v.total)}</b></div><div class="stat-row"><span>Costo de la mercadería</span><b>${fmt(v.costo)}</b></div><div class="stat-row"><span>Margen</span><b style="color:var(--ok)">${fmt(v.margen)}</b></div>`,`<button class="btn" data-close>Cerrar</button><button class="btn pri" onclick="verCFE(${v.id})">${ico('doc')}Ver comprobante</button>`);}
+
+// ---------- Márgenes ----------
+VIEWS.margenes = () => {
+  const d7=new Date(HOY);d7.setDate(d7.getDate()-7);const vs=ventas.filter(v=>v.fecha>=d7);
+  const porProd={};vs.forEach(v=>{const f=v.total/v.bruto;v.items.forEach(i=>{const x=porProd[i.id]||(porProd[i.id]={id:i.id,kg:0,venta:0,costo:0});x.kg+=i.q;x.venta+=i.q*i.p*f;x.costo+=i.q*P(i.id).costo;});});
+  let rows=productos.map(p=>{const x=porProd[p.id]||{kg:0,venta:0,costo:0};const lista=(p.p-p.costo)/p.p*100;return {p,lista,real:x.venta?(x.venta-x.costo)/x.venta*100:lista,gan:x.venta-x.costo,venta:x.venta,q:x.kg};});
+  rows.sort((a,b)=>margenOrden==='gan'?b.gan-a.gan:margenOrden==='venta'?b.venta-a.venta:a.real-b.real);
+  const cats=[...new Set(productos.map(p=>p.c))].map(c=>{const r=rows.filter(x=>x.p.c===c);const v=sum(r,x=>x.venta),g=sum(r,x=>x.gan);return [c,v,g];});
+  const bajos=rows.filter(r=>r.real<32);
+  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">Margen bruto 7 días</div><div class="val">${pct(sum(rows,r=>r.gan)/Math.max(sum(rows,r=>r.venta),1)*100)}</div><div class="d">${fmt(sum(rows,r=>r.gan))} de ganancia</div></div><div class="card kpi"><div class="lab">Ventas 7 días</div><div class="val">${fmt(sum(rows,r=>r.venta))}</div><div class="d n">después de descuentos</div></div><div class="card kpi"><div class="lab">Lo que se comen los descuentos</div><div class="val">${fmt(sum(vs,v=>v.desc-v.banco))}</div><div class="d neg">la parte que pone el local</div></div><div class="card kpi"><div class="lab">Productos con margen bajo</div><div class="val">${bajos.length}</div><div class="d ${bajos.length?'neg':''}">debajo de 32%</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('pct')}Margen por producto<span class="act tiny">Tocá un producto para simular un precio nuevo</span></h3>
+    <div class="tabs"><span class="tiny">Ordenar por</span><button class="tab ${margenOrden==='margen'?'on':''}" onclick="margenOrden='margen';VIEWS.margenes()">Menor margen</button><button class="tab ${margenOrden==='gan'?'on':''}" onclick="margenOrden='gan';VIEWS.margenes()">Más ganancia</button><button class="tab ${margenOrden==='venta'?'on':''}" onclick="margenOrden='venta';VIEWS.margenes()">Más vendido</button></div>
+    <div class="tw"><table><tr><th>Producto</th><th class="num">Costo</th><th class="num">Precio</th><th class="num">Margen lista</th><th class="num">Margen real</th><th class="num">Ganancia 7 días</th></tr>${rows.map(r=>`<tr class="cl" onclick="simular(${r.p.id})"><td><b>${r.p.n}</b><div class="tiny">${r.p.c}</div></td><td class="num">${fmt(r.p.costo)}</td><td class="num">${fmt(r.p.p)}</td><td class="num">${pct(r.lista)}</td><td class="num"><span class="pill ${r.real>=38?'p-ok':r.real>=32?'p-warn':'p-bad'}">${pct(r.real)}</span></td><td class="num">${fmt(r.gan)}</td></tr>`).join('')}</table></div>
+    <p class="tiny">Margen real = lo que queda después de los descuentos con tarjeta, sumando el reintegro del banco.</p></div>
+  <div><div class="card" style="margin-bottom:14px"><h3>${ico('chart')}Ganancia por categoría</h3>${cats.sort((a,b)=>b[2]-a[2]).map(([c,v,g])=>`<div style="margin-bottom:11px"><div class="row" style="justify-content:space-between"><span>${c}</span><b>${fmt(g)} <span class="tiny">${pct(g/Math.max(v,1)*100)}</span></b></div><div class="bar"><i style="width:${g/Math.max(...cats.map(x=>x[2]))*100}%"></i></div></div>`).join('')}</div>
+  <div class="card"><h3>${ico('alert')}Para revisar</h3>${bajos.length?bajos.slice(0,4).map(r=>`<div class="list-it"><div style="flex:1"><b>${r.p.n}</b><div class="tiny">Margen real ${pct(r.real)}. El último costo del frigorífico subió.</div></div><button class="btn sm" onclick="simular(${r.p.id})">Ajustar</button></div>`).join(''):'<div class="empty">Todo en rango</div>'}</div></div></div>`;
+};
+function simular(id){const p=P(id);
+  modal('Precio de '+p.n,`<div class="frow"><label class="f">Costo actual<input value="${fmt(p.costo)}" disabled></label><label class="f">Precio nuevo<input id="sp" type="number" value="${p.p}"></label></div><input id="sr" type="range" min="${Math.round(p.costo*1.05)}" max="${Math.round(p.costo*2.2)}" value="${p.p}" style="width:100%"><div class="grid2e" style="margin-top:12px;margin-bottom:0"><div class="card kpi"><div class="lab">Margen</div><div class="val" id="sm"></div></div><div class="card kpi"><div class="lab">Ganancia por ${p.u==='kg'?'kilo':'unidad'}</div><div class="val" id="sg"></div></div></div>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="P(${id}).p=+$('#sp').value;closeModal();VIEWS[view]();toast('Precio de ${p.n} actualizado en caja y POS')">Guardar precio</button>`);
+  const upd=v=>{$('#sp').value=v;$('#sr').value=v;$('#sm').textContent=pct((v-p.costo)/v*100);$('#sg').textContent=fmt(v-p.costo);};upd(p.p);$('#sr').oninput=e=>upd(+e.target.value);$('#sp').oninput=e=>upd(+e.target.value||0);
+}
+
+// ---------- Facturación ----------
+VIEWS.facturas = () => {
+  const vs=ventas.filter(esHoy);
+  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('doc')}Emitidos hoy</div><div class="val">${vs.length}</div><div class="d">100% automáticos</div></div><div class="card kpi"><div class="lab">${ico('check')}Aceptados por DGI</div><div class="val">${vs.length}</div><div class="d">0 rechazados</div></div><div class="card kpi"><div class="lab">${ico('doc')}e-Facturas con RUT</div><div class="val">${ventas.filter(v=>v.cfe.startsWith('e-Factura')).length+3}</div><div class="d n">este mes</div></div><div class="card kpi"><div class="lab">${ico('clock')}Tiempo ahorrado</div><div class="val">11 h</div><div class="d">al mes, sin tipear facturas</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('doc')}Comprobantes de hoy<button class="btn sm act" onclick="facturaRUT()">${ico('plus')}Factura con RUT</button></h3><div class="tw"><table><tr><th>Comprobante</th><th>Hora</th><th>Medio</th><th class="num">Total</th><th>Estado</th></tr>${vs.map(v=>`<tr class="cl" onclick="verCFE(${v.id})"><td><b>${v.cfe}</b></td><td>${hhmm(v.fecha)}</td><td>${tarPill(v.tar)}</td><td class="num">${fmt(v.total)}</td><td><span class="pill p-ok">${v.estado}</span></td></tr>`).join('')}</table></div></div>
+  <div class="card"><h3>${ico('link')}Cómo funciona</h3><div class="step"><div class="n">1</div><div><b>Se cobra en el POS</b><div class="tiny">Getnet aprueba la tarjeta.</div></div></div><div class="step"><div class="n">2</div><div><b>El sistema arma el comprobante</b><div class="tiny">Con el descuento aplicado y el IVA de cada producto.</div></div></div><div class="step"><div class="n">3</div><div><b>Se envía a DGI y vuelve aceptado</b><div class="tiny">En menos de dos segundos.</div></div></div><div class="step"><div class="n">4</div><div><b>Al cliente le llega por WhatsApp o mail</b><div class="tiny">Si lo pidió. Si no, sale impreso.</div></div></div><p class="tiny">Nadie en el local tiene que hacer una factura a mano.</p></div></div>`;
+};
+function verCFE(id){const v=ventas.find(x=>x.id===id);const neto=v.total/1.22;
+  modal(v.cfe,`<div class="cfe"><div class="h"><div><b>PG MERCADO DE CARNES</b><div class="tiny">Av. Gral. José María Paz 1425 · Montevideo<br>RUT 21 845 330 0017</div></div><div style="text-align:right"><b>${v.cfe.split(' A ')[0]}</b><div class="tiny">Serie A · Nº ${v.id}<br>${fechaCorta(v.fecha)}/${HOY.getFullYear()} ${hhmm(v.fecha)}</div></div></div>
+  ${v.items.map(i=>`<div class="sumline"><span>${i.n} ${i.u==='kg'?kgf(i.q):'x'+i.q}</span><span>${fmt(i.q*i.p)}</span></div>`).join('')}${v.desc?`<div class="sumline" style="color:var(--san)"><span>Descuento ${v.regla}</span><span>- ${fmt(v.desc)}</span></div>`:''}
+  <div style="border-top:1px dashed var(--line);margin-top:8px;padding-top:8px"><div class="sumline"><span>Neto gravado</span><span>${fmt(neto)}</span></div><div class="sumline"><span>IVA 22%</span><span>${fmt(v.total-neto)}</span></div><div class="sumline" style="font-weight:800;font-size:16px"><span>TOTAL</span><span>${fmt(v.total)}</span></div></div>
+  <div class="tiny" style="margin-top:10px">Pago: ${TARJETAS[v.tar].n} · Código de seguridad ${String(v.id*7919).slice(-6)} · Verificá en dgi.gub.uy</div></div>`,
+  `<button class="btn" data-close>Cerrar</button><button class="btn pri" onclick="closeModal();toast('Comprobante enviado por WhatsApp')">Enviar por WhatsApp</button>`);}
+function facturaRUT(){modal('Factura con RUT',`<label class="f">Empresa<select><option>Club Náutico Punta Gorda · RUT 21 334 550 0011</option><option>Restaurante Lo de Pepe · RUT 21 902 110 0019</option></select></label><label class="f">Venta a facturar<select>${ventas.filter(esHoy).slice(0,6).map(v=>`<option>${hhmm(v.fecha)} · ${fmt(v.total)}</option>`).join('')}</select></label><p class="tiny">Se anula el e-Ticket y se emite la e-Factura a nombre de la empresa, con nota automática.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="closeModal();toast('e-Factura emitida y aceptada por DGI')">Emitir e-Factura</button>`);}
+
+// ---------- Santander ----------
+VIEWS.santander = () => {
+  const mes=ventas.filter(v=>TARJETAS[v.tar].san), des=sum(mes,v=>v.desc), ban=sum(mes,v=>v.banco);
+  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('card')}Ventas con Santander</div><div class="val">${fmt(sum(mes,v=>v.total))}</div><div class="d">${mes.length} ventas · ${pct(mes.length/ventas.length*100)} del total</div></div><div class="card kpi"><div class="lab">${ico('pct')}Descuentos otorgados</div><div class="val">${fmt(des)}</div><div class="d n">últimos 8 días</div></div><div class="card kpi"><div class="lab">${ico('down')}Reintegro del banco</div><div class="val">${fmt(ban)}</div><div class="d">se acredita con la liquidación Getnet</div></div><div class="card kpi"><div class="lab">${ico('caja')}Costo real para el local</div><div class="val">${fmt(des-ban)}</div><div class="d n">${pct((des-ban)/Math.max(sum(mes,v=>v.bruto),1)*100)} de lo vendido</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('card')}Promociones<button class="btn pri sm act" onclick="editarRegla()">${ico('plus')}Nueva promo</button></h3>
+    ${reglas.map(r=>`<div class="cardrule"><div class="cardimg ${r.t==='san-sel'?'sel':r.t==='san-deb'?'deb':''}"></div><div style="flex:1"><b>${r.pc}% · ${r.n}</b><div class="tiny">${TARJETAS[r.t].n} · ${r.dias.length===7?'Todos los días':r.dias.map(d=>DIAS[d].slice(0,3)).join(', ')} · tope ${fmt(r.tope)} · el banco pone el ${r.banco}%</div></div>${r.on&&r.dias.includes(HOY.getDay())?'<span class="pill p-san">Activa hoy</span>':''}<button class="btn sm" onclick="editarRegla(${r.id})">Editar</button><button class="sw ${r.on?'on':''}" onclick="reglas.find(x=>x.id===${r.id}).on=!reglas.find(x=>x.id===${r.id}).on;VIEWS.santander()"></button></div>`).join('')}
+    <p class="tiny">Cuando hay dos promos para la misma tarjeta el mismo día, se aplica la mejor para el cliente. La cajera no tiene que acordarse de nada.</p></div>
+  <div class="card"><h3>${ico('chart')}Descuento por tarjeta</h3>${['san-cred','san-deb','san-sel'].map(t=>{const vs=mes.filter(v=>v.tar===t);return `<div style="margin-bottom:14px"><div class="row" style="justify-content:space-between"><b>${TARJETAS[t].n}</b><span>${vs.length} ventas</span></div><div class="stat-row"><span class="muted">Descuento dado</span><b>${fmt(sum(vs,v=>v.desc))}</b></div><div class="stat-row"><span class="muted">Pone el banco</span><b>${fmt(sum(vs,v=>v.banco))}</b></div></div>`}).join('')}
+    <button class="btn" style="width:100%;justify-content:center" onclick="toast('Reporte de reintegros enviado al contador')">${ico('doc')}Mandar reporte de reintegros al contador</button></div></div>`;
+};
+function editarRegla(id){const r=reglas.find(x=>x.id===id)||{t:'san-cred',n:'',pc:15,dias:[4],tope:1500,banco:50};
+  modal(id?'Editar promo':'Nueva promo',`<label class="f">Nombre<input id="rn" value="${r.n}" placeholder="Ej: Viernes de asado"></label><div class="frow"><label class="f">Tarjeta<select id="rt">${['san-cred','san-deb','san-sel'].map(t=>`<option value="${t}" ${r.t===t?'selected':''}>${TARJETAS[t].n}</option>`).join('')}</select></label><label class="f">Descuento %<input id="rp" type="number" value="${r.pc}"></label></div><div class="frow"><label class="f">Tope por compra<input id="rtope" type="number" value="${r.tope}"></label><label class="f">% que pone el banco<input id="rb" type="number" value="${r.banco}"></label></div>
+  <div class="tiny" style="font-weight:700;margin-bottom:6px">Días</div><div class="tabs" id="rdias">${[1,2,3,4,5,6,0].map(d=>`<button class="tab ${r.dias.includes(d)?'on':''}" data-d="${d}" onclick="this.classList.toggle('on')">${DIAS[d].slice(0,3)}</button>`).join('')}</div>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarRegla(${id||0})">Guardar</button>`);}
+function guardarRegla(id){const dias=[...document.querySelectorAll('#rdias .tab.on')].map(b=>+b.dataset.d);const d={t:$('#rt').value,n:$('#rn').value||'Promo Santander',pc:+$('#rp').value||0,dias,tope:+$('#rtope').value||0,banco:+$('#rb').value||0,on:true};
+  if(id)Object.assign(reglas.find(x=>x.id===id),d);else reglas.push({id:Date.now(),...d});closeModal();VIEWS.santander();toast('Promo guardada. Ya se aplica en caja.');}
+
+// ---------- Reportes ----------
 VIEWS.reportes = () => {
-  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">Ventas de setiembre</div><div class="val">${fmt(1864000)}</div><div class="d">+11% contra agosto</div></div><div class="card kpi"><div class="lab">Margen bruto</div><div class="val">41%</div><div class="d">Objetivo 40%</div></div><div class="card kpi"><div class="lab">Kilos vendidos</div><div class="val">2.140 kg</div><div class="d">+8%</div></div><div class="card kpi"><div class="lab">Delivery</div><div class="val">38%</div><div class="d">de las ventas</div></div></div>
-  <div class="grid2e"><div class="card"><h3>${ico('chart')}Ventas por mes</h3>${chart([1320,1410,1380,1520,1490,1680,1864],['Mar','Abr','May','Jun','Jul','Ago','Set'],[6])}</div>
-  <div class="card"><h3>${ico('chart')}Ventas por día de la semana</h3>${chart([180,160,190,260,340,420,190],['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'],[4,5])}<p class="tiny">Viernes y sábado concentran el 41% de las ventas: conviene reforzar el mostrador y los repartos.</p></div></div>
-  <div class="grid2e"><div class="card"><h3>${ico('tag')}Cortes que más dejan</h3>${[['Picaña',284000],['Tomahawk Master Beef',231000],['Bife angosto',198000],['Asado de tira',176000],['Milanesa de carne casera',142000]].map(([n,v])=>`<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span>${n}</span><b>${fmt(v)}</b></div><div class="bar"><i style="width:${v/284000*100}%"></i></div></div>`).join('')}</div>
-  <div class="card"><h3>${ico('wine')}Venta cruzada</h3><div class="stat-row"><span>Llevan vino con picaña o Tomahawk</span><b>34%</b></div><div class="stat-row"><span>Llevan chimichurri con asado</span><b>22%</b></div><div class="stat-row"><span>Ticket con almacén</span><b>${fmt(3120)}</b></div><div class="stat-row"><span>Ticket sin almacén</span><b>${fmt(1840)}</b></div><p class="tiny" style="margin-top:10px">Sugerir vino o aceite en el mostrador sube el ticket un 70%.</p></div></div>`;
+  const dias=[];for(let dd=7;dd>=0;dd--){const f=new Date(HOY);f.setDate(HOY.getDate()-dd);dias.push([DIAS[f.getDay()].slice(0,3),sum(ventas.filter(v=>v.fecha.toDateString()===f.toDateString()),v=>v.total)]);}
+  const medios=Object.keys(TARJETAS).map(t=>[TARJETAS[t].n,sum(ventas.filter(v=>v.tar===t),v=>v.total)]).sort((a,b)=>b[1]-a[1]);const tt=sum(medios,m=>m[1]);
+  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">Ventas de ${MESES[HOY.getMonth()]}</div><div class="val">${fmt(2410000)}</div><div class="d">+9% contra el mes anterior</div></div><div class="card kpi"><div class="lab">Margen bruto</div><div class="val">36,4%</div><div class="d">+1,2 puntos</div></div><div class="card kpi"><div class="lab">Ticket promedio</div><div class="val">${fmt(sum(ventas,v=>v.total)/ventas.length)}</div><div class="d">+4%</div></div><div class="card kpi"><div class="lab">Ventas con vino</div><div class="val">31%</div><div class="d">suben el ticket 65%</div></div></div>
+  <div class="grid2e"><div class="card"><h3>${ico('chart')}Últimos 8 días</h3>${chart(dias.map(d=>d[1]),dias.map(d=>d[0]),[dias.length-1])}</div>
+  <div class="card"><h3>${ico('card')}Ventas por medio de pago</h3>${medios.map(([n,m])=>`<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span>${n}</span><b>${pct(m/tt*100)}</b></div><div class="bar"><i style="width:${m/medios[0][1]*100}%;${n.includes('Santander')?'background:var(--san)':''}"></i></div></div>`).join('')}</div></div>
+  <div class="grid2e"><div class="card"><h3>${ico('star')}Más vendidos</h3>${topMargen(ventas).slice(0,6).map(([n,m,t],i)=>`<div class="list-it"><div class="av">${i+1}</div><div style="flex:1"><b>${n}</b><div class="tiny">${fmt(t)} vendidos</div></div><b>${fmt(m)}</b></div>`).join('')}</div>
+  <div class="card"><h3>${ico('clock')}Horarios fuertes</h3><div class="stat-row"><span>Viernes 18 a 21 h</span><b>22% de la semana</b></div><div class="stat-row"><span>Sábado 11 a 14 h</span><b>18%</b></div><div class="stat-row"><span>Domingo 10 a 14 h</span><b>9%</b></div><div class="stat-row"><span>Lunes a miércoles</span><b>27%</b></div><p class="tiny" style="margin-top:10px">Conviene reforzar la caja los viernes a la tarde: ahí se junta la mayor fila.</p></div></div>`;
 };
 
+// ---------- Productos ----------
+VIEWS.productos = () => {
+  $('#view').innerHTML = `<div class="card"><h3>${ico('tag')}Lista de precios<span class="act row"><span class="tiny">Tocá un producto para cambiar el precio</span><button class="btn pri sm" onclick="nuevoProd()">${ico('plus')}Nuevo producto</button></span></h3><div class="tw">
+  <table><tr><th>Producto</th><th>Categoría</th><th>Se vende</th><th class="num">Costo</th><th class="num">Precio</th><th class="num">Margen</th><th class="num">En el local</th></tr>
+  ${productos.map(p=>{const m=(p.p-p.costo)/p.p*100;return `<tr class="cl" onclick="simular(${p.id})"><td><b>${p.n}</b></td><td class="muted">${p.c}</td><td>${p.u==='kg'?'Por kilo':'Por unidad'}</td><td class="num">${fmt(p.costo)}</td><td class="num"><b>${fmt(p.p)}</b></td><td class="num"><span class="pill ${m>=38?'p-ok':m>=32?'p-warn':'p-bad'}">${pct(m)}</span></td><td class="num">${p.u==='kg'?kgf(p.st):p.st+' u'}</td></tr>`}).join('')}</table></div></div>`;
+};
+function nuevoProd(){modal('Nuevo producto',`<label class="f">Nombre<input id="npn" value="Matambre"></label><div class="frow"><label class="f">Categoría<select id="npc">${[...new Set(productos.map(p=>p.c))].map(c=>`<option>${c}</option>`).join('')}</select></label><label class="f">Se vende<select id="npu"><option value="kg">Por kilo</option><option value="u">Por unidad</option></select></label></div><div class="frow"><label class="f">Costo<input id="npco" type="number" value="430"></label><label class="f">Precio<input id="npp" type="number" value="690"></label></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarProd()">Guardar</button>`);}
+function guardarProd(){productos.push({id:Date.now(),n:$('#npn').value,c:$('#npc').value,u:$('#npu').value,costo:+$('#npco').value,p:+$('#npp').value,st:0});closeModal();VIEWS.productos();toast('Producto creado. Ya aparece en caja.');}
+
+// ---------- Compras ----------
+VIEWS.compras = () => {
+  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('caja')}A pagar</div><div class="val">${fmt(sum(proveedores,p=>p.saldo))}</div><div class="d neg">${fmt(148600)} vence el viernes</div></div><div class="card kpi"><div class="lab">${ico('camion')}Compras del mes</div><div class="val">${fmt(1530000)}</div><div class="d n">22 facturas</div></div><div class="card kpi"><div class="lab">${ico('up')}Costo de la picaña</div><div class="val">${fmt(P(1).costo)}</div><div class="d neg">+3,1% en el mes</div></div><div class="card kpi"><div class="lab">${ico('users')}Proveedores</div><div class="val">${proveedores.length}</div></div></div>
+  <div class="card"><h3>${ico('camion')}Proveedores<button class="btn pri sm act" onclick="cargarCompra()">${ico('plus')}Cargar factura de compra</button></h3><div class="tw"><table><tr><th>Proveedor</th><th>Qué le comprás</th><th>Última entrega</th><th>Condición</th><th class="num">Saldo</th><th></th></tr>${proveedores.map((p,i)=>`<tr><td><b>${p.n}</b></td><td class="muted">${p.rub}</td><td>${p.ult}</td><td>${p.cond}</td><td class="num">${p.saldo?fmt(p.saldo):'<span class="pill p-ok">Al día</span>'}</td><td class="num">${p.saldo?`<button class="btn sm" onclick="pagar(${i})">Pagar</button>`:''}</td></tr>`).join('')}</table></div></div>`;
+};
+function cargarCompra(){modal('Factura de compra',`<label class="f">Proveedor<select><option>Frigorífico Las Moras</option></select></label><div class="frow"><label class="f">Producto<select id="ccp">${productos.filter(p=>p.u==='kg').map(p=>`<option value="${p.id}">${p.n}</option>`).join('')}</select></label><label class="f">Kilos<input id="cck" type="number" value="12"></label></div><label class="f">Costo por kilo<input id="ccc" type="number" value="${P(1).costo+25}"></label><p class="tiny">Al guardar se actualiza el costo y el margen de ese producto. Si el margen baja de 32%, te avisa.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarCompra()">Guardar</button>`);}
+function guardarCompra(){const p=P(+$('#ccp').value);p.costo=+$('#ccc').value||p.costo;p.st+=+$('#cck').value||0;const m=(p.p-p.costo)/p.p*100;closeModal();VIEWS.compras();toast(m<32?`Costo de ${p.n} actualizado. Ojo: el margen bajó a ${pct(m)}.`:`Costo de ${p.n} actualizado. Margen ${pct(m)}.`);}
+function pagar(i){const p=proveedores[i];modal('Pagar a '+p.n,`<div class="stat-row"><span>Saldo</span><b>${fmt(p.saldo)}</b></div><label class="f" style="margin-top:12px">Medio<select><option>Transferencia Santander</option><option>Efectivo de caja</option><option>Cheque diferido</option></select></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="proveedores[${i}].saldo=0;closeModal();VIEWS.compras();toast('Pago registrado')">Registrar pago</button>`);}
+
+// ---------- Clientes ----------
+VIEWS.clientes = () => {
+  $('#view').innerHTML = `<div class="grid3"><div class="card kpi"><div class="lab">${ico('users')}Clientes identificados</div><div class="val">486</div><div class="d">+31 este mes</div></div><div class="card kpi"><div class="lab">${ico('pin')}De Punta Gorda</div><div class="val">54%</div><div class="d n">Carrasco 29% · Malvín 11%</div></div><div class="card kpi"><div class="lab">${ico('card')}Pagan con Santander</div><div class="val">46%</div><div class="d n">clientes frecuentes</div></div></div>
+  <div class="card"><h3>${ico('users')}Clientes frecuentes</h3><div class="tw"><table><tr><th>Cliente</th><th>Barrio</th><th>Suele pagar con</th><th>Siempre lleva</th><th class="num">Compras</th><th class="num">Total</th><th>Última</th></tr>${clientes.map((c,i)=>`<tr class="cl" onclick="verCliente(${i})"><td><div class="row"><div class="av">${ini(c.n)}</div><b>${c.n}</b></div></td><td>${c.b}</td><td>${c.tar}</td><td class="muted">${c.pref}</td><td class="num">${c.comp}</td><td class="num">${fmt(c.tot)}</td><td>${c.ult}</td></tr>`).join('')}</table></div></div>`;
+};
+function verCliente(i){const c=clientes[i];modal(c.n,`<div class="stat-row"><span>Barrio</span><b>${c.b}</b></div><div class="stat-row"><span>Teléfono</span><b>${c.t}</b></div><div class="stat-row"><span>Compras</span><b>${c.comp}</b></div><div class="stat-row"><span>Total</span><b>${fmt(c.tot)}</b></div><div class="stat-row"><span>Ticket promedio</span><b>${fmt(c.tot/c.comp)}</b></div><div class="stat-row"><span>Siempre lleva</span><b>${c.pref}</b></div>`,`<button class="btn" data-close>Cerrar</button><button class="btn pri" onclick="closeModal();toast('Mensaje enviado a ${c.n.split(' ')[0]} por WhatsApp')">Escribir por WhatsApp</button>`);}
+
+// ---------- Equipo ----------
+VIEWS.equipo = () => {
+  const vh=ventas.filter(esHoy);
+  $('#view').innerHTML = `<div class="grid3">${EMPLEADOS.map(e=>{const vs=ventas.filter(v=>v.cajero===e.n);return `<div class="card"><div class="row" style="margin-bottom:12px"><div class="av">${ini(e.n)}</div><div><b>${e.n}</b><div class="tiny">${e.rol}</div></div></div><div class="stat-row"><span>Ventas hoy</span><b>${vh.filter(v=>v.cajero===e.n).length}</b></div><div class="stat-row"><span>Vendido en 8 días</span><b>${fmt(sum(vs,v=>v.total))}</b></div><div class="stat-row"><span>Diferencias de caja</span><b>${e.n.startsWith('Nico')?fmt(-120):'Ninguna'}</b></div></div>`}).join('')}</div>
+  <div class="grid2e"><div class="card"><h3>${ico('lock')}Qué puede hacer cada uno</h3>${[['Vender y cobrar','Todos'],['Abrir y cerrar caja','Cajeros'],['Anular una venta','Solo con clave del dueño'],['Cambiar precios','Solo el dueño'],['Ver márgenes y costos','Solo el dueño'],['Editar promos Santander','Solo el dueño']].map(([a,b])=>`<div class="stat-row"><span>${a}</span><b>${b}</b></div>`).join('')}</div>
+  <div class="card"><h3>${ico('check')}Lo que le simplifica al equipo</h3>${['No calcula descuentos: el sistema sabe qué tarjeta y qué día es.','No hace facturas: salen solas al cobrar.','No anota ventas en el cuaderno: entran solas desde el POS.','El cierre de caja se hace en dos minutos.'].map(t=>`<div class="list-it">${ico('check')}<span>${t}</span></div>`).join('')}</div></div>`;
+};
+function cambiarUsuario(){modal('Cambiar de usuario',EMPLEADOS.concat([{n:'Rodrigo Álvarez',rol:'Dueño'}]).map(e=>`<div class="kres" onclick="usuario='${e.n}';closeModal();go(view);toast('Sesión de ${e.n.split(' ')[0]}')"><div class="av">${ini(e.n)}</div><div><b>${e.n}</b><div class="tiny">${e.rol}</div></div></div>`).join(''));}
+
+// ---------- Delivery (próximamente) ----------
+VIEWS.delivery = () => {
+  $('#view').innerHTML = `<div class="card soon" style="padding:34px;margin-bottom:14px"><span class="pill p-gold">Fase 2</span><h2 style="margin:12px 0 6px">Delivery, cuando el local esté listo</h2><p class="muted" style="max-width:640px">Lo dejamos planificado para una segunda etapa. Cuando se active, los pedidos por WhatsApp e Instagram entran al mismo sistema, con la misma lista de precios, las mismas promos Santander y la factura automática.</p></div>
+  <div class="grid3">${[['msg','Pedidos por WhatsApp','El cliente escribe, el pedido queda cargado sin copiar nada.'],['moto','Seguimiento del reparto','Nuevo, preparando, en camino, entregado. Al cliente le llega el aviso.'],['card','Cobro con link de pago','Link de pago con tarjeta Santander y el descuento aplicado.']].map(([i,t,d])=>`<div class="card"><h3>${ico(i==='msg'?'users':i)}${t}</h3><p class="muted" style="margin:0">${d}</p></div>`).join('')}</div>
+  <div class="card"><h3>${ico('eye')}Vista previa</h3><div class="tabs"><span class="pill p-br">Nuevos 3</span><span class="pill p-warn">Preparando 2</span><span class="pill p-gold">En camino 1</span><span class="pill p-ok">Entregados 9</span></div><button class="btn" onclick="toast('Te avisamos cuando arranque la fase 2')">${ico('clock')}Avisame cuando esté</button></div>`;
+};
+
+// ---------- Configuración ----------
 VIEWS.config = () => {
-  $('#view').innerHTML = `<div class="grid2e"><div class="card"><h3>${ico('pin')}Datos del local</h3><label class="f">Nombre<input value="PG Mercado de Carnes"></label><label class="f">Dirección<input value="Av. Gral. José María Paz 1425, Montevideo"></label><label class="f">WhatsApp<input value="+598 98 789 200"></label><button class="btn pri" onclick="toast('Datos guardados')">Guardar</button></div>
-  <div class="card"><h3>${ico('clock')}Horarios</h3>${[['Lunes a miércoles','9:00 a 20:00'],['Jueves y viernes','9:00 a 21:00'],['Sábados','10:00 a 21:00'],['Domingos','10:00 a 14:00']].map(([d,h])=>`<div class="stat-row"><span>${d}</span><b>${h}</b></div>`).join('')}<h3 style="margin-top:18px">${ico('users')}Equipo</h3>${[['Martín Rodríguez','Encargado'],['Hernán Suárez','Carnicero'],['Pablo Giménez','Carnicero'],['Camila Núñez','Caja y WhatsApp'],['Bruno Silva','Reparto']].map(([n,r])=>`<div class="list-it"><div class="av">${n.split(' ').map(x=>x[0]).join('')}</div><div><b>${n}</b><div class="tiny">${r}</div></div></div>`).join('')}</div></div>`;
+  $('#view').innerHTML = `<div class="grid2e"><div class="card"><h3>${ico('pin')}Datos del local</h3><label class="f">Nombre<input value="PG Mercado de Carnes"></label><label class="f">Dirección<input value="Av. Gral. José María Paz 1425, Montevideo"></label><label class="f">WhatsApp<input value="+598 98 789 200"></label><button class="btn pri" onclick="toast('Datos guardados')">Guardar</button>
+  <h3 style="margin-top:20px">${ico('clock')}Horarios</h3>${[['Lunes a miércoles','9:00 a 20:00'],['Jueves y viernes','9:00 a 21:00'],['Sábados','10:00 a 21:00'],['Domingos','10:00 a 14:00']].map(([d,h])=>`<div class="stat-row"><span>${d}</span><b>${h}</b></div>`).join('')}</div>
+  <div class="card"><h3>${ico('link')}Conexiones</h3>${[['pos','POS Getnet (Santander)','Las ventas con tarjeta entran solas'],['doc','Facturación electrónica DGI','e-Ticket y e-Factura automáticos'],['card','Promociones Santander','Reglas por tarjeta y día'],['users','WhatsApp Business','Comprobantes y resumen de caja'],['down','Excel','Planilla de ventas descargable']].map(([i,t,d])=>`<div class="list-it">${ico(i)}<div style="flex:1"><b>${t}</b><div class="tiny">${d}</div></div><span class="pill p-ok">Conectado</span></div>`).join('')}</div></div>`;
 };
 
-// ---------------- Búsqueda Ctrl+K ----------------
+// ---------- Búsqueda ----------
 function openK(){
-  modal('Buscar',`<input id="kq" placeholder="Picaña, Florencia, #1284..." style="width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:10px"><div id="kr"></div>`);
+  modal('Buscar',`<input id="kq" placeholder="Picaña, Florencia, e-Ticket..." style="width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:10px"><div id="kr"></div>`);
   const q=$('#kq');q.focus();const run=()=>{const s=q.value.toLowerCase();
-    const r=[...productos.filter(p=>p.n.toLowerCase().includes(s)).map(p=>({t:p.n,d:fmt(p.p)+' / '+p.u,i:'tag',f:()=>go('catalogo')})),
-      ...clientes.filter(c=>c.n.toLowerCase().includes(s)).map(c=>({t:c.n,d:c.b,i:'users',f:()=>{go('clientes');verCliente(c.id)}})),
-      ...pedidos.filter(p=>('#'+p.id+' '+p.cli).toLowerCase().includes(s)).map(p=>({t:'Pedido #'+p.id,d:p.cli,i:'moto',f:()=>{go('pedidos');verPedido(p.id)}}))].slice(0,8);
+    const r=[...productos.filter(p=>p.n.toLowerCase().includes(s)).map(p=>({t:p.n,d:fmt(p.p)+' / '+p.u,i:'tag',f:()=>{go('productos');simular(p.id)}})),
+      ...clientes.filter(c=>c.n.toLowerCase().includes(s)).map((c)=>({t:c.n,d:c.b,i:'users',f:()=>{go('clientes');verCliente(clientes.indexOf(c))}})),
+      ...(s.length>1?ventas.filter(v=>v.cfe.toLowerCase().includes(s)).slice(0,4).map(v=>({t:v.cfe,d:fmt(v.total),i:'doc',f:()=>verCFE(v.id)})):[]),
+      ...Object.entries(TITLES).filter(([k,t])=>t[0].toLowerCase().includes(s)).map(([k,t])=>({t:t[0],d:'Ir a la sección',i:'inicio',f:()=>go(k)}))].slice(0,9);
     $('#kr').innerHTML=r.length?r.map((x,j)=>`<div class="kres" data-k="${j}">${ico(x.i)}<b>${x.t}</b><span class="tiny" style="margin-left:auto">${x.d}</span></div>`).join(''):'<div class="empty">Sin resultados</div>';
     document.querySelectorAll('.kres').forEach(el=>el.onclick=()=>{closeModal();r[el.dataset.k].f();});};
   q.oninput=run;run();
 }
 $('#openK').onclick=openK;
+
+// ---------- Ventas que llegan solas del POS ----------
+setInterval(()=>{
+  if(!caja.abierta||$('#layer').innerHTML)return;
+  const v=armarVenta(new Date(),caja.cajero,TARS[Math.floor(Math.random()*TARS.length)],itemsAzar(),'POS Getnet');v.fresh=true;ventas.unshift(v);
+  caja.movs.push({h:v.fecha,t:'Venta '+v.cfe,d:TARJETAS[v.tar].n+' · POS Getnet',m:v.total});
+  toast(`Nueva venta desde el POS: ${fmt(v.total)} con ${TARJETAS[v.tar].n}. Ya está en la planilla.`,'pos');
+  if(['inicio','planilla','caja','facturas'].includes(view))VIEWS[view]();
+},45000);
 
 go('inicio');
 </script>
