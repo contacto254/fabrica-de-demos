@@ -81,9 +81,9 @@ li::marker{color:var(--tinta)}
   <div class="band">
     <div class="biglogo">Custom<span>ERP</span></div>
     <h1>El sistema de<br>PG Mercado de Carnes</h1>
-    <div class="sub">Venta, caja, facturación, márgenes y descuentos Santander en un solo sistema. Qué te armamos y cómo lo hacemos.</div>
+    <div class="sub">Venta, caja, facturación, descuentos Santander y resultados del mes en un solo sistema. Qué te armamos y cómo lo hacemos.</div>
     <div class="meta">
-      <div><div class="lab">Para</div>PG Mercado de Carnes</div>
+      <div><div class="lab">Para</div>Juan Vique</div>
       <div><div class="lab">Fecha</div>28/09/2026</div>
       <div><div class="lab">Estado</div>Primera instancia</div>
     </div>
@@ -95,7 +95,7 @@ li::marker{color:var(--tinta)}
       <tr><td>Planilla de ventas</td><td>Cada venta se registra sola con fecha, hora, productos, medio de pago, descuento, cajero y margen. Se filtra y se exporta a Excel.</td></tr>
       <tr><td>Venta del POS dentro del sistema</td><td>Lo cobrado en el POS entra al sistema sin volver a tipearlo. Al cerrar la caja, el lote del POS se concilia contra lo registrado.</td></tr>
       <tr><td>Facturas automáticas</td><td>Al cobrar se emite el e-Ticket, o la e-Factura si el cliente da RUT, y se envía a DGI.</td></tr>
-      <tr><td>Conocer los márgenes</td><td>Costo, precio y margen por producto y por categoría, calculado después de los descuentos y con el reintegro del banco.</td></tr>
+      <tr><td>Conocer márgenes y resultados</td><td>Margen real por producto y estado de resultados del mes: facturas de venta menos facturas de compra, con el IVA a pagar estimado.</td></tr>
       <tr><td>Descuentos con tarjetas Santander</td><td>Cada promoción se carga una vez: tarjeta, porcentaje, días, tope y parte que cubre el banco. En caja se aplica sola.</td></tr>
       <tr><td>Abrir y cerrar caja</td><td>Apertura con fondo y responsable, retiros con motivo y cierre con arqueo. Nada se borra: todo queda registrado.</td></tr>
       <tr><td>Simplificar la tarea del equipo</td><td>La cajera elige el producto y el medio de pago. El descuento, la factura y el registro los hace el sistema.</td></tr>
@@ -120,7 +120,7 @@ li::marker{color:var(--tinta)}
   <div class="grid2" style="margin-top:4mm">
     <div>
       <div class="box" style="margin-bottom:4mm"><h3>Cómo se registra una venta</h3><p style="margin:0">Producto por kilo con el peso de la etiqueta de la bandeja, o por unidad. Medio de pago: tarjetas Santander de crédito, débito o Select, otras tarjetas o efectivo. Con eso el sistema calcula el descuento, emite el comprobante y descuenta el stock.</p></div>
-      <div class="box"><h3>Qué ve el dueño</h3><p style="margin:0">Ventas del día y del mes, margen real por producto, descuentos otorgados y lo que corresponde reintegrar al banco. También el resultado de cada cierre de caja, con diferencias a nombre de quien cerró.</p></div>
+      <div class="box"><h3>Qué ve el dueño</h3><p style="margin:0">Ventas del día, margen real por producto, descuentos otorgados y reintegros del banco. El resultado de cada cierre de caja y el estado de resultados de cada mes, comparado con el anterior.</p></div>
     </div>
     <div class="box r"><h3>Reglas que el sistema controla solo</h3>
       <ul style="margin-top:2mm">
@@ -141,7 +141,7 @@ li::marker{color:var(--tinta)}
   <ul>
     <li>Delivery: pedidos por WhatsApp e Instagram, seguimiento del reparto y cobro con link de pago.</li>
     <li>Tienda online y catálogo publicado en la web.</li>
-    <li>Contabilidad: el sistema exporta la información para el contador, pero no lleva la contabilidad.</li>
+    <li>Contabilidad formal y declaraciones: las sigue haciendo el contador, con el estado de resultados y el IVA que le deja listos el sistema.</li>
   </ul>
   <div class="foot"><span>CustomERP · Sistemas de gestión a medida</span><span>PG Mercado de Carnes · 2 de 5</span></div>
 </section>
@@ -150,20 +150,24 @@ li::marker{color:var(--tinta)}
 <section class="page">
   <div class="head"><span class="logo">Custom<i></i></span><span class="lab">Propuesta · PG Mercado de Carnes</span></div>
   <h2>Lo que te armamos</h2>
-  <div class="chips"><span class="chip">Apertura de caja</span><span class="arr">&gt;</span><span class="chip">Venta</span><span class="arr">&gt;</span><span class="chip">Descuento Santander</span><span class="arr">&gt;</span><span class="chip">Cobro en POS</span><span class="arr">&gt;</span><span class="chip">Factura DGI</span><span class="arr">&gt;</span><span class="chip">Planilla</span><span class="arr">&gt;</span><span class="chip">Márgenes</span><span class="arr">&gt;</span><span class="chip">Cierre de caja</span></div>
+  <p>Siete módulos, cada uno con sus pestañas. Todo lo que pasa en la caja termina en el estado de resultados sin cargar nada dos veces.</p>
+  <div class="chips"><span class="chip">Apertura de caja</span><span class="arr">&gt;</span><span class="chip">Venta</span><span class="arr">&gt;</span><span class="chip">Descuento Santander</span><span class="arr">&gt;</span><span class="chip">Cobro en POS</span><span class="arr">&gt;</span><span class="chip">Factura DGI</span><span class="arr">&gt;</span><span class="chip">Cierre de caja</span><span class="arr">&gt;</span><span class="chip">Estado de resultados</span></div>
   <table>
-    <tr><th style="width:21%">Módulo</th><th style="width:41%">Qué resuelve</th><th>Qué pasa solo</th></tr>
-    <tr><td>Venta</td><td>Pantalla de cobro con los productos del local, por peso o por unidad, y selección del medio de pago.</td><td>Aplica la promoción que corresponde y envía el importe al POS.</td></tr>
-    <tr><td>Integración POS</td><td>Conexión con el POS del local para que el cobro con tarjeta no se tipee dos veces.</td><td>Cada cobro aprobado queda registrado como venta.</td></tr>
-    <tr><td>Facturación electrónica</td><td>e-Ticket y e-Factura con RUT, a través del proveedor de facturación electrónica habilitado.</td><td>Se emite al cobrar, se envía a DGI y, si el cliente lo pide, por WhatsApp o mail.</td></tr>
-    <tr><td>Descuentos Santander</td><td>Promociones por tarjeta, porcentaje, días, tope y parte que cubre el banco. Se activan y desactivan desde el sistema.</td><td>La cajera no calcula nada. A fin de mes sale el reporte de reintegros.</td></tr>
-    <tr><td>Caja</td><td>Apertura con fondo, retiros con motivo, cierre y arqueo por turno. Historial de cierres.</td><td>Concilia tarjetas contra el lote del POS. El resumen del cierre le llega al dueño.</td></tr>
-    <tr><td>Planilla de ventas</td><td>Todas las ventas con filtros por fecha, medio de pago, cajero y producto.</td><td>Se completa sola. Se exporta a Excel.</td></tr>
-    <tr><td>Márgenes</td><td>Margen por producto y por categoría, de lista y real, con simulador de precio.</td><td>Se recalcula con cada venta y con cada costo nuevo.</td></tr>
-    <tr><td>Productos y compras</td><td>Lista de precios, costos, facturas de proveedores y saldos a pagar.</td><td>Al cargar una compra se actualiza el costo del producto.</td></tr>
-    <tr><td>Equipo y permisos</td><td>Usuarios para cajeros, encargado y dueño, cada uno con lo que puede hacer.</td><td>Cada venta, retiro y cierre queda a nombre de quien lo hizo.</td></tr>
-    <tr><td>Reportes</td><td>Ventas por día, por hora, por medio de pago y productos más vendidos.</td><td>Resumen diario por WhatsApp y mail.</td></tr>
+    <tr><th style="width:17%">Módulo</th><th style="width:43%">Qué incluye</th><th>Qué pasa solo</th></tr>
+    <tr><td>Inicio</td><td>Resumen del día: ventas, margen, promociones activas y últimas ventas.</td><td>Se actualiza con cada cobro del POS.</td></tr>
+    <tr><td>Ventas</td><td>Vender · Planilla de ventas · Facturas emitidas · Promos Santander · Clientes.</td><td>Aplica la promoción, envía el importe al POS, emite el e-Ticket o la e-Factura y registra la venta.</td></tr>
+    <tr><td>Caja</td><td>Apertura con fondo, retiros con motivo, cierre, arqueo e historial de cierres.</td><td>Concilia tarjetas contra el lote del POS. El resumen del cierre le llega al dueño.</td></tr>
+    <tr><td>Compras</td><td>Facturas de compra de mercadería y de gastos del local · Proveedores y saldos.</td><td>Cada factura actualiza el costo del producto, el saldo del proveedor y el resultado del mes.</td></tr>
+    <tr><td>Productos</td><td>Precios y stock · Márgenes por producto y categoría, con simulador de precio.</td><td>Avisa cuando un costo nuevo deja el margen debajo del mínimo.</td></tr>
+    <tr><td>Resultados</td><td>Estado de resultados mensual · IVA de ventas y de compras.</td><td>Se arma solo con las facturas. Se exporta para el contador.</td></tr>
+    <tr><td>Configuración</td><td>Local, conexiones (POS, facturación electrónica, WhatsApp) · Equipo y permisos.</td><td>Cada venta, retiro y cierre queda a nombre de quien lo hizo.</td></tr>
   </table>
+  <h2 class="sec">Cómo se arma el estado de resultados</h2>
+  <div class="grid3">
+    <div class="box"><div class="lab">Facturas de venta</div><h3>Ventas del mes</h3><p style="margin:0">Todos los e-Tickets y e-Facturas emitidos, ya con los descuentos. Se suman los reintegros de Santander.</p></div>
+    <div class="box"><div class="lab">Facturas de compra</div><h3>Mercadería y gastos</h3><p style="margin:0">Compras a proveedores, ajustadas por el stock, y gastos del local: sueldos, alquiler, UTE, comisiones del POS y otros.</p></div>
+    <div class="box r"><div class="lab">Resultado</div><h3>Lo que quedó</h3><p style="margin:0">Margen bruto y resultado del mes, comparados con el mes anterior. El IVA a pagar sale de las mismas facturas.</p></div>
+  </div>
   <div class="foot"><span>CustomERP · Sistemas de gestión a medida</span><span>PG Mercado de Carnes · 3 de 5</span></div>
 </section>
 
@@ -179,7 +183,7 @@ li::marker{color:var(--tinta)}
   </div>
   <ul>
     <li>El <b>dueño</b> recibe el resumen del cierre: ventas, medios de pago, descuentos, retiros y diferencias.</li>
-    <li>El <b>contador</b> recibe la planilla del mes y el reporte de reintegros Santander.</li>
+    <li>El <b>contador</b> recibe el estado de resultados, el IVA del mes y el reporte de reintegros Santander.</li>
     <li>El <b>equipo</b> solo vende y cobra. No hace cuentas ni anota nada a mano.</li>
   </ul>
   <p class="note">Las promociones del demo son de ejemplo. En el sistema se cargan las condiciones vigentes del convenio del local con Santander, y todo se recalcula solo.</p>
@@ -188,7 +192,7 @@ li::marker{color:var(--tinta)}
     <div class="box"><div class="num">01</div><h3>Vender</h3><p style="margin:0">Cargá una bandeja de picaña y un vino, elegí Santander Crédito y mirá cómo se aplica el descuento y sale el comprobante.</p></div>
     <div class="box"><div class="num">02</div><h3>Caja</h3><p style="margin:0">Cerrá la caja y cambiá el efectivo contado: el sistema marca la diferencia y a nombre de quién queda.</p></div>
     <div class="box"><div class="num">03</div><h3>Planilla de ventas</h3><p style="margin:0">Cada tanto entra una venta desde el POS y aparece sola. Filtrá por Santander y descargá el Excel.</p></div>
-    <div class="box"><div class="num">04</div><h3>Márgenes</h3><p style="margin:0">Tocá un producto y probá un precio nuevo: el margen se recalcula en el momento.</p></div>
+    <div class="box"><div class="num">04</div><h3>Resultados</h3><p style="margin:0">Mirá el estado de resultados de agosto y cargá una factura de compra: el resultado del mes cambia en el momento.</p></div>
   </div>
   <h2 class="sec">Lo que necesitamos de ustedes</h2>
   <ul>
