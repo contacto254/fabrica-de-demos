@@ -76,6 +76,10 @@ tr.flash td{animation:fl 2.4s}
 .btn.pri:hover:not(:disabled){background:var(--brand-deep)}
 .btn.big{padding:13px 16px;font-size:15px;justify-content:center}
 .btn.sm{padding:5px 9px;font-size:12px}
+.mtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:-6px 0 18px;overflow-x:auto}
+.mtab{border:0;background:none;padding:10px 14px;font-weight:700;color:var(--ink-2);border-bottom:2.5px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.mtab:hover{color:var(--ink)}
+.mtab.on{color:var(--brand);border-color:var(--brand)}
 .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
 .tab{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 13px;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--ink-2)}
 .tab.on{background:var(--ink);border-color:var(--ink);color:#fff}
@@ -341,24 +345,64 @@ let carrito = [], pago = 'san-cred', filtroCat = 'Todos', view = 'inicio';
 let planilla = {rango:'hoy', medio:'todos', cajero:'todos', q:''};
 let margenOrden = 'margen';
 
+// ================= Contabilidad: facturas de compra y meses =================
+const sum = (arr,f) => arr.reduce((a,x)=>a+f(x),0);
+const TASA = cat => ['Vinos','Almacén'].includes(cat) ? 0.22 : 0.10;
+function netoVenta(v){const f=v.total/v.bruto;let n=0,ib=0,im=0;v.items.forEach(i=>{const t=TASA(P(i.id).c),bruto=i.q*i.p*f,ne=bruto/(1+t);n+=ne;if(t>.2)ib+=bruto-ne;else im+=bruto-ne;});return {n,ib,im};}
+const MESES4 = [3,2,1,0].map(k=>{const d=new Date(HOY.getFullYear(),HOY.getMonth()-k,1);return {y:d.getFullYear(),m:d.getMonth(),actual:k===0}});
+const mesDe = f => MESES4.findIndex(x=>x.y===f.getFullYear()&&x.m===f.getMonth());
+const VBASE = [1831400,1904700,2011900];
+const STOCK = [598300,612800,587400,605900,622100];
+const inicioVentana = (()=>{const d=new Date(HOY);d.setDate(HOY.getDate()-7);d.setHours(0,0,0,0);return d})();
+const promDia = sum(ventas,v=>netoVenta(v).n)/8;
+const diasBase = Math.max(0,inicioVentana.getDate()-1);
+const BASE_ACTUAL = inicioVentana.getMonth()===HOY.getMonth() ? Math.round(promDia*diasBase) : 0;
+let fcompras = [], nroFC = 0;
+const PROV_MERC = [['Frigorífico Las Moras','21 455 870 0012',.62,[3,10,17,24]],['Granja Los Aromos','21 330 118 0015',.10,[5,12,19,26]],['Elaborados Don Julio','21 781 220 0019',.12,[4,11,18,25]],['Bodega Bouza','21 118 904 0017',.08,[8]],['Agroindustrial Garzón','21 604 333 0010',.05,[14]],['Distribuidora Condimentos del Este','21 902 441 0013',.03,[20]]];
+const GASTOS_FIJOS = [['Sueldos y cargas sociales','Liquidación de sueldos (BPS)',312000,0,26],['Alquiler','Inmobiliaria Punta Gorda',98000,.22,1],['UTE','UTE',34200,.22,12],['OSE','OSE',4300,.22,12],['Comisiones POS','Getnet Uruguay',0,.22,28],['Sistema y facturación electrónica','CustomERP',2400,.22,2],['Estudio contable','Estudio Contable Ferrés',14500,.22,5],['Envases y bolsas','Envases del Sur',16000,.22,9],['Limpieza y mantenimiento','Limpiezas Oriental',7800,.22,15],['Publicidad','Meta (Instagram)',9000,.22,20]];
+function ventasMes(i){ return i<3 ? VBASE[i] : BASE_ACTUAL + sum(ventas.filter(v=>mesDe(v.fecha)===3),v=>netoVenta(v).n); }
+MESES4.forEach((M,i)=>{
+  const V = ventasMes(i), ult = new Date(M.y,M.m+1,0).getDate(), hasta = M.actual ? HOY.getDate() : ult;
+  const compraMerc = V*0.638 + (STOCK[i+1]-STOCK[i]) * (M.actual ? 0 : 1);
+  PROV_MERC.forEach(([prov,rut,sh,dias])=>{dias.filter(d=>d<=hasta).forEach(d=>{const neto=Math.round(compraMerc*sh/dias.length*(0.9+rnd()*0.2));const tasa=prov.includes('Bouza')||prov.includes('Garzón')||prov.includes('Condimentos')?.22:.10;
+    fcompras.push({id:++nroFC,fecha:new Date(M.y,M.m,d,9),prov,rut,cat:'Mercadería',nro:'A '+(10230+nroFC*7),neto,iva:Math.round(neto*tasa),pagada:!(M.actual&&d>hasta-12)});});});
+  GASTOS_FIJOS.forEach(([cat,prov,monto,tasa,d])=>{const dia=Math.min(d,ult);if(dia>hasta)return;let neto=monto?Math.round(monto*(0.96+rnd()*0.08)):Math.round(V*1.12*0.021);
+    fcompras.push({id:++nroFC,fecha:new Date(M.y,M.m,dia,9),prov,rut:'',cat,nro:tasa?'A '+(5020+nroFC*3):'Recibo '+(M.m+1),neto,iva:Math.round(neto*tasa),pagada:!(M.actual&&dia>hasta-5)});});
+});
+fcompras.sort((a,b)=>b.fecha-a.fecha);
+proveedores.forEach(p=>Object.defineProperty(p,'saldo',{get(){return sum(fcompras.filter(f=>!f.pagada&&f.prov===p.n),f=>f.neto+f.iva)},set(v){if(!v)fcompras.filter(f=>f.prov===p.n).forEach(f=>f.pagada=true)}}));
+function datosMes(i){
+  const M=MESES4[i], fc=fcompras.filter(f=>mesDe(f.fecha)===i), vw=ventas.filter(v=>mesDe(v.fecha)===i);
+  const V=ventasMes(i), base=i<3?V:BASE_ACTUAL;
+  const desc = base*0.034 + sum(vw,v=>v.desc)/1.12, reint = base*0.034*0.52 + sum(vw,v=>v.banco)/1.12;
+  const compr = sum(fc.filter(f=>f.cat==='Mercadería'),f=>f.neto), sIni=STOCK[i], sFin=M.actual?STOCK[i]+Math.round((compr-V*0.638)):STOCK[i+1];
+  const cmv = compr + sIni - sFin;
+  const gastos={};fc.filter(f=>f.cat!=='Mercadería').forEach(f=>gastos[f.cat]=(gastos[f.cat]||0)+f.neto);
+  const tg=sum(Object.values(gastos),x=>x);
+  const ivaB = base*0.16*0.22/1.0 + sum(vw,v=>netoVenta(v).ib), ivaM = base*0.84*0.10 + sum(vw,v=>netoVenta(v).im);
+  return {M,V,desc,reint,ing:V+reint,compr,sIni,sFin,cmv,mb:V+reint-cmv,gastos,tg,res:V+reint-cmv-tg,ivaB,ivaM,ivaC:sum(fc,f=>f.iva),fc};
+}
+const nombreMes = i => { const M=MESES4[i]; const n=MESES[M.m]; return n[0].toUpperCase()+n.slice(1)+(M.actual?' (en curso)':''); };
+let mesSel = 2, compraFiltro = {mes:3, cat:'todas'};
+
 // ================= Navegación =================
-const NAV = [
-  ['Día a día',[['inicio','Inicio','inicio'],['vender','Vender','cart'],['caja','Caja','caja'],['planilla','Planilla de ventas','sheet']]],
-  ['Números',[['margenes','Márgenes','pct'],['facturas','Facturación','doc'],['santander','Descuentos Santander','card'],['reportes','Reportes','chart']]],
-  ['Mercadería',[['productos','Productos y precios','tag'],['compras','Compras','camion']]],
-  ['Gente',[['clientes','Clientes','users'],['equipo','Equipo','team']]],
-  ['Próximamente',[['delivery','Delivery','moto']]],
-  ['',[['config','Configuración','gear']]],
+const MODS = [
+  ['inicio','Inicio','inicio',[['inicio','Resumen del día']],''],
+  ['ventas','Ventas','cart',[['vender','Vender'],['planilla','Planilla de ventas'],['facturas','Facturas emitidas'],['santander','Promos Santander'],['clientes','Clientes']],'Cobro, facturación y clientes'],
+  ['caja','Caja','caja',[['caja','Turno y cierres']],'Apertura, retiros, cierre y arqueo'],
+  ['compras','Compras','camion',[['compras','Facturas de compra'],['proveedores','Proveedores']],'Mercadería y gastos del local'],
+  ['productos','Productos','tag',[['productos','Precios y stock'],['margenes','Márgenes']],'Precio, costo y lo que deja cada producto'],
+  ['resultados','Resultados','chart',[['estado','Estado de resultados'],['iva','IVA']],'Facturas de venta menos facturas de compra'],
+  ['config','Configuración','gear',[['config','Local y conexiones'],['equipo','Equipo y permisos']],'Datos del local, usuarios y conexiones'],
+  ['delivery','Delivery','moto',[['delivery','Fase 2']],'Próximamente'],
 ];
-const TITLES = {
-  inicio:['Inicio',''],vender:['Vender','Cobrá en un paso: el descuento y la factura salen solos'],caja:['Caja','Apertura, cierre y todo lo que pasó en el turno'],
-  planilla:['Planilla de ventas','Cada venta, de dónde vino y cómo se pagó'],margenes:['Márgenes','Cuánto te deja cada producto de verdad'],
-  facturas:['Facturación','Comprobantes electrónicos emitidos automáticamente'],santander:['Descuentos Santander','Las promos se aplican solas según la tarjeta y el día'],
-  reportes:['Reportes','Cómo viene el mes'],productos:['Productos y precios','Precio, costo y stock en una sola lista'],compras:['Compras','Lo que le comprás a cada proveedor'],
-  clientes:['Clientes','Quién compra y qué'],equipo:['Equipo','Quién vendió qué y en qué turno'],delivery:['Delivery','Fase 2 del proyecto'],config:['Configuración','Datos del local y conexiones'],
-};
+const TITLES = {}; MODS.forEach(m=>m[3].forEach(([k,l])=>TITLES[k]=[l]));
+const modDe = k => MODS.find(m=>m[0]===k) || MODS.find(m=>m[3].some(t=>t[0]===k));
+const ultimaTab = {};
+let modActual = 'inicio';
 function renderNav(){
-  $('#nav').innerHTML = NAV.map(([g,items])=>(g?`<div class="navg">${g}</div>`:'<div style="height:12px"></div>')+items.map(([k,l,i])=>`<button class="nav ${view===k?'on':''}" data-go="${k}">${ico(i)}${l}${k==='vender'&&carrito.length?`<span class="cnt">${carrito.length}</span>`:''}${k==='delivery'?'<span class="cnt">Pronto</span>':''}</button>`).join('')).join('');
+  const item = m => `<button class="nav ${modActual===m[0]?'on':''}" data-go="${m[0]}">${ico(m[2])}${m[1]}${m[0]==='ventas'&&carrito.length?`<span class="cnt">${carrito.length}</span>`:''}${m[0]==='delivery'?'<span class="cnt">Pronto</span>':''}</button>`;
+  $('#nav').innerHTML = '<div style="height:6px"></div>' + MODS.slice(0,6).map(item).join('') + '<div class="navg" style="margin-top:22px"></div>' + item(MODS[6]) + '<div class="navg">Próximamente</div>' + item(MODS[7]);
 }
 function renderHeader(){
   const cs = $('#cajastate');
@@ -367,7 +411,16 @@ function renderHeader(){
   cs.style.color = caja.abierta ? 'var(--ok)' : 'var(--bad)';
   $('#userbtn').innerHTML = `<div class="av">${ini(usuario)}</div><div><div>${usuario}</div><div class="tiny">${(EMPLEADOS.find(e=>e.n===usuario)||{rol:'Dueño'}).rol}</div></div>`;
 }
-function go(v){view=v;renderNav();renderHeader();$('#title').textContent=TITLES[v][0];$('#subtitle').textContent=TITLES[v][1]||(DIAS[HOY.getDay()]+' '+HOY.getDate()+' de '+MESES[HOY.getMonth()]+' · Punta Gorda');VIEWS[v]();}
+function go(k){
+  const m = modDe(k); if(!m) return;
+  const tab = m[3].some(t=>t[0]===k) ? k : (ultimaTab[m[0]] || m[3][0][0]);
+  modActual = m[0]; view = tab; ultimaTab[m[0]] = tab;
+  renderNav(); renderHeader();
+  $('#title').textContent = m[1];
+  $('#subtitle').textContent = m[4] || (DIAS[HOY.getDay()]+' '+HOY.getDate()+' de '+MESES[HOY.getMonth()]+' · Punta Gorda');
+  $('#view').innerHTML = (m[3].length>1 ? `<div class="mtabs">${m[3].map(([t,l])=>`<button class="mtab ${t===tab?'on':''}" data-go="${t}">${l}</button>`).join('')}</div>` : '') + '<div id="pane"></div>';
+  VIEWS[tab](); $('#view').scrollTop = 0;
+}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){closeModal();go(b.dataset.go);}});
 $('#cajastate').onclick = () => caja.abierta ? go('caja') : abrirCaja();
 $('#userbtn').onclick = cambiarUsuario;
@@ -379,7 +432,6 @@ document.addEventListener('click',e=>{if(e.target.id==='ov'||e.target.closest('[
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openK();}});
 const chart = (vals,labels,alt) => {const mx=Math.max(...vals,1);return `<div class="chart">${vals.map((v,i)=>`<div class="c"><i class="${alt&&alt.includes(i)?'alt':''}" style="height:${v/mx*100}%" title="${fmt(v)}"></i><span>${labels[i]}</span></div>`).join('')}</div>`;};
 const tarPill = t => {const x=TARJETAS[t];return `<span class="pill ${x.san?'p-san':t==='efectivo'?'p-ok':'p-n'}">${x.n}</span>`;};
-const sum = (arr,f) => arr.reduce((a,x)=>a+f(x),0);
 
 // ================= Vistas =================
 const VIEWS = {};
@@ -388,7 +440,7 @@ VIEWS.inicio = () => {
   const vh = ventas.filter(esHoy), tot = sum(vh,v=>v.total), mg = sum(vh,v=>v.margen), desc = sum(vh,v=>v.desc), san = vh.filter(v=>TARJETAS[v.tar].san);
   const reglasHoy = reglas.filter(r=>r.on&&r.dias.includes(HOY.getDay()));
   const horas=[9,10,11,12,13,14,15,16,17,18,19,20]; const porHora = horas.map(h=>sum(vh.filter(v=>v.fecha.getHours()===h),v=>v.total));
-  $('#view').innerHTML = `
+  $('#pane').innerHTML = `
   <div class="hero"><div><h2>Buen día, ${usuario.split(' ')[0]}.</h2><p>${caja.abierta?`La caja está abierta desde las ${hhmm(caja.desde)}. Las ventas del POS Getnet entran solas a la planilla.`:'La caja está cerrada. Abrila para empezar a vender.'}</p></div>${caja.abierta?`<button class="btn" data-go="vender">${ico('cart')}Nueva venta</button>`:`<button class="btn" onclick="abrirCaja()">${ico('unlock')}Abrir caja</button>`}</div>
   <div class="grid4">
     <div class="card kpi"><div class="lab">${ico('caja')}Vendido hoy</div><div class="val">${fmt(tot)}</div><div class="d">${vh.length} ventas · ticket ${fmt(tot/Math.max(vh.length,1))}</div></div>
@@ -411,12 +463,12 @@ function topMargen(vs){const m={};vs.forEach(v=>{const f=v.total/v.bruto;v.items
 
 // ---------- Vender ----------
 VIEWS.vender = () => {
-  if(!caja.abierta){$('#view').innerHTML=`<div class="card empty" style="padding:60px">${ico('lock')}<h3 style="justify-content:center;margin-top:10px">La caja está cerrada</h3><p class="muted">Para vender, primero abrí la caja con el fondo inicial.</p><button class="btn pri" onclick="abrirCaja()">${ico('unlock')}Abrir caja</button></div>`;return;}
+  if(!caja.abierta){$('#pane').innerHTML=`<div class="card empty" style="padding:60px">${ico('lock')}<h3 style="justify-content:center;margin-top:10px">La caja está cerrada</h3><p class="muted">Para vender, primero abrí la caja con el fondo inicial.</p><button class="btn pri" onclick="abrirCaja()">${ico('unlock')}Abrir caja</button></div>`;return;}
   const cats = ['Todos',...new Set(productos.map(p=>p.c))];
   const lista = productos.filter(p=>filtroCat==='Todos'||p.c===filtroCat);
   const bruto = sum(carrito,c=>c.q*c.p), {r,d} = descuentoDe(pago,bruto,HOY.getDay()), tot = bruto-d;
   const promosHoy = Object.keys(TARJETAS).filter(t=>reglaPara(t,HOY.getDay()));
-  $('#view').innerHTML = `<div class="pos"><div>
+  $('#pane').innerHTML = `<div class="pos"><div>
     <div class="tabs">${cats.map(c=>`<button class="tab ${c===filtroCat?'on':''}" onclick="filtroCat='${c}';VIEWS.vender()">${c}</button>`).join('')}</div>
     <div class="prods">${lista.map(p=>`<button class="prod" onclick="agregar(${p.id})"><div class="cat">${p.c}</div><b>${p.n}</b><div class="pr">${fmt(p.p)} / ${p.u}</div><div class="tiny">${p.u==='kg'?'Bandeja al vacío':'Por unidad'}</div></button>`).join('')}</div>
   </div>
@@ -460,7 +512,7 @@ function finalizar(origen){
 VIEWS.caja = () => {
   const vt = ventas.filter(v=>esHoy(v)&&v.fecha>=caja.desde);
   const ef = sum(vt.filter(v=>v.tar==='efectivo'),v=>v.total), tj = sum(vt.filter(v=>v.tar!=='efectivo'),v=>v.total), ret = sum(caja.retiros,r=>r.m);
-  $('#view').innerHTML = `
+  $('#pane').innerHTML = `
   <div class="hero" style="background:${caja.abierta?'linear-gradient(120deg,#1F4D36,#2F8A5B)':'linear-gradient(120deg,var(--brand-deep),var(--brand))'}"><div><h2>${caja.abierta?'Caja abierta':'Caja cerrada'}</h2><p>${caja.abierta?`Abrió ${caja.cajero} a las ${hhmm(caja.desde)} con ${fmt(caja.fondo)} de fondo.`:'Para empezar el turno, abrí la caja con el fondo inicial.'}</p></div>
   ${caja.abierta?`<div class="row" style="margin-left:auto"><button class="btn" onclick="retiro()">${ico('down')}Retiro de efectivo</button><button class="btn" onclick="cerrarCaja()">${ico('lock')}Cerrar caja</button></div>`:`<button class="btn" onclick="abrirCaja()">${ico('unlock')}Abrir caja</button>`}</div>
   ${caja.abierta?`<div class="grid4">
@@ -496,7 +548,7 @@ function ventasFiltradas(){
 }
 VIEWS.planilla = () => {
   const vs = ventasFiltradas();
-  $('#view').innerHTML = `<div class="tabs">
+  $('#pane').innerHTML = `<div class="tabs">
     <button class="tab ${planilla.rango==='hoy'?'on':''}" onclick="planilla.rango='hoy';VIEWS.planilla()">Hoy</button><button class="tab ${planilla.rango==='7'?'on':''}" onclick="planilla.rango='7';VIEWS.planilla()">Últimos 7 días</button>
     <select class="inp" onchange="planilla.medio=this.value;VIEWS.planilla()"><option value="todos">Todos los medios</option><option value="santander" ${planilla.medio==='santander'?'selected':''}>Solo Santander</option>${Object.entries(TARJETAS).map(([k,t])=>`<option value="${k}" ${planilla.medio===k?'selected':''}>${t.n}</option>`).join('')}</select>
     <select class="inp" onchange="planilla.cajero=this.value;VIEWS.planilla()"><option value="todos">Todo el equipo</option>${EMPLEADOS.slice(0,2).map(e=>`<option ${planilla.cajero===e.n?'selected':''}>${e.n}</option>`).join('')}</select>
@@ -525,7 +577,7 @@ VIEWS.margenes = () => {
   rows.sort((a,b)=>margenOrden==='gan'?b.gan-a.gan:margenOrden==='venta'?b.venta-a.venta:a.real-b.real);
   const cats=[...new Set(productos.map(p=>p.c))].map(c=>{const r=rows.filter(x=>x.p.c===c);const v=sum(r,x=>x.venta),g=sum(r,x=>x.gan);return [c,v,g];});
   const bajos=rows.filter(r=>r.real<32);
-  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">Margen bruto 7 días</div><div class="val">${pct(sum(rows,r=>r.gan)/Math.max(sum(rows,r=>r.venta),1)*100)}</div><div class="d">${fmt(sum(rows,r=>r.gan))} de ganancia</div></div><div class="card kpi"><div class="lab">Ventas 7 días</div><div class="val">${fmt(sum(rows,r=>r.venta))}</div><div class="d n">después de descuentos</div></div><div class="card kpi"><div class="lab">Lo que se comen los descuentos</div><div class="val">${fmt(sum(vs,v=>v.desc-v.banco))}</div><div class="d neg">la parte que pone el local</div></div><div class="card kpi"><div class="lab">Productos con margen bajo</div><div class="val">${bajos.length}</div><div class="d ${bajos.length?'neg':''}">debajo de 32%</div></div></div>
+  $('#pane').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">Margen bruto 7 días</div><div class="val">${pct(sum(rows,r=>r.gan)/Math.max(sum(rows,r=>r.venta),1)*100)}</div><div class="d">${fmt(sum(rows,r=>r.gan))} de ganancia</div></div><div class="card kpi"><div class="lab">Ventas 7 días</div><div class="val">${fmt(sum(rows,r=>r.venta))}</div><div class="d n">después de descuentos</div></div><div class="card kpi"><div class="lab">Lo que se comen los descuentos</div><div class="val">${fmt(sum(vs,v=>v.desc-v.banco))}</div><div class="d neg">la parte que pone el local</div></div><div class="card kpi"><div class="lab">Productos con margen bajo</div><div class="val">${bajos.length}</div><div class="d ${bajos.length?'neg':''}">debajo de 32%</div></div></div>
   <div class="grid2"><div class="card"><h3>${ico('pct')}Margen por producto<span class="act tiny">Tocá un producto para simular un precio nuevo</span></h3>
     <div class="tabs"><span class="tiny">Ordenar por</span><button class="tab ${margenOrden==='margen'?'on':''}" onclick="margenOrden='margen';VIEWS.margenes()">Menor margen</button><button class="tab ${margenOrden==='gan'?'on':''}" onclick="margenOrden='gan';VIEWS.margenes()">Más ganancia</button><button class="tab ${margenOrden==='venta'?'on':''}" onclick="margenOrden='venta';VIEWS.margenes()">Más vendido</button></div>
     <div class="tw"><table><tr><th>Producto</th><th class="num">Costo</th><th class="num">Precio</th><th class="num">Margen lista</th><th class="num">Margen real</th><th class="num">Ganancia 7 días</th></tr>${rows.map(r=>`<tr class="cl" onclick="simular(${r.p.id})"><td><b>${r.p.n}</b><div class="tiny">${r.p.c}</div></td><td class="num">${fmt(r.p.costo)}</td><td class="num">${fmt(r.p.p)}</td><td class="num">${pct(r.lista)}</td><td class="num"><span class="pill ${r.real>=38?'p-ok':r.real>=32?'p-warn':'p-bad'}">${pct(r.real)}</span></td><td class="num">${fmt(r.gan)}</td></tr>`).join('')}</table></div>
@@ -542,14 +594,14 @@ function simular(id){const p=P(id);
 // ---------- Facturación ----------
 VIEWS.facturas = () => {
   const vs=ventas.filter(esHoy);
-  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('doc')}Emitidos hoy</div><div class="val">${vs.length}</div><div class="d">100% automáticos</div></div><div class="card kpi"><div class="lab">${ico('check')}Aceptados por DGI</div><div class="val">${vs.length}</div><div class="d">0 rechazados</div></div><div class="card kpi"><div class="lab">${ico('doc')}e-Facturas con RUT</div><div class="val">${ventas.filter(v=>v.cfe.startsWith('e-Factura')).length+3}</div><div class="d n">este mes</div></div><div class="card kpi"><div class="lab">${ico('clock')}Tiempo ahorrado</div><div class="val">11 h</div><div class="d">al mes, sin tipear facturas</div></div></div>
+  $('#pane').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('doc')}Emitidos hoy</div><div class="val">${vs.length}</div><div class="d">100% automáticos</div></div><div class="card kpi"><div class="lab">${ico('check')}Aceptados por DGI</div><div class="val">${vs.length}</div><div class="d">0 rechazados</div></div><div class="card kpi"><div class="lab">${ico('doc')}e-Facturas con RUT</div><div class="val">${ventas.filter(v=>v.cfe.startsWith('e-Factura')).length+3}</div><div class="d n">este mes</div></div><div class="card kpi"><div class="lab">${ico('clock')}Tiempo ahorrado</div><div class="val">11 h</div><div class="d">al mes, sin tipear facturas</div></div></div>
   <div class="grid2"><div class="card"><h3>${ico('doc')}Comprobantes de hoy<button class="btn sm act" onclick="facturaRUT()">${ico('plus')}Factura con RUT</button></h3><div class="tw"><table><tr><th>Comprobante</th><th>Hora</th><th>Medio</th><th class="num">Total</th><th>Estado</th></tr>${vs.map(v=>`<tr class="cl" onclick="verCFE(${v.id})"><td><b>${v.cfe}</b></td><td>${hhmm(v.fecha)}</td><td>${tarPill(v.tar)}</td><td class="num">${fmt(v.total)}</td><td><span class="pill p-ok">${v.estado}</span></td></tr>`).join('')}</table></div></div>
   <div class="card"><h3>${ico('link')}Cómo funciona</h3><div class="step"><div class="n">1</div><div><b>Se cobra en el POS</b><div class="tiny">Getnet aprueba la tarjeta.</div></div></div><div class="step"><div class="n">2</div><div><b>El sistema arma el comprobante</b><div class="tiny">Con el descuento aplicado y el IVA de cada producto.</div></div></div><div class="step"><div class="n">3</div><div><b>Se envía a DGI y vuelve aceptado</b><div class="tiny">En menos de dos segundos.</div></div></div><div class="step"><div class="n">4</div><div><b>Al cliente le llega por WhatsApp o mail</b><div class="tiny">Si lo pidió. Si no, sale impreso.</div></div></div><p class="tiny">Nadie en el local tiene que hacer una factura a mano.</p></div></div>`;
 };
-function verCFE(id){const v=ventas.find(x=>x.id===id);const neto=v.total/1.22;
+function verCFE(id){const v=ventas.find(x=>x.id===id);const nv=netoVenta(v),neto=nv.n;
   modal(v.cfe,`<div class="cfe"><div class="h"><div><b>PG MERCADO DE CARNES</b><div class="tiny">Av. Gral. José María Paz 1425 · Montevideo<br>RUT 21 845 330 0017</div></div><div style="text-align:right"><b>${v.cfe.split(' A ')[0]}</b><div class="tiny">Serie A · Nº ${v.id}<br>${fechaCorta(v.fecha)}/${HOY.getFullYear()} ${hhmm(v.fecha)}</div></div></div>
   ${v.items.map(i=>`<div class="sumline"><span>${i.n} ${i.u==='kg'?kgf(i.q):'x'+i.q}</span><span>${fmt(i.q*i.p)}</span></div>`).join('')}${v.desc?`<div class="sumline" style="color:var(--san)"><span>Descuento ${v.regla}</span><span>- ${fmt(v.desc)}</span></div>`:''}
-  <div style="border-top:1px dashed var(--line);margin-top:8px;padding-top:8px"><div class="sumline"><span>Neto gravado</span><span>${fmt(neto)}</span></div><div class="sumline"><span>IVA 22%</span><span>${fmt(v.total-neto)}</span></div><div class="sumline" style="font-weight:800;font-size:16px"><span>TOTAL</span><span>${fmt(v.total)}</span></div></div>
+  <div style="border-top:1px dashed var(--line);margin-top:8px;padding-top:8px"><div class="sumline"><span>Neto gravado</span><span>${fmt(neto)}</span></div>${nv.ib?`<div class="sumline"><span>IVA tasa básica 22%</span><span>${fmt(nv.ib)}</span></div>`:''}${nv.im?`<div class="sumline"><span>IVA tasa mínima 10%</span><span>${fmt(nv.im)}</span></div>`:''}<div class="sumline" style="font-weight:800;font-size:16px"><span>TOTAL</span><span>${fmt(v.total)}</span></div></div>
   <div class="tiny" style="margin-top:10px">Pago: ${TARJETAS[v.tar].n} · Código de seguridad ${String(v.id*7919).slice(-6)} · Verificá en dgi.gub.uy</div></div>`,
   `<button class="btn" data-close>Cerrar</button><button class="btn pri" onclick="closeModal();toast('Comprobante enviado por WhatsApp')">Enviar por WhatsApp</button>`);}
 function facturaRUT(){modal('Factura con RUT',`<label class="f">Empresa<select><option>Club Náutico Punta Gorda · RUT 21 334 550 0011</option><option>Restaurante Lo de Pepe · RUT 21 902 110 0019</option></select></label><label class="f">Venta a facturar<select>${ventas.filter(esHoy).slice(0,6).map(v=>`<option>${hhmm(v.fecha)} · ${fmt(v.total)}</option>`).join('')}</select></label><p class="tiny">Se anula el e-Ticket y se emite la e-Factura a nombre de la empresa, con nota automática.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="closeModal();toast('e-Factura emitida y aceptada por DGI')">Emitir e-Factura</button>`);}
@@ -557,7 +609,7 @@ function facturaRUT(){modal('Factura con RUT',`<label class="f">Empresa<select><
 // ---------- Santander ----------
 VIEWS.santander = () => {
   const mes=ventas.filter(v=>TARJETAS[v.tar].san), des=sum(mes,v=>v.desc), ban=sum(mes,v=>v.banco);
-  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('card')}Ventas con Santander</div><div class="val">${fmt(sum(mes,v=>v.total))}</div><div class="d">${mes.length} ventas · ${pct(mes.length/ventas.length*100)} del total</div></div><div class="card kpi"><div class="lab">${ico('pct')}Descuentos otorgados</div><div class="val">${fmt(des)}</div><div class="d n">últimos 8 días</div></div><div class="card kpi"><div class="lab">${ico('down')}Reintegro del banco</div><div class="val">${fmt(ban)}</div><div class="d">se acredita con la liquidación Getnet</div></div><div class="card kpi"><div class="lab">${ico('caja')}Costo real para el local</div><div class="val">${fmt(des-ban)}</div><div class="d n">${pct((des-ban)/Math.max(sum(mes,v=>v.bruto),1)*100)} de lo vendido</div></div></div>
+  $('#pane').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('card')}Ventas con Santander</div><div class="val">${fmt(sum(mes,v=>v.total))}</div><div class="d">${mes.length} ventas · ${pct(mes.length/ventas.length*100)} del total</div></div><div class="card kpi"><div class="lab">${ico('pct')}Descuentos otorgados</div><div class="val">${fmt(des)}</div><div class="d n">últimos 8 días</div></div><div class="card kpi"><div class="lab">${ico('down')}Reintegro del banco</div><div class="val">${fmt(ban)}</div><div class="d">se acredita con la liquidación Getnet</div></div><div class="card kpi"><div class="lab">${ico('caja')}Costo real para el local</div><div class="val">${fmt(des-ban)}</div><div class="d n">${pct((des-ban)/Math.max(sum(mes,v=>v.bruto),1)*100)} de lo vendido</div></div></div>
   <div class="grid2"><div class="card"><h3>${ico('card')}Promociones<button class="btn pri sm act" onclick="editarRegla()">${ico('plus')}Nueva promo</button></h3>
     ${reglas.map(r=>`<div class="cardrule"><div class="cardimg ${r.t==='san-sel'?'sel':r.t==='san-deb'?'deb':''}"></div><div style="flex:1"><b>${r.pc}% · ${r.n}</b><div class="tiny">${TARJETAS[r.t].n} · ${r.dias.length===7?'Todos los días':r.dias.map(d=>DIAS[d].slice(0,3)).join(', ')} · tope ${fmt(r.tope)} · el banco pone el ${r.banco}%</div></div>${r.on&&r.dias.includes(HOY.getDay())?'<span class="pill p-san">Activa hoy</span>':''}<button class="btn sm" onclick="editarRegla(${r.id})">Editar</button><button class="sw ${r.on?'on':''}" onclick="reglas.find(x=>x.id===${r.id}).on=!reglas.find(x=>x.id===${r.id}).on;VIEWS.santander()"></button></div>`).join('')}
     <p class="tiny">Cuando hay dos promos para la misma tarjeta el mismo día, se aplica la mejor para el cliente. La cajera no tiene que acordarse de nada.</p></div>
@@ -571,20 +623,9 @@ function editarRegla(id){const r=reglas.find(x=>x.id===id)||{t:'san-cred',n:'',p
 function guardarRegla(id){const dias=[...document.querySelectorAll('#rdias .tab.on')].map(b=>+b.dataset.d);const d={t:$('#rt').value,n:$('#rn').value||'Promo Santander',pc:+$('#rp').value||0,dias,tope:+$('#rtope').value||0,banco:+$('#rb').value||0,on:true};
   if(id)Object.assign(reglas.find(x=>x.id===id),d);else reglas.push({id:Date.now(),...d});closeModal();VIEWS.santander();toast('Promo guardada. Ya se aplica en caja.');}
 
-// ---------- Reportes ----------
-VIEWS.reportes = () => {
-  const dias=[];for(let dd=7;dd>=0;dd--){const f=new Date(HOY);f.setDate(HOY.getDate()-dd);dias.push([DIAS[f.getDay()].slice(0,3),sum(ventas.filter(v=>v.fecha.toDateString()===f.toDateString()),v=>v.total)]);}
-  const medios=Object.keys(TARJETAS).map(t=>[TARJETAS[t].n,sum(ventas.filter(v=>v.tar===t),v=>v.total)]).sort((a,b)=>b[1]-a[1]);const tt=sum(medios,m=>m[1]);
-  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">Ventas de ${MESES[HOY.getMonth()]}</div><div class="val">${fmt(2410000)}</div><div class="d">+9% contra el mes anterior</div></div><div class="card kpi"><div class="lab">Margen bruto</div><div class="val">36,4%</div><div class="d">+1,2 puntos</div></div><div class="card kpi"><div class="lab">Ticket promedio</div><div class="val">${fmt(sum(ventas,v=>v.total)/ventas.length)}</div><div class="d">+4%</div></div><div class="card kpi"><div class="lab">Ventas con vino</div><div class="val">31%</div><div class="d">suben el ticket 65%</div></div></div>
-  <div class="grid2e"><div class="card"><h3>${ico('chart')}Últimos 8 días</h3>${chart(dias.map(d=>d[1]),dias.map(d=>d[0]),[dias.length-1])}</div>
-  <div class="card"><h3>${ico('card')}Ventas por medio de pago</h3>${medios.map(([n,m])=>`<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span>${n}</span><b>${pct(m/tt*100)}</b></div><div class="bar"><i style="width:${m/medios[0][1]*100}%;${n.includes('Santander')?'background:var(--san)':''}"></i></div></div>`).join('')}</div></div>
-  <div class="grid2e"><div class="card"><h3>${ico('star')}Más vendidos</h3>${topMargen(ventas).slice(0,6).map(([n,m,t],i)=>`<div class="list-it"><div class="av">${i+1}</div><div style="flex:1"><b>${n}</b><div class="tiny">${fmt(t)} vendidos</div></div><b>${fmt(m)}</b></div>`).join('')}</div>
-  <div class="card"><h3>${ico('clock')}Horarios fuertes</h3><div class="stat-row"><span>Viernes 18 a 21 h</span><b>22% de la semana</b></div><div class="stat-row"><span>Sábado 11 a 14 h</span><b>18%</b></div><div class="stat-row"><span>Domingo 10 a 14 h</span><b>9%</b></div><div class="stat-row"><span>Lunes a miércoles</span><b>27%</b></div><p class="tiny" style="margin-top:10px">Conviene reforzar la caja los viernes a la tarde: ahí se junta la mayor fila.</p></div></div>`;
-};
-
 // ---------- Productos ----------
 VIEWS.productos = () => {
-  $('#view').innerHTML = `<div class="card"><h3>${ico('tag')}Lista de precios<span class="act row"><span class="tiny">Tocá un producto para cambiar el precio</span><button class="btn pri sm" onclick="nuevoProd()">${ico('plus')}Nuevo producto</button></span></h3><div class="tw">
+  $('#pane').innerHTML = `<div class="card"><h3>${ico('tag')}Lista de precios<span class="act row"><span class="tiny">Tocá un producto para cambiar el precio</span><button class="btn pri sm" onclick="nuevoProd()">${ico('plus')}Nuevo producto</button></span></h3><div class="tw">
   <table><tr><th>Producto</th><th>Categoría</th><th>Se vende</th><th class="num">Costo</th><th class="num">Precio</th><th class="num">Margen</th><th class="num">En el local</th></tr>
   ${productos.map(p=>{const m=(p.p-p.costo)/p.p*100;return `<tr class="cl" onclick="simular(${p.id})"><td><b>${p.n}</b></td><td class="muted">${p.c}</td><td>${p.u==='kg'?'Por kilo':'Por unidad'}</td><td class="num">${fmt(p.costo)}</td><td class="num"><b>${fmt(p.p)}</b></td><td class="num"><span class="pill ${m>=38?'p-ok':m>=32?'p-warn':'p-bad'}">${pct(m)}</span></td><td class="num">${p.u==='kg'?kgf(p.st):p.st+' u'}</td></tr>`}).join('')}</table></div></div>`;
 };
@@ -592,17 +633,102 @@ function nuevoProd(){modal('Nuevo producto',`<label class="f">Nombre<input id="n
 function guardarProd(){productos.push({id:Date.now(),n:$('#npn').value,c:$('#npc').value,u:$('#npu').value,costo:+$('#npco').value,p:+$('#npp').value,st:0});closeModal();VIEWS.productos();toast('Producto creado. Ya aparece en caja.');}
 
 // ---------- Compras ----------
-VIEWS.compras = () => {
-  $('#view').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('caja')}A pagar</div><div class="val">${fmt(sum(proveedores,p=>p.saldo))}</div><div class="d neg">${fmt(148600)} vence el viernes</div></div><div class="card kpi"><div class="lab">${ico('camion')}Compras del mes</div><div class="val">${fmt(1530000)}</div><div class="d n">22 facturas</div></div><div class="card kpi"><div class="lab">${ico('up')}Costo de la picaña</div><div class="val">${fmt(P(1).costo)}</div><div class="d neg">+3,1% en el mes</div></div><div class="card kpi"><div class="lab">${ico('users')}Proveedores</div><div class="val">${proveedores.length}</div></div></div>
-  <div class="card"><h3>${ico('camion')}Proveedores<button class="btn pri sm act" onclick="cargarCompra()">${ico('plus')}Cargar factura de compra</button></h3><div class="tw"><table><tr><th>Proveedor</th><th>Qué le comprás</th><th>Última entrega</th><th>Condición</th><th class="num">Saldo</th><th></th></tr>${proveedores.map((p,i)=>`<tr><td><b>${p.n}</b></td><td class="muted">${p.rub}</td><td>${p.ult}</td><td>${p.cond}</td><td class="num">${p.saldo?fmt(p.saldo):'<span class="pill p-ok">Al día</span>'}</td><td class="num">${p.saldo?`<button class="btn sm" onclick="pagar(${i})">Pagar</button>`:''}</td></tr>`).join('')}</table></div></div>`;
+VIEWS.proveedores = () => {
+  $('#pane').innerHTML = `<div class="grid4"><div class="card kpi"><div class="lab">${ico('caja')}A pagar</div><div class="val">${fmt(sum(proveedores,p=>p.saldo))}</div><div class="d neg">${fcompras.filter(f=>!f.pagada).length} facturas impagas</div></div><div class="card kpi"><div class="lab">${ico('camion')}Compras del mes</div><div class="val">${fmt(sum(fcompras.filter(f=>mesDe(f.fecha)===3&&f.cat==='Mercadería'),f=>f.neto))}</div><div class="d n">${fcompras.filter(f=>mesDe(f.fecha)===3&&f.cat==='Mercadería').length} facturas, sin IVA</div></div><div class="card kpi"><div class="lab">${ico('up')}Costo de la picaña</div><div class="val">${fmt(P(1).costo)}</div><div class="d neg">+3,1% en el mes</div></div><div class="card kpi"><div class="lab">${ico('users')}Proveedores</div><div class="val">${proveedores.length}</div></div></div>
+  <div class="card"><h3>${ico('camion')}Proveedores<button class="btn pri sm act" onclick="cargarFactura()">${ico('plus')}Cargar factura de compra</button></h3><div class="tw"><table><tr><th>Proveedor</th><th>Qué le comprás</th><th>Última entrega</th><th>Condición</th><th class="num">Saldo</th><th></th></tr>${proveedores.map((p,i)=>`<tr><td><b>${p.n}</b></td><td class="muted">${p.rub}</td><td>${p.ult}</td><td>${p.cond}</td><td class="num">${p.saldo?fmt(p.saldo):'<span class="pill p-ok">Al día</span>'}</td><td class="num">${p.saldo?`<button class="btn sm" onclick="pagar(${i})">Pagar</button>`:''}</td></tr>`).join('')}</table></div></div>`;
 };
 function cargarCompra(){modal('Factura de compra',`<label class="f">Proveedor<select><option>Frigorífico Las Moras</option></select></label><div class="frow"><label class="f">Producto<select id="ccp">${productos.filter(p=>p.u==='kg').map(p=>`<option value="${p.id}">${p.n}</option>`).join('')}</select></label><label class="f">Kilos<input id="cck" type="number" value="12"></label></div><label class="f">Costo por kilo<input id="ccc" type="number" value="${P(1).costo+25}"></label><p class="tiny">Al guardar se actualiza el costo y el margen de ese producto. Si el margen baja de 32%, te avisa.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarCompra()">Guardar</button>`);}
-function guardarCompra(){const p=P(+$('#ccp').value);p.costo=+$('#ccc').value||p.costo;p.st+=+$('#cck').value||0;const m=(p.p-p.costo)/p.p*100;closeModal();VIEWS.compras();toast(m<32?`Costo de ${p.n} actualizado. Ojo: el margen bajó a ${pct(m)}.`:`Costo de ${p.n} actualizado. Margen ${pct(m)}.`);}
-function pagar(i){const p=proveedores[i];modal('Pagar a '+p.n,`<div class="stat-row"><span>Saldo</span><b>${fmt(p.saldo)}</b></div><label class="f" style="margin-top:12px">Medio<select><option>Transferencia Santander</option><option>Efectivo de caja</option><option>Cheque diferido</option></select></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="proveedores[${i}].saldo=0;closeModal();VIEWS.compras();toast('Pago registrado')">Registrar pago</button>`);}
+function guardarCompra(){const p=P(+$('#ccp').value);p.costo=+$('#ccc').value||p.costo;p.st+=+$('#cck').value||0;const m=(p.p-p.costo)/p.p*100;closeModal();VIEWS[view]();toast(m<32?`Costo de ${p.n} actualizado. Ojo: el margen bajó a ${pct(m)}.`:`Costo de ${p.n} actualizado. Margen ${pct(m)}.`);}
+function pagar(i){const p=proveedores[i];modal('Pagar a '+p.n,`<div class="stat-row"><span>Saldo</span><b>${fmt(p.saldo)}</b></div><label class="f" style="margin-top:12px">Medio<select><option>Transferencia Santander</option><option>Efectivo de caja</option><option>Cheque diferido</option></select></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="proveedores[${i}].saldo=0;closeModal();VIEWS[view]();toast('Pago registrado')">Registrar pago</button>`);}
+
+// ---------- Compras: facturas de compra ----------
+const selMes = (val, fn) => `<select class="inp" onchange="${fn}(+this.value)">${MESES4.map((M,i)=>`<option value="${i}" ${i===val?'selected':''}>${nombreMes(i)}</option>`).join('')}</select>`;
+function setCompraMes(i){compraFiltro.mes=i;VIEWS.compras();}
+VIEWS.compras = () => {
+  const cats=['todas','Mercadería','gastos',...GASTOS_FIJOS.map(g=>g[0])];
+  const fc=fcompras.filter(f=>mesDe(f.fecha)===compraFiltro.mes&&(compraFiltro.cat==='todas'||(compraFiltro.cat==='gastos'?f.cat!=='Mercadería':f.cat===compraFiltro.cat)));
+  const todas=fcompras.filter(f=>mesDe(f.fecha)===compraFiltro.mes), merc=sum(todas.filter(f=>f.cat==='Mercadería'),f=>f.neto), gas=sum(todas.filter(f=>f.cat!=='Mercadería'),f=>f.neto), apagar=sum(fcompras.filter(f=>!f.pagada),f=>f.neto+f.iva);
+  $('#pane').innerHTML = `<div class="tabs">${selMes(compraFiltro.mes,'setCompraMes')}
+    <select class="inp" onchange="compraFiltro.cat=this.value;VIEWS.compras()">${cats.map(c=>`<option value="${c}" ${compraFiltro.cat===c?'selected':''}>${c==='todas'?'Todas las facturas':c==='gastos'?'Solo gastos':c}</option>`).join('')}</select>
+    <button class="btn pri" style="margin-left:auto" onclick="cargarFactura()">${ico('plus')}Cargar factura</button></div>
+  <div class="grid4"><div class="card kpi"><div class="lab">${ico('camion')}Mercadería</div><div class="val">${fmt(merc)}</div><div class="d n">sin IVA</div></div><div class="card kpi"><div class="lab">${ico('doc')}Gastos del local</div><div class="val">${fmt(gas)}</div><div class="d n">sin IVA</div></div><div class="card kpi"><div class="lab">${ico('pct')}IVA de compras</div><div class="val">${fmt(sum(todas,f=>f.iva))}</div><div class="d">se descuenta del IVA a pagar</div></div><div class="card kpi"><div class="lab">${ico('caja')}A pagar</div><div class="val">${fmt(apagar)}</div><div class="d ${apagar?'neg':''}">${fcompras.filter(f=>!f.pagada).length} facturas</div></div></div>
+  <div class="card"><div class="tw"><table><tr><th>Fecha</th><th>Proveedor</th><th>Tipo</th><th>Comprobante</th><th class="num">Neto</th><th class="num">IVA</th><th class="num">Total</th><th>Estado</th></tr>
+  ${fc.map(f=>`<tr><td>${fechaCorta(f.fecha)}</td><td><b>${f.prov}</b>${f.rut?`<div class="tiny">RUT ${f.rut}</div>`:''}</td><td><span class="pill ${f.cat==='Mercadería'?'p-br':'p-n'}">${f.cat}</span></td><td class="tiny">${f.nro}</td><td class="num">${fmt(f.neto)}</td><td class="num">${f.iva?fmt(f.iva):'—'}</td><td class="num"><b>${fmt(f.neto+f.iva)}</b></td><td>${f.pagada?'<span class="pill p-ok">Pagada</span>':`<button class="btn sm" onclick="pagarFactura(${f.id})">Pagar</button>`}</td></tr>`).join('')||'<tr><td colspan="8" class="empty">Sin facturas</td></tr>'}
+  <tr class="tot"><td colspan="4">${fc.length} facturas</td><td class="num">${fmt(sum(fc,f=>f.neto))}</td><td class="num">${fmt(sum(fc,f=>f.iva))}</td><td class="num">${fmt(sum(fc,f=>f.neto+f.iva))}</td><td></td></tr></table></div>
+  <p class="tiny">Cada factura que se carga acá impacta sola en el estado de resultados y en el IVA del mes.</p></div>`;
+};
+function pagarFactura(id){const f=fcompras.find(x=>x.id===id);modal('Pagar factura',`<div class="stat-row"><span>Proveedor</span><b>${f.prov}</b></div><div class="stat-row"><span>Comprobante</span><b>${f.nro}</b></div><div class="stat-row"><span>Total</span><b>${fmt(f.neto+f.iva)}</b></div><label class="f" style="margin-top:12px">Medio<select><option>Transferencia Santander</option><option>Efectivo de caja</option><option>Cheque diferido</option></select></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="fcompras.find(x=>x.id===${id}).pagada=true;closeModal();VIEWS[view]();toast('Pago registrado')">Registrar pago</button>`);}
+function cargarFactura(){
+  modal('Cargar factura de compra',`<div class="tabs" id="ftipo"><button class="tab on" data-t="m" onclick="tipoFactura('m')">Mercadería</button><button class="tab" data-t="g" onclick="tipoFactura('g')">Gasto del local</button></div><div id="fform"></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarFactura()">Guardar factura</button>`);
+  tipoFactura('m');
+}
+function tipoFactura(t){
+  document.querySelectorAll('#ftipo .tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  $('#fform').dataset.t=t;
+  $('#fform').innerHTML = t==='m'
+   ? `<label class="f">Proveedor<select id="fprov">${PROV_MERC.map(p=>`<option>${p[0]}</option>`).join('')}</select></label><div class="frow"><label class="f">Producto<select id="ccp">${productos.map(p=>`<option value="${p.id}">${p.n}</option>`).join('')}</select></label><label class="f">Cantidad (${'kg o unidades'})<input id="cck" type="number" value="12"></label></div><label class="f">Costo por kilo o unidad, sin IVA<input id="ccc" type="number" value="${P(1).costo+25}"></label><p class="tiny">Actualiza el costo del producto, el stock, el margen y el estado de resultados.</p>`
+   : `<label class="f">Tipo de gasto<select id="fcat">${GASTOS_FIJOS.map(g=>`<option>${g[0]}</option>`).join('')}<option>Otros gastos</option></select></label><label class="f">Proveedor<input id="fprov" value="Ferretería Malvín"></label><div class="frow"><label class="f">Importe sin IVA<input id="fneto" type="number" value="4500"></label><label class="f">IVA<select id="fiva"><option value=".22">22%</option><option value=".10">10%</option><option value="0">Sin IVA</option></select></label></div>`;
+}
+function guardarFactura(){
+  const t=$('#fform').dataset.t;
+  if(t==='m'){const p=P(+$('#ccp').value),q=+$('#cck').value||0,c=+$('#ccc').value||p.costo;p.costo=c;p.st+=q;const neto=Math.round(q*c);
+    fcompras.unshift({id:++nroFC,fecha:new Date(),prov:$('#fprov').value,rut:'',cat:'Mercadería',nro:'A '+(20000+nroFC),neto,iva:Math.round(neto*TASA(p.c)),pagada:false});
+    const m=(p.p-p.costo)/p.p*100;closeModal();compraFiltro.mes=3;VIEWS[view]();toast(m<32?`Factura cargada. Ojo: el margen de ${p.n} bajó a ${pct(m)}.`:`Factura cargada. Costo de ${p.n} actualizado, margen ${pct(m)}.`);}
+  else{const neto=+$('#fneto').value||0,tasa=+$('#fiva').value;fcompras.unshift({id:++nroFC,fecha:new Date(),prov:$('#fprov').value,rut:'',cat:$('#fcat').value,nro:'A '+(20000+nroFC),neto,iva:Math.round(neto*tasa),pagada:false});closeModal();compraFiltro.mes=3;VIEWS[view]();toast('Gasto cargado. Ya impacta en el resultado del mes.');}
+}
+
+// ---------- Resultados: estado de resultados ----------
+function setMesSel(i){mesSel=i;VIEWS[view]();}
+function verCompras(i,cat){compraFiltro={mes:i,cat};go('compras');}
+VIEWS.estado = () => {
+  const a=datosMes(mesSel), b=mesSel>0?datosMes(mesSel-1):null;
+  const cats=[...new Set([...Object.keys(a.gastos),...(b?Object.keys(b.gastos):[])])].sort((x,y)=>(a.gastos[y]||0)-(a.gastos[x]||0));
+  const pv=(x)=>`<span class="tiny">${pct(x/a.V*100)}</span>`;
+  const var_=(x,y,inv)=>{if(!b||!y||a.M.actual)return '<td class="num tiny">'+(a.M.actual&&b&&y?'en curso':'')+'</td>';const v=(x-y)/Math.abs(y)*100;const good=inv?v<=0:v>=0;return `<td class="num" style="color:${Math.abs(v)<1?'var(--ink-3)':good?'var(--ok)':'var(--bad)'}">${v>0?'+':''}${v.toFixed(1).replace('.',',')}%</td>`;};
+  const fila=(lab,x,y,opt={})=>`<tr class="${opt.tot?'tot':''} ${opt.link?'cl':''}" ${opt.link?`onclick="${opt.link}"`:''}><td style="${opt.ind?'padding-left:26px':''}${opt.tot?'':'font-weight:'+(opt.b?'700':'400')}">${lab}${opt.link?` <span class="tiny">${opt.ll||'ver facturas'}</span>`:''}</td><td class="num">${opt.neg?'- ':''}${fmt(x)}</td><td class="num">${pv(x)}</td><td class="num muted">${b?(opt.neg?'- ':'')+fmt(y):''}</td>${var_(x,y,opt.inv)}</tr>`;
+  const res=[0,1,2,3].map(i=>datosMes(i));
+  $('#pane').innerHTML = `<div class="tabs">${selMes(mesSel,'setMesSel')}<span class="tiny">Importes sin IVA. ${a.M.actual?'Mes en curso, al '+HOY.getDate()+'/'+(HOY.getMonth()+1)+'.':''}</span><button class="btn" style="margin-left:auto" onclick="exportarEstado()">${ico('down')}Exportar para el contador</button></div>
+  <div class="grid4"><div class="card kpi"><div class="lab">Ventas facturadas</div><div class="val">${fmt(a.V)}</div><div class="d n">${a.M.actual?'Proyección del mes: '+fmt(a.V/HOY.getDate()*new Date(a.M.y,a.M.m+1,0).getDate()):b?(a.V>=b.V?'+':'')+pct((a.V-b.V)/b.V*100)+' vs '+MESES[b.M.m]:''}</div></div><div class="card kpi"><div class="lab">Margen bruto</div><div class="val">${pct(a.mb/a.V*100)}</div><div class="d n">${fmt(a.mb)}</div></div><div class="card kpi"><div class="lab">Gastos del local</div><div class="val">${fmt(a.tg)}</div><div class="d n">${pct(a.tg/a.V*100)} de las ventas</div></div><div class="card kpi" style="background:${a.res>=0?'var(--ok-soft)':'var(--bad-soft)'}"><div class="lab">Resultado del mes</div><div class="val" style="color:${a.res>=0?'var(--ok)':'var(--bad)'}">${fmt(a.res)}</div><div class="d n">${pct(a.res/a.V*100)} de las ventas</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('sheet')}Estado de resultados · ${nombreMes(mesSel)}</h3><div class="tw"><table>
+    <tr><th>Concepto</th><th class="num">${MESES[a.M.m][0].toUpperCase()+MESES[a.M.m].slice(1,3)}</th><th class="num">% vtas</th><th class="num">${b?MESES[b.M.m][0].toUpperCase()+MESES[b.M.m].slice(1,3):''}</th><th class="num">Var.</th></tr>
+    ${fila('Ventas facturadas (e-Tickets y e-Facturas)',a.V,b&&b.V,{b:1,link:"go('planilla')",ll:'ver planilla'})}
+    ${fila('Reintegros Santander',a.reint,b&&b.reint,{ind:1,link:"go('santander')",ll:'ver promos'})}
+    ${fila('Ingresos',a.ing,b&&b.ing,{tot:1})}
+    ${fila('Compras de mercadería',a.compr,b&&b.compr,{ind:1,neg:1,inv:1,link:`verCompras(${mesSel},'Mercadería')`})}
+    ${fila('Stock al inicio',a.sIni,b&&b.sIni,{ind:1})}
+    ${fila('Stock al cierre',a.sFin,b&&b.sFin,{ind:1,neg:1})}
+    ${fila('Costo de la mercadería vendida',a.cmv,b&&b.cmv,{b:1,neg:1,inv:1})}
+    ${fila('Margen bruto',a.mb,b&&b.mb,{tot:1})}
+    ${cats.map(c=>fila(c,a.gastos[c]||0,b&&(b.gastos[c]||0),{ind:1,neg:1,inv:1,link:`verCompras(${mesSel},'${c}')`})).join('')}
+    ${fila('Gastos del local',a.tg,b&&b.tg,{b:1,neg:1,inv:1})}
+    ${fila('Resultado del mes',a.res,b&&b.res,{tot:1})}
+  </table></div><p class="tiny">Descuentos Santander otorgados en el mes: ${fmt(a.desc)}. Ya están descontados de las ventas; el banco reintegra ${fmt(a.reint)}.</p></div>
+  <div><div class="card" style="margin-bottom:14px"><h3>${ico('chart')}Resultado por mes</h3>${chart(res.map(r=>Math.max(r.res,0)),res.map(r=>MESES[r.M.m].slice(0,3)),[mesSel])}<div class="tiny">En dorado, el mes seleccionado.</div></div>
+  <div class="card"><h3>${ico('pct')}De cada $ 100 que vendés</h3>${[['Mercadería',a.cmv,'var(--brand)'],['Sueldos',a.gastos['Sueldos y cargas sociales']||0,'var(--gold)'],['Otros gastos',a.tg-(a.gastos['Sueldos y cargas sociales']||0),'var(--ink-3)'],['Te queda',Math.max(a.res,0),'var(--ok)']].map(([l,x,c])=>`<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span>${l}</span><b>$ ${Math.round(x/a.ing*100)}</b></div><div class="bar"><i style="width:${x/a.ing*100}%;background:${c}"></i></div></div>`).join('')}</div></div></div>`;
+};
+function exportarEstado(){
+  const a=datosMes(mesSel);const rows=[['Concepto','Importe sin IVA'],['Ventas facturadas',a.V],['Reintegros Santander',a.reint],['Ingresos',a.ing],['Compras de mercadería',-a.compr],['Stock al inicio',a.sIni],['Stock al cierre',-a.sFin],['Costo de la mercadería vendida',-a.cmv],['Margen bruto',a.mb],...Object.entries(a.gastos).map(([c,x])=>[c,-x]),['Gastos del local',-a.tg],['Resultado del mes',a.res]];
+  const csv='﻿'+rows.map(r=>r.map((c,i)=>'"'+(i?Math.round(c):c)+'"').join(';')).join('\n');
+  const el=document.createElement('a');el.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));el.download='estado-de-resultados-'+MESES[a.M.m]+'.csv';document.body.appendChild(el);el.click();el.remove();toast('Estado de resultados de '+MESES[a.M.m]+' descargado');
+}
+
+// ---------- Resultados: IVA ----------
+VIEWS.iva = () => {
+  const a=datosMes(mesSel), deb=a.ivaB+a.ivaM, cred=a.ivaC, saldo=deb-cred;
+  const credB=sum(a.fc.filter(f=>f.neto&&f.iva/f.neto>.2),f=>f.iva), credM=cred-credB;
+  $('#pane').innerHTML = `<div class="tabs">${selMes(mesSel,'setMesSel')}<span class="tiny">Sale solo de las facturas de venta y de compra del mes.</span></div>
+  <div class="grid3"><div class="card kpi"><div class="lab">IVA de las ventas</div><div class="val">${fmt(deb)}</div><div class="d n">lo que cobraste de IVA</div></div><div class="card kpi"><div class="lab">IVA de las compras</div><div class="val">${fmt(cred)}</div><div class="d n">lo que pagaste de IVA</div></div><div class="card kpi" style="background:var(--gold-soft)"><div class="lab">Saldo a pagar a DGI</div><div class="val">${fmt(saldo)}</div><div class="d n">estimado</div></div></div>
+  <div class="grid2e"><div class="card"><h3>${ico('doc')}Detalle</h3><table><tr><th>Concepto</th><th class="num">Tasa básica 22%</th><th class="num">Tasa mínima 10%</th><th class="num">Total</th></tr>
+  <tr><td>IVA ventas</td><td class="num">${fmt(a.ivaB)}</td><td class="num">${fmt(a.ivaM)}</td><td class="num"><b>${fmt(deb)}</b></td></tr>
+  <tr><td>IVA compras</td><td class="num">- ${fmt(credB)}</td><td class="num">- ${fmt(credM)}</td><td class="num"><b>- ${fmt(cred)}</b></td></tr>
+  <tr class="tot"><td>Saldo</td><td class="num">${fmt(a.ivaB-credB)}</td><td class="num">${fmt(a.ivaM-credM)}</td><td class="num">${fmt(saldo)}</td></tr></table>
+  <p class="tiny">Carnes, pollo y preparados van con tasa mínima. Vinos y almacén, con tasa básica. El importe final lo confirma el contador en la declaración.</p></div>
+  <div class="card"><h3>${ico('check')}Para el contador</h3><div class="stat-row"><span>Facturas de venta del mes</span><b>${ventas.filter(v=>mesDe(v.fecha)===mesSel).length + (mesSel<3?Math.round(a.V/1500):Math.round(BASE_ACTUAL/1500))}</b></div><div class="stat-row"><span>Facturas de compra del mes</span><b>${a.fc.length}</b></div><div class="stat-row"><span>Estado de resultados</span><b>Listo</b></div><button class="btn pri" style="width:100%;justify-content:center;margin-top:12px" onclick="toast('Paquete del mes enviado al Estudio Contable Ferrés')">${ico('doc')}Mandar todo al contador</button></div></div>`;
+};
 
 // ---------- Clientes ----------
 VIEWS.clientes = () => {
-  $('#view').innerHTML = `<div class="grid3"><div class="card kpi"><div class="lab">${ico('users')}Clientes identificados</div><div class="val">486</div><div class="d">+31 este mes</div></div><div class="card kpi"><div class="lab">${ico('pin')}De Punta Gorda</div><div class="val">54%</div><div class="d n">Carrasco 29% · Malvín 11%</div></div><div class="card kpi"><div class="lab">${ico('card')}Pagan con Santander</div><div class="val">46%</div><div class="d n">clientes frecuentes</div></div></div>
+  $('#pane').innerHTML = `<div class="grid3"><div class="card kpi"><div class="lab">${ico('users')}Clientes identificados</div><div class="val">486</div><div class="d">+31 este mes</div></div><div class="card kpi"><div class="lab">${ico('pin')}De Punta Gorda</div><div class="val">54%</div><div class="d n">Carrasco 29% · Malvín 11%</div></div><div class="card kpi"><div class="lab">${ico('card')}Pagan con Santander</div><div class="val">46%</div><div class="d n">clientes frecuentes</div></div></div>
   <div class="card"><h3>${ico('users')}Clientes frecuentes</h3><div class="tw"><table><tr><th>Cliente</th><th>Barrio</th><th>Suele pagar con</th><th>Siempre lleva</th><th class="num">Compras</th><th class="num">Total</th><th>Última</th></tr>${clientes.map((c,i)=>`<tr class="cl" onclick="verCliente(${i})"><td><div class="row"><div class="av">${ini(c.n)}</div><b>${c.n}</b></div></td><td>${c.b}</td><td>${c.tar}</td><td class="muted">${c.pref}</td><td class="num">${c.comp}</td><td class="num">${fmt(c.tot)}</td><td>${c.ult}</td></tr>`).join('')}</table></div></div>`;
 };
 function verCliente(i){const c=clientes[i];modal(c.n,`<div class="stat-row"><span>Barrio</span><b>${c.b}</b></div><div class="stat-row"><span>Teléfono</span><b>${c.t}</b></div><div class="stat-row"><span>Compras</span><b>${c.comp}</b></div><div class="stat-row"><span>Total</span><b>${fmt(c.tot)}</b></div><div class="stat-row"><span>Ticket promedio</span><b>${fmt(c.tot/c.comp)}</b></div><div class="stat-row"><span>Siempre lleva</span><b>${c.pref}</b></div>`,`<button class="btn" data-close>Cerrar</button><button class="btn pri" onclick="closeModal();toast('Mensaje enviado a ${c.n.split(' ')[0]} por WhatsApp')">Escribir por WhatsApp</button>`);}
@@ -610,7 +736,7 @@ function verCliente(i){const c=clientes[i];modal(c.n,`<div class="stat-row"><spa
 // ---------- Equipo ----------
 VIEWS.equipo = () => {
   const vh=ventas.filter(esHoy);
-  $('#view').innerHTML = `<div class="grid3">${EMPLEADOS.map(e=>{const vs=ventas.filter(v=>v.cajero===e.n);return `<div class="card"><div class="row" style="margin-bottom:12px"><div class="av">${ini(e.n)}</div><div><b>${e.n}</b><div class="tiny">${e.rol}</div></div></div><div class="stat-row"><span>Ventas hoy</span><b>${vh.filter(v=>v.cajero===e.n).length}</b></div><div class="stat-row"><span>Vendido en 8 días</span><b>${fmt(sum(vs,v=>v.total))}</b></div><div class="stat-row"><span>Diferencias de caja</span><b>${e.n.startsWith('Nico')?fmt(-120):'Ninguna'}</b></div></div>`}).join('')}</div>
+  $('#pane').innerHTML = `<div class="grid3">${EMPLEADOS.map(e=>{const vs=ventas.filter(v=>v.cajero===e.n);return `<div class="card"><div class="row" style="margin-bottom:12px"><div class="av">${ini(e.n)}</div><div><b>${e.n}</b><div class="tiny">${e.rol}</div></div></div><div class="stat-row"><span>Ventas hoy</span><b>${vh.filter(v=>v.cajero===e.n).length}</b></div><div class="stat-row"><span>Vendido en 8 días</span><b>${fmt(sum(vs,v=>v.total))}</b></div><div class="stat-row"><span>Diferencias de caja</span><b>${e.n.startsWith('Nico')?fmt(-120):'Ninguna'}</b></div></div>`}).join('')}</div>
   <div class="grid2e"><div class="card"><h3>${ico('lock')}Qué puede hacer cada uno</h3>${[['Vender y cobrar','Todos'],['Abrir y cerrar caja','Cajeros'],['Anular una venta','Solo con clave del dueño'],['Cambiar precios','Solo el dueño'],['Ver márgenes y costos','Solo el dueño'],['Editar promos Santander','Solo el dueño']].map(([a,b])=>`<div class="stat-row"><span>${a}</span><b>${b}</b></div>`).join('')}</div>
   <div class="card"><h3>${ico('check')}Lo que le simplifica al equipo</h3>${['No calcula descuentos: el sistema sabe qué tarjeta y qué día es.','No hace facturas: salen solas al cobrar.','No anota ventas en el cuaderno: entran solas desde el POS.','El cierre de caja se hace en dos minutos.'].map(t=>`<div class="list-it">${ico('check')}<span>${t}</span></div>`).join('')}</div></div>`;
 };
@@ -618,14 +744,14 @@ function cambiarUsuario(){modal('Cambiar de usuario',EMPLEADOS.concat([{n:'Rodri
 
 // ---------- Delivery (próximamente) ----------
 VIEWS.delivery = () => {
-  $('#view').innerHTML = `<div class="card soon" style="padding:34px;margin-bottom:14px"><span class="pill p-gold">Fase 2</span><h2 style="margin:12px 0 6px">Delivery, cuando el local esté listo</h2><p class="muted" style="max-width:640px">Lo dejamos planificado para una segunda etapa. Cuando se active, los pedidos por WhatsApp e Instagram entran al mismo sistema, con la misma lista de precios, las mismas promos Santander y la factura automática.</p></div>
+  $('#pane').innerHTML = `<div class="card soon" style="padding:34px;margin-bottom:14px"><span class="pill p-gold">Fase 2</span><h2 style="margin:12px 0 6px">Delivery, cuando el local esté listo</h2><p class="muted" style="max-width:640px">Lo dejamos planificado para una segunda etapa. Cuando se active, los pedidos por WhatsApp e Instagram entran al mismo sistema, con la misma lista de precios, las mismas promos Santander y la factura automática.</p></div>
   <div class="grid3">${[['msg','Pedidos por WhatsApp','El cliente escribe, el pedido queda cargado sin copiar nada.'],['moto','Seguimiento del reparto','Nuevo, preparando, en camino, entregado. Al cliente le llega el aviso.'],['card','Cobro con link de pago','Link de pago con tarjeta Santander y el descuento aplicado.']].map(([i,t,d])=>`<div class="card"><h3>${ico(i==='msg'?'users':i)}${t}</h3><p class="muted" style="margin:0">${d}</p></div>`).join('')}</div>
   <div class="card"><h3>${ico('eye')}Vista previa</h3><div class="tabs"><span class="pill p-br">Nuevos 3</span><span class="pill p-warn">Preparando 2</span><span class="pill p-gold">En camino 1</span><span class="pill p-ok">Entregados 9</span></div><button class="btn" onclick="toast('Te avisamos cuando arranque la fase 2')">${ico('clock')}Avisame cuando esté</button></div>`;
 };
 
 // ---------- Configuración ----------
 VIEWS.config = () => {
-  $('#view').innerHTML = `<div class="grid2e"><div class="card"><h3>${ico('pin')}Datos del local</h3><label class="f">Nombre<input value="PG Mercado de Carnes"></label><label class="f">Dirección<input value="Av. Gral. José María Paz 1425, Montevideo"></label><label class="f">WhatsApp<input value="+598 98 789 200"></label><button class="btn pri" onclick="toast('Datos guardados')">Guardar</button>
+  $('#pane').innerHTML = `<div class="grid2e"><div class="card"><h3>${ico('pin')}Datos del local</h3><label class="f">Nombre<input value="PG Mercado de Carnes"></label><label class="f">Dirección<input value="Av. Gral. José María Paz 1425, Montevideo"></label><label class="f">WhatsApp<input value="+598 98 789 200"></label><button class="btn pri" onclick="toast('Datos guardados')">Guardar</button>
   <h3 style="margin-top:20px">${ico('clock')}Horarios</h3>${[['Lunes a miércoles','9:00 a 20:00'],['Jueves y viernes','9:00 a 21:00'],['Sábados','10:00 a 21:00'],['Domingos','10:00 a 14:00']].map(([d,h])=>`<div class="stat-row"><span>${d}</span><b>${h}</b></div>`).join('')}</div>
   <div class="card"><h3>${ico('link')}Conexiones</h3>${[['pos','POS Getnet (Santander)','Las ventas con tarjeta entran solas'],['doc','Facturación electrónica DGI','e-Ticket y e-Factura automáticos'],['card','Promociones Santander','Reglas por tarjeta y día'],['users','WhatsApp Business','Comprobantes y resumen de caja'],['down','Excel','Planilla de ventas descargable']].map(([i,t,d])=>`<div class="list-it">${ico(i)}<div style="flex:1"><b>${t}</b><div class="tiny">${d}</div></div><span class="pill p-ok">Conectado</span></div>`).join('')}</div></div>`;
 };
@@ -650,7 +776,7 @@ setInterval(()=>{
   const v=armarVenta(new Date(),caja.cajero,TARS[Math.floor(Math.random()*TARS.length)],itemsAzar(),'POS Getnet');v.fresh=true;ventas.unshift(v);
   caja.movs.push({h:v.fecha,t:'Venta '+v.cfe,d:TARJETAS[v.tar].n+' · POS Getnet',m:v.total});
   toast(`Nueva venta desde el POS: ${fmt(v.total)} con ${TARJETAS[v.tar].n}. Ya está en la planilla.`,'pos');
-  if(['inicio','planilla','caja','facturas'].includes(view))VIEWS[view]();
+  if(['inicio','planilla','caja','facturas','estado','iva'].includes(view))VIEWS[view]();
 },45000);
 
 go('inicio');
