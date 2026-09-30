@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pura Vida Paisajismo · Gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F0E6; --panel:#FFFFFF; --ink:#16241A; --ink-2:#56665A; --ink-3:#98A39A; --line:#E5E0D2;
+  --brand:#1E8A3C; --brand-deep:#123A22; --brand-soft:#E1F0DF; --lime:#A6CE39; --lime-soft:#F0F7DA; --cream:#EFE7D6;
+  --ok:#1E8A3C; --ok-soft:#E1F0DF; --warn:#C98A12; --warn-soft:#FBF0D6; --bad:#C8452F; --bad-soft:#FBE5DF; --sky:#3F7FB5; --sky-soft:#E3EEF8;
+  --r:10px; --r-lg:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Barlow,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14.5px}
+button,input,select,textarea{font:inherit;color:inherit}
+button:disabled{opacity:.45;cursor:not-allowed}
+.ic{width:1.15em;height:1.15em;flex:none;vertical-align:-.15em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.app{display:grid;grid-template-columns:232px 1fr;height:100vh}
+aside{background:var(--brand-deep);color:#E4EFE3;display:flex;flex-direction:column;padding:18px 12px;overflow:auto}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px 18px}
+.logo b{display:block;font-size:17px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;line-height:1}
+.logo small{display:block;font-size:11px;color:#A9C7AE;letter-spacing:2px;text-transform:uppercase;margin-top:3px}
+.navg{font-size:10.5px;text-transform:uppercase;letter-spacing:1.4px;color:#86A58C;margin:18px 10px 6px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:#E4EFE3;text-align:left;font-weight:600;font-size:15px}
+.nav:hover{background:rgba(255,255,255,.07)}
+.nav.on{background:#fff;color:var(--brand-deep)}
+.nav .cnt{margin-left:auto;background:var(--lime);color:var(--brand-deep);border-radius:20px;font-size:11px;padding:0 7px;font-weight:800}
+.side-foot{margin-top:auto;padding:12px 10px 4px;font-size:12.5px;color:#A9C7AE;border-top:1px solid rgba(255,255,255,.12)}
+.side-foot .row{margin-top:6px}
+main{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+header{display:flex;align-items:center;gap:12px;padding:12px 24px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:22px;margin:0;font-weight:800;text-transform:uppercase;letter-spacing:.3px}
+header .sub{color:var(--ink-3);font-size:13px}
+.search{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:var(--r);padding:7px 12px;color:var(--ink-3);cursor:pointer;min-width:230px;background:var(--bg)}
+.search kbd{margin-left:auto;font-size:11px;border:1px solid var(--line);border-radius:5px;padding:0 5px;background:#fff}
+.user{display:flex;align-items:center;gap:8px;font-weight:600}
+.av{width:32px;height:32px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:800;font-size:12px;flex:none}
+.content{padding:18px 24px 40px;overflow:auto;flex:1}
+.mtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:-4px 0 18px;overflow-x:auto}
+.mtab{border:0;background:none;padding:10px 14px;font-weight:700;color:var(--ink-2);border-bottom:2.5px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap;font-size:14.5px}
+.mtab:hover{color:var(--ink)}.mtab.on{color:var(--brand);border-color:var(--brand)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1.45fr 1fr;gap:14px;margin-bottom:14px}
+.grid2e{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}
+.card h3{margin:0 0 12px;font-size:15.5px;display:flex;align-items:center;gap:8px;font-weight:700}
+.card h3 .act{margin-left:auto}
+.kpi .lab{color:var(--ink-2);font-size:13px;display:flex;align-items:center;gap:6px}
+.kpi .val{font-size:26px;font-weight:800;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:12.5px;color:var(--ok);font-weight:700}
+.kpi .d.neg{color:var(--bad)}.kpi .d.n{color:var(--ink-3)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tr.cl{cursor:pointer}tr.cl:hover td{background:#FAF8F2}
+tr.tot td{font-weight:800;background:#FAF8F2;border-top:2px solid var(--line)}
+.num{text-align:right;white-space:nowrap}
+.muted{color:var(--ink-2)}.tiny{font-size:12.5px;color:var(--ink-3)}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)}.p-warn{background:var(--warn-soft);color:#946311}.p-bad{background:var(--bad-soft);color:var(--bad)}.p-n{background:#EFEBE0;color:var(--ink-2)}.p-lime{background:var(--lime-soft);color:#5E7A12}.p-sky{background:var(--sky-soft);color:var(--sky)}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:var(--r);padding:8px 13px;cursor:pointer;font-weight:700;font-size:13.5px;white-space:nowrap}
+.btn:hover:not(:disabled){border-color:var(--ink-3)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.pri:hover:not(:disabled){background:#17722F}
+.btn.lime{background:var(--lime);border-color:var(--lime);color:var(--brand-deep)}
+.btn.sm{padding:5px 9px;font-size:12.5px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.tab{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 13px;cursor:pointer;font-weight:700;font-size:13px;color:var(--ink-2)}
+.tab.on{background:var(--brand-deep);border-color:var(--brand-deep);color:#fff}
+.inp{border:1px solid var(--line);border-radius:var(--r);padding:7px 11px;background:#fff}
+.bar{height:8px;background:#EFEBE0;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brand);border-radius:6px}
+.row{display:flex;align-items:center;gap:10px}
+.list-it{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.list-it:last-child{border-bottom:0}
+.hero{background:linear-gradient(115deg,var(--brand-deep),#1E6B37);color:#fff;border-radius:var(--r-lg);padding:20px 22px;margin-bottom:14px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.hero h2{margin:0 0 4px;font-size:24px;font-weight:800}
+.hero p{margin:0;color:#CFE3D2}
+.hero .btn{margin-left:auto;color:var(--ink)}
+.chart{display:flex;align-items:flex-end;gap:8px;height:160px;padding-top:10px}
+.chart .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.chart .stk{width:100%;display:flex;flex-direction:column-reverse;border-radius:6px 6px 2px 2px;overflow:hidden}
+.chart .stk i{display:block}
+.chart .c span{font-size:11.5px;color:var(--ink-3)}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--ink-2);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.overlay{position:fixed;inset:0;background:rgba(18,36,26,.45);display:grid;place-items:center;z-index:50;padding:20px}
+.modal{background:#fff;border-radius:var(--r-lg);width:min(560px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal.wide{width:min(820px,100%)}
+.modal .mh{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:2}
+.modal .mh h2{margin:0;font-size:19px;font-weight:800}
+.modal .mb{padding:18px 20px}
+.modal .mf{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:#fff}
+.x{margin-left:auto;border:0;background:none;cursor:pointer;color:var(--ink-3);padding:4px}
+label.f{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2);margin:0 0 12px}
+label.f input,label.f select,label.f textarea{display:block;width:100%;margin-top:5px;border:1px solid var(--line);border-radius:var(--r);padding:9px 11px;background:#fff}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toasts{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:60}
+.toast{background:var(--brand-deep);color:#fff;padding:12px 16px;border-radius:var(--r);display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.2);animation:up .25s;max-width:400px}
+.toast .ic{color:var(--lime)}
+@keyframes up{from{transform:translateY(10px);opacity:0}}
+.stat-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
+.stat-row:last-child{border:0}
+.empty{color:var(--ink-3);text-align:center;padding:26px 0}
+.kres{border-bottom:1px solid var(--line);padding:10px 14px;cursor:pointer;display:flex;gap:10px;align-items:center}
+.kres:hover{background:var(--brand-soft)}
+/* clima */
+.wx{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.wd{border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;background:#fff}
+.wd.al{border-color:var(--warn);background:var(--warn-soft)}
+.wd b{display:block;font-size:12.5px;text-transform:capitalize}
+.wd .t{font-weight:800;font-size:15px;margin-top:4px}
+.wd .r{font-size:11.5px;color:var(--sky);font-weight:700}
+.wd .ic{width:26px;height:26px;margin-top:6px}
+.alert{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:12px;background:var(--warn-soft);margin-top:10px}
+.alert .ic{color:var(--warn);margin-top:2px}
+.alert.sky{background:var(--sky-soft)}.alert.sky .ic{color:var(--sky)}
+.alert.lime{background:var(--lime-soft)}.alert.lime .ic{color:#5E7A12}
+.alert b{display:block}
+.alert .btn{margin-left:auto}
+/* kanban */
+.kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;align-items:start}
+.col{background:#ECE7DA;border-radius:var(--r-lg);padding:10px;min-height:320px}
+.col.over{outline:2px dashed var(--brand)}
+.col h4{margin:4px 6px 10px;font-size:13.5px;display:flex;justify-content:space-between;text-transform:uppercase;letter-spacing:.5px}
+.tk{background:#fff;border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px;cursor:grab}
+.tk b{display:block;margin-bottom:2px}
+.tk .ft{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:6px}
+/* proyectos */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.pcard{background:#fff;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;cursor:pointer;transition:box-shadow .15s}
+.pcard:hover{box-shadow:0 8px 24px rgba(18,58,34,.12)}
+.pcard .plan{background:#F7F4EC;padding:10px 10px 4px}
+.pcard .pb{padding:12px 14px 14px}
+.plan svg{display:block;width:100%;height:auto}
+.plan-big{background:#F7F4EC;border-radius:12px;padding:12px;border:1px solid var(--line)}
+.zone{cursor:pointer;transition:opacity .15s}
+.zone:hover{opacity:.82}
+.zone.sel{stroke:var(--brand-deep)!important;stroke-width:.8!important}
+.months{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-top:6px}
+.months span{height:8px;border-radius:3px;background:#EFEBE0}
+.mlab{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;font-size:10px;color:var(--ink-3);text-align:center;margin-top:2px}
+input[type=range]{width:100%;accent-color:var(--brand)}
+.swatch{width:14px;height:14px;border-radius:4px;display:inline-block;flex:none;border:1px solid rgba(0,0,0,.08)}
+.spc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer}
+.spc:hover{border-color:var(--brand)}
+.spc .top{height:54px;border-radius:10px;margin-bottom:10px;position:relative;overflow:hidden}
+.back{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--brand);font-weight:700;cursor:pointer;padding:0;margin-bottom:10px}
+.steps .st{display:grid;grid-template-columns:22px 1fr auto;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center}
+.steps .st:last-child{border:0}
+.dot{width:18px;height:18px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center}
+.dot.done{background:var(--brand);border-color:var(--brand);color:#fff}
+.dot.now{border-color:var(--lime);background:var(--lime-soft)}
+.week{display:grid;grid-template-columns:150px repeat(6,1fr);gap:6px}
+.week .h{font-size:12px;font-weight:700;color:var(--ink-3);text-transform:uppercase;padding:4px}
+.week .cz{font-weight:700;padding:8px 4px;font-size:13px}
+.cell{background:#F7F4EC;border-radius:10px;min-height:64px;padding:5px;display:flex;flex-direction:column;gap:4px}
+.vis{background:#fff;border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:8px;padding:5px 7px;font-size:12px;cursor:pointer;line-height:1.25}
+.vis.done{border-left-color:var(--ink-3);opacity:.6}
+.vis.hu{border-left-color:#C9A36B}
+.chk{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.chk .bx{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;flex:none}
+.chk.on .bx{background:var(--brand);border-color:var(--brand);color:#fff}
+.portal{background:var(--cream);border-radius:14px;padding:18px}
+@media (max-width:1150px){.grid4{grid-template-columns:repeat(2,1fr)}.grid3,.grid2,.grid2e{grid-template-columns:1fr}.kanban{grid-template-columns:repeat(2,1fr)}.search{display:none}}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-inicio" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.6 3.5 6"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 15-14-1 10-6 15-14 15"/><path d="M5 19 13 11"/></symbol>
+  <symbol id="i-plan" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h7v12M10 14h11M15 3v6"/></symbol>
+  <symbol id="i-shears" viewBox="0 0 24 24"><circle cx="6" cy="18" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8 16 20 4M16 16 4 4"/></symbol>
+  <symbol id="i-team" viewBox="0 0 24 24"><circle cx="12" cy="7" r="3.5"/><path d="M5 21c.5-4.5 3.2-7 7-7s6.5 2.5 7 7"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9a4.5 4.5 0 0 0 1 9z"/></symbol>
+  <symbol id="i-rain" viewBox="0 0 24 24"><path d="M7 14h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 5a4.5 4.5 0 0 0 1 9z"/><path d="M8 17l-1 3M12 17l-1 3M16 17l-1 3"/></symbol>
+  <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 6h12v10H2zM14 10h4l4 3v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-insta" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></symbol>
+  <symbol id="i-tool" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></symbol>
+  <symbol id="i-sprout" viewBox="0 0 24 24"><path d="M12 21v-9"/><path d="M12 12c0-4-3-6-7-6 0 4 3 6 7 6zM12 10c0-4 3-6 7-6 0 4-3 6-7 6z"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-flower" viewBox="0 0 24 24"><circle cx="12" cy="10" r="2.5"/><path d="M12 7.5a2.5 2.5 0 1 1 2.4-3.2M14.4 10.8a2.5 2.5 0 1 1 1.5 3.9M9.6 10.8a2.5 2.5 0 1 0-1.5 3.9M9.6 4.3A2.5 2.5 0 0 1 12 7.5M12 12.5V21M12 18c-2-2-4-2-5-1"/></symbol>
+</svg>
+
+<div class="app">
+  <aside>
+    <div class="logo">
+      <svg width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#fff"/><path d="M20 5c5 4 9 9 9 15a9 9 0 0 1-18 0c0-6 4-11 9-15z" fill="#1E8A3C"/><path d="M24 12c-4-1-8 1-7 4s7 2 7 6-5 5-8 3" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M20 29v6" stroke="#1E8A3C" stroke-width="2" stroke-linecap="round"/></svg>
+      <div><b>Pura Vida</b><small>Paisajismo</small></div>
+    </div>
+    <div id="nav"></div>
+    <div class="side-foot"><div class="row"><svg class="ic"><use href="#i-insta"/></svg>@puravida_paisajismo</div><div class="row"><svg class="ic"><use href="#i-pin"/></svg>Montevideo y Canelones</div></div>
+  </aside>
+  <main>
+    <header>
+      <div><h1 id="title">Inicio</h1><div class="sub" id="subtitle"></div></div>
+      <div class="search" id="openK"><svg class="ic"><use href="#i-search"/></svg>Buscar jardín, cliente, planta<kbd>Ctrl K</kbd></div>
+      <div class="user"><div class="av">LD</div><div><div>Lolo Diaz</div><div class="tiny">Paisajista</div></div></div>
+    </header>
+    <div class="content" id="view"></div>
+  </main>
+</div>
+<div id="layer"></div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+// ================= Utilidades =================
+const $ = s => document.querySelector(s);
+const usd = n => 'US$ ' + Math.round(n).toLocaleString('es-UY');
+const num = n => Math.round(n).toLocaleString('es-UY');
+const pct = n => Math.round(n) + '%';
+const ico = id => `<svg class="ic"><use href="#i-${id}"/></svg>`;
+const sum = (a,f) => a.reduce((s,x)=>s+f(x),0);
+const ini = n => n.replace(/^(Familia|Casa|Jardín)\s+/,'').split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+let seed = 5; const rnd = () => (seed = (seed*9301+49297)%233280)/233280;
+const DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'];
+const MC = ['E','F','M','A','M','J','J','A','S','O','N','D'];
+const HOY = new Date(); HOY.setHours(12,0,0,0);
+const DAY = 86400000;
+const addD = n => new Date(HOY.getTime()+n*DAY);
+const fcorta = d => d.getDate()+'/'+(d.getMonth()+1);
+const fdia = d => DIAS[d.getDay()].slice(0,3)+' '+d.getDate();
+const esc = s => String(s).replace(/'/g,"\\'");
+
+// ================= Plantas (paleta de Pura Vida) =================
+// fl = meses de floración (1-12), dens = plantas por m², costo/precio en US$ por planta
+const ESP = [
+  {id:1,n:'Stipa',ci:'Nassella tenuissima',t:'Gramínea',sol:'Sol pleno',riego:'Bajo',alt:'0,6 m',nat:true,col:'#E3D08E',fl:[10,11,12,1],mac:'M3',costo:3.2,precio:6.5,st:140,dens:5,viv:'Nativas del Sur'},
+  {id:2,n:'Achillea amarilla',ci:'Achillea millefolium',t:'Perenne',sol:'Sol pleno',riego:'Bajo',alt:'0,6 m',nat:false,col:'#F2C230',fl:[10,11,12,1,2],mac:'M3',costo:2.8,precio:6,st:90,dens:5,viv:'Vivero Las Acacias'},
+  {id:3,n:'Salvia leucantha',ci:'Salvia leucantha',t:'Arbusto',sol:'Sol pleno',riego:'Bajo',alt:'1 m',nat:false,col:'#8E5BB5',fl:[3,4,5,6],mac:'M10',costo:4.5,precio:10,st:35,dens:2,viv:'Vivero Las Acacias'},
+  {id:4,n:'Salvia Hot Lips',ci:'Salvia microphylla',t:'Arbusto',sol:'Sol pleno',riego:'Medio',alt:'0,8 m',nat:false,col:'#E0457B',fl:[10,11,12,1,2,3],mac:'M3',costo:3.5,precio:8,st:24,dens:3,viv:'Vivero Las Acacias'},
+  {id:5,n:'Gaura',ci:'Gaura lindheimeri',t:'Perenne',sol:'Sol pleno',riego:'Bajo',alt:'0,8 m',nat:false,col:'#F1D3E2',fl:[11,12,1,2,3],mac:'M3',costo:3,precio:7,st:44,dens:4,viv:'Vivero Las Acacias'},
+  {id:6,n:'Lavanda',ci:'Lavandula dentata',t:'Arbusto',sol:'Sol pleno',riego:'Bajo',alt:'0,6 m',nat:false,col:'#8C7CC9',fl:[9,10,11,12,1],mac:'M3',costo:3.2,precio:7.5,st:18,dens:4,viv:'Vivero Carrasco'},
+  {id:7,n:'Agapanto',ci:'Agapanthus africanus',t:'Perenne',sol:'Sol o media sombra',riego:'Medio',alt:'0,7 m',nat:false,col:'#5C7FD6',fl:[12,1,2],mac:'M10',costo:4,precio:9,st:50,dens:4,viv:'Vivero Carrasco'},
+  {id:8,n:'Pennisetum rubrum',ci:'Pennisetum setaceum',t:'Gramínea',sol:'Sol pleno',riego:'Bajo',alt:'1,2 m',nat:false,col:'#9C3B4A',fl:[1,2,3,4],mac:'M10',costo:5,precio:11,st:25,dens:2,viv:'Vivero Las Acacias'},
+  {id:9,n:'Paja mansa',ci:'Cortaderia selloana',t:'Gramínea',sol:'Sol pleno',riego:'Bajo',alt:'2 m',nat:true,col:'#E9DDB8',fl:[2,3,4],mac:'M10',costo:5.5,precio:12,st:12,dens:.5,viv:'Nativas del Sur'},
+  {id:10,n:'Verbena',ci:'Verbena bonariensis',t:'Perenne',sol:'Sol pleno',riego:'Bajo',alt:'1,2 m',nat:true,col:'#7B4FB3',fl:[11,12,1,2,3],mac:'M3',costo:2.5,precio:6,st:70,dens:4,viv:'Nativas del Sur'},
+  {id:11,n:'Erigeron',ci:'Erigeron karvinskianus',t:'Cubresuelo',sol:'Sol pleno',riego:'Bajo',alt:'0,3 m',nat:false,col:'#F4E8EE',fl:[9,10,11,12,1,2,3,4],mac:'Plantín',costo:1.5,precio:4,st:160,dens:8,viv:'Vivero Carrasco'},
+  {id:12,n:'Dietes',ci:'Dietes iridioides',t:'Perenne',sol:'Sol o media sombra',riego:'Bajo',alt:'0,7 m',nat:false,col:'#EDEDF2',fl:[9,10,11,12],mac:'M3',costo:3,precio:7,st:48,dens:4,viv:'Vivero Carrasco'},
+  {id:13,n:'Eugenia',ci:'Eugenia myrtifolia',t:'Arbusto',sol:'Sol o media sombra',riego:'Medio',alt:'2,5 m',nat:false,col:'#C85A3C',fl:[9,10],mac:'M10',costo:6,precio:14,st:40,dens:1.5,viv:'Vivero Carrasco'},
+  {id:14,n:'Pitanga',ci:'Eugenia uniflora',t:'Arbusto',sol:'Sol pleno',riego:'Medio',alt:'3 m',nat:true,col:'#F7F4E8',fl:[9,10],mac:'M10',costo:7,precio:16,st:15,dens:1,viv:'Nativas del Sur'},
+  {id:15,n:'Ceibo',ci:'Erythrina crista-galli',t:'Árbol',sol:'Sol pleno',riego:'Medio',alt:'6 m',nat:true,col:'#D2232A',fl:[11,12,1],mac:'Ejemplar 2 m',costo:45,precio:95,st:4,dens:0,viv:'Nativas del Sur'},
+  {id:16,n:'Olivo',ci:'Olea europaea',t:'Árbol',sol:'Sol pleno',riego:'Bajo',alt:'5 m',nat:false,col:'#C9D3B0',fl:[],mac:'Ejemplar 2 m',costo:90,precio:180,st:3,dens:0,viv:'Vivero Las Acacias'},
+  {id:17,n:'Romero rastrero',ci:'Salvia rosmarinus Prostratus',t:'Cubresuelo',sol:'Sol pleno',riego:'Bajo',alt:'0,3 m',nat:false,col:'#7FA6D8',fl:[7,8,9,10],mac:'M3',costo:2.8,precio:6.5,st:55,dens:5,viv:'Vivero Carrasco'},
+  {id:18,n:'Ophiopogon',ci:'Ophiopogon japonicus',t:'Cubresuelo',sol:'Media sombra',riego:'Medio',alt:'0,2 m',nat:false,col:'#6A5ACD',fl:[12],mac:'Plantín',costo:1.2,precio:3.5,st:200,dens:12,viv:'Vivero Carrasco'},
+  {id:19,n:'Liriope',ci:'Liriope muscari',t:'Cubresuelo',sol:'Media sombra',riego:'Medio',alt:'0,3 m',nat:false,col:'#8A6CCB',fl:[1,2,3],mac:'M3',costo:2.5,precio:6,st:70,dens:6,viv:'Vivero Carrasco'},
+  {id:20,n:'Lantana rastrera',ci:'Lantana montevidensis',t:'Cubresuelo',sol:'Sol pleno',riego:'Bajo',alt:'0,4 m',nat:true,col:'#B98AD9',fl:[10,11,12,1,2,3,4],mac:'M3',costo:2.5,precio:6,st:64,dens:4,viv:'Nativas del Sur'},
+  {id:21,n:'Hemerocallis',ci:'Hemerocallis fulva',t:'Perenne',sol:'Sol pleno',riego:'Medio',alt:'0,7 m',nat:false,col:'#F08A24',fl:[11,12,1],mac:'M3',costo:3,precio:7,st:36,dens:4,viv:'Vivero Las Acacias'},
+  {id:22,n:'Jazmín del país',ci:'Trachelospermum jasminoides',t:'Trepadora',sol:'Sol o media sombra',riego:'Medio',alt:'Trepadora',nat:false,col:'#FBF7EC',fl:[10,11,12],mac:'M10',costo:5,precio:12,st:22,dens:1,viv:'Vivero Carrasco'},
+  {id:23,n:'Tomate cherry',ci:'Solanum lycopersicum',t:'Huerta',sol:'Sol pleno',riego:'Alto',alt:'1,5 m',nat:false,col:'#E3452F',fl:[12,1,2,3],mac:'Plantín',costo:.6,precio:1.8,st:60,dens:3,viv:'Vivero Las Acacias'},
+  {id:24,n:'Lechuga',ci:'Lactuca sativa',t:'Huerta',sol:'Sol pleno',riego:'Alto',alt:'0,2 m',nat:false,col:'#9CCB5A',fl:[],mac:'Plantín',costo:.3,precio:1,st:120,dens:10,viv:'Vivero Las Acacias'},
+  {id:25,n:'Albahaca',ci:'Ocimum basilicum',t:'Huerta',sol:'Sol pleno',riego:'Alto',alt:'0,4 m',nat:false,col:'#5E9E3E',fl:[1,2],mac:'Plantín',costo:.5,precio:1.5,st:80,dens:6,viv:'Vivero Las Acacias'},
+  {id:26,n:'Frutilla',ci:'Fragaria × ananassa',t:'Huerta',sol:'Sol pleno',riego:'Alto',alt:'0,2 m',nat:false,col:'#D83A4A',fl:[10,11,12],mac:'Plantín',costo:.7,precio:2,st:40,dens:8,viv:'Vivero Las Acacias'},
+];
+const S = id => ESP.find(e=>e.id===id);
+const INSUMOS = {
+  tepe:{n:'Césped en tepes (Bermuda Tifway)',u:'m²',costo:4.2,precio:7.5,st:0},
+  sust:{n:'Sustrato orgánico',u:'m³',costo:38,precio:65,st:14},
+  mulch:{n:'Mulch de corteza de pino',u:'m³',costo:45,precio:80,st:6},
+  piedra:{n:'Piedra partida blanca',u:'m³',costo:52,precio:90,st:3},
+  riego:{n:'Riego por goteo (manguera y goteros)',u:'m',costo:.9,precio:2.2,st:600},
+  prog:{n:'Programador de riego 6 zonas',u:'u',costo:85,precio:160,st:2},
+};
+
+// ================= Plano: diseños tipo =================
+const BASE_COL = {cantero:'#A9C98A',cerco:'#4F7F3A',cesped:'#CFE3A6',huerta:'#C9A36B',deck:'#DCC7A1',piedra:'#D3CEC3'};
+const LAYOUTS = {
+  A:{fijos:[{pts:'0,0 100,0 100,15 0,15',lab:'Casa',lx:50,ly:9}],zonas:[
+    {k:'za',n:'Cantero de ingreso',tipo:'cantero',luz:'Sol pleno',sh:.08,pts:'3,18 30,18 30,28 3,42',lx:13,ly:26},
+    {k:'zb',n:'Borde de gramíneas',tipo:'cantero',luz:'Sol pleno',sh:.12,pts:'71,18 97,18 97,67 87,67 87,28 71,28',lx:84,ly:23.5},
+    {k:'zc',n:'Cerco perimetral',tipo:'cerco',luz:'Media sombra',sh:.06,pts:'3,62 86,62 86,67 3,67',lx:44,ly:65.6},
+    {k:'zd',n:'Césped',tipo:'cesped',luz:'Sol pleno',sh:.45,pts:'24,31 84,31 84,58 24,58',lx:54,ly:45},
+    {k:'ze',n:'Huerta',tipo:'huerta',luz:'Sol pleno',sh:.05,pts:'4,46 18,46 18,58 4,58',lx:11,ly:53},
+    {k:'zf',n:'Deck y galería',tipo:'deck',luz:'Media sombra',sh:.09,pts:'33,18 68,18 68,28 33,28',lx:50.5,ly:24},
+    {k:'zg',n:'Camino de piedra',tipo:'piedra',luz:'Sol pleno',sh:.03,pts:'19.5,31 22.5,31 22.5,61 19.5,61',lx:0,ly:0}]},
+  B:{fijos:[{pts:'0,64 100,64 100,70 0,70',lab:'Living',lx:50,ly:68}],zonas:[
+    {k:'z3',n:'Deck de lapacho',tipo:'deck',luz:'Sol pleno',sh:.55,pts:'4,15 83,15 83,63 4,63',lx:44,ly:38},
+    {k:'z1',n:'Jardinera norte',tipo:'cantero',luz:'Sol pleno',sh:.16,pts:'4,3 96,3 96,14 4,14',lx:50,ly:9.5},
+    {k:'z2',n:'Jardinera este',tipo:'cantero',luz:'Media sombra',sh:.12,pts:'84,15 96,15 96,63 84,63',lx:90,ly:40},
+    {k:'z4',n:'Macetones de olivo',tipo:'cantero',luz:'Sol pleno',sh:.05,pts:'8,48 28,48 28,60 8,60',lx:18,ly:55},
+    {k:'z5',n:'Huerta en altura',tipo:'huerta',luz:'Sol pleno',sh:.05,pts:'58,48 80,48 80,60 58,60',lx:69,ly:55}]},
+};
+const PAL = {
+  jardin:{za:[[4,.35],[2,.3],[11,.35]],zb:[[1,.4],[8,.2],[10,.2],[5,.2]],zc:[[13,1]],ze:[[23,.3],[24,.4],[25,.3]]},
+  nativo:{za:[[20,.4],[10,.3],[1,.3]],zb:[[9,.1],[1,.5],[10,.2],[2,.2]],zc:[[14,1]],ze:[[24,.5],[26,.5]]},
+  costero:{za:[[6,.4],[17,.3],[12,.3]],zb:[[1,.5],[5,.25],[7,.25]],zc:[[13,1]],ze:[[23,.5],[25,.5]]},
+  terraza:{z1:[[6,.4],[22,.2],[11,.4]],z2:[[19,.5],[18,.5]],z4:[[17,1]],z5:[[23,.4],[25,.3],[24,.3]]},
+};
+const TREES = {jardin:[[15,92,62],[16,12,36]],nativo:[[15,92,62],[15,78,22],[14,10,35]],costero:[[16,12,36],[16,90,60]],terraza:[[16,14,54],[16,22,54]]};
+
+// ================= Proyectos =================
+const ETAPAS = [['diseno','Diseño'],['presupuesto','Presupuesto'],['aprobado','Aprobado'],['obra','En obra'],['terminado','Terminado']];
+const CRONO = [['Replanteo y preparación de suelo',3],['Instalación de riego',2],['Canteros y plantación',4],['Césped',2],['Mulch y terminaciones',2],['Entrega y recorrida con el cliente',1]];
+let proyectos = [
+  {id:'P-118',n:'Jardín Ferrés',cli:'Familia Ferrés',b:'Carrasco',m2:420,lay:'A',pal:'jardin',et:'obra',av:62,ini:-9,cuad:'Obras 1',desvio:1.09,cobrado:.8,origen:'Instagram · El mejor césped'},
+  {id:'P-121',n:'Casa Arocena',cli:'Familia Arocena',b:'Colinas de Carrasco',m2:650,lay:'A',pal:'nativo',et:'obra',av:24,ini:-3,cuad:'Obras 2',desvio:.97,cobrado:.4,origen:'Referido'},
+  {id:'P-123',n:'Terraza Rambla',cli:'Martina Olivera',b:'Pocitos',m2:95,lay:'B',pal:'terraza',et:'aprobado',av:0,ini:6,cuad:'Obras 1',desvio:1,cobrado:.4,origen:'Instagram · Cubre suelos'},
+  {id:'P-125',n:'Jardín Methol',cli:'Familia Methol',b:'Barra de Carrasco',m2:380,lay:'A',pal:'costero',et:'presupuesto',av:0,ini:14,cuad:'Obras 2',desvio:1,cobrado:0,origen:'Instagram · El jardín en primavera'},
+  {id:'P-126',n:'Chacra Los Ceibos',cli:'Diego Albanell',b:'Pando, Canelones',m2:1200,lay:'A',pal:'nativo',et:'diseno',av:0,ini:25,cuad:'Obras 1',desvio:1,cobrado:0,origen:'WhatsApp'},
+  {id:'P-127',n:'Hotel Costa Azul',cli:'Hotel Costa Azul',b:'Atlántida',m2:820,lay:'A',pal:'costero',et:'presupuesto',av:0,ini:20,cuad:'Obras 2',desvio:1,cobrado:0,origen:'Web'},
+  {id:'P-112',n:'Jardín Bentancor',cli:'Lucía Bentancor',b:'Punta Gorda',m2:310,lay:'A',pal:'jardin',et:'terminado',av:100,ini:-48,cuad:'Obras 1',desvio:1.04,cobrado:1,origen:'Instagram · Eugenia myrtifolia'},
+  {id:'P-109',n:'Patio Viera',cli:'Familia Viera',b:'Malvín',m2:140,lay:'B',pal:'terraza',et:'terminado',av:100,ini:-70,cuad:'Obras 2',desvio:.95,cobrado:1,origen:'Referido'},
+];
+const PR = id => proyectos.find(p=>p.id===id);
+// Cada proyecto guarda su propia copia de la paleta para poder editarla
+proyectos.forEach(p=>{p.plantas=JSON.parse(JSON.stringify(PAL[p.pal]));p.arboles=TREES[p.pal].map(t=>t.slice());p.crono=CRONO.map(([n,d],i)=>({n,d}));});
+function zonas(p){return LAYOUTS[p.lay].zonas.map(z=>({...z,m2:Math.round(p.m2*z.sh)}));}
+function lineasZona(p,z){return (p.plantas[z.k]||[]).map(([id,sh])=>{const e=S(id);return {id,q:Math.max(1,Math.round(z.m2*e.dens*sh))};});}
+function plantasProyecto(p){
+  const m={};zonas(p).forEach(z=>lineasZona(p,z).forEach(l=>m[l.id]=(m[l.id]||0)+l.q));
+  p.arboles.forEach(([id])=>m[id]=(m[id]||0)+1);
+  return Object.entries(m).map(([id,q])=>({id:+id,q}));
+}
+function presupuesto(p){
+  const zs=zonas(p), plant=sum(zs.filter(z=>z.tipo==='cantero'||z.tipo==='cerco'||z.tipo==='huerta'),z=>z.m2), ces=sum(zs.filter(z=>z.tipo==='cesped'),z=>z.m2), pie=sum(zs.filter(z=>z.tipo==='piedra'),z=>z.m2), deck=sum(zs.filter(z=>z.tipo==='deck'),z=>z.m2);
+  const pl=plantasProyecto(p);
+  const ins=[['sust',plant*.15],['mulch',plant*.06],['tepe',ces],['piedra',pie*.08],['riego',plant*1.6+ces*.8],['prog',1]].filter(x=>x[1]>0).map(([k,q])=>({k,q:Math.ceil(q)}));
+  const hs=Math.round(plant*1.1+ces*.22+pie*.6+deck*.1+pl.length*2);
+  const diseno=Math.round(350+p.m2*1.1);
+  const items=[
+    ...pl.map(l=>({g:'Plantas',n:S(l.id).n+' ('+S(l.id).mac+')',q:l.q,u:'u',pu:S(l.id).precio,cu:S(l.id).costo})),
+    ...ins.map(i=>({g:'Materiales',n:INSUMOS[i.k].n,q:i.q,u:INSUMOS[i.k].u,pu:INSUMOS[i.k].precio,cu:INSUMOS[i.k].costo})),
+    {g:'Mano de obra',n:'Cuadrilla de obra ('+hs+' h)',q:hs,u:'h',pu:15,cu:8.5},
+    {g:'Diseño',n:'Proyecto paisajístico, plano y paleta vegetal',q:1,u:'',pu:diseno,cu:diseno*.25},
+  ];
+  const total=sum(items,i=>i.q*i.pu), costo=sum(items,i=>i.q*i.cu);
+  return {items,total,costo,margen:total-costo,hs,pl,ins};
+}
+
+// ================= Comercial: consultas =================
+const REELS = ['El mejor césped','Cubre suelos: 4 tipos','El jardín en primavera','Eugenia myrtifolia','Quiénes somos','Cómo lo hacemos','Huertas grandes'];
+let leads = [
+  {id:1,n:'Florencia Castro',b:'Punta Gorda',src:'Instagram',reel:'El mejor césped',st:'nueva',m2:250,serv:'Césped y canteros',dias:0},
+  {id:2,n:'Gonzalo Techera',b:'Shangrilá',src:'Instagram',reel:'Huertas grandes',st:'nueva',m2:600,serv:'Huerta grande',dias:0},
+  {id:3,n:'Estudio Rivera Arquitectos',b:'Carrasco',src:'Referido',reel:'',st:'nueva',m2:900,serv:'Diseño para obra nueva',dias:1},
+  {id:4,n:'Valentina Pereyra',b:'Lagomar',src:'WhatsApp',reel:'',st:'visita',m2:180,serv:'Mantenimiento',dias:2},
+  {id:5,n:'Juan Pedro Ferrés (h)',b:'Carrasco Norte',src:'Instagram',reel:'Cubre suelos: 4 tipos',st:'visita',m2:320,serv:'Rediseño de jardín',dias:3},
+  {id:6,n:'Diego Albanell',b:'Pando, Canelones',src:'WhatsApp',reel:'',st:'diseno',m2:1200,serv:'Chacra completa',dias:6,proy:'P-126'},
+  {id:7,n:'Familia Methol',b:'Barra de Carrasco',src:'Instagram',reel:'El jardín en primavera',st:'presupuesto',m2:380,serv:'Jardín completo',dias:9,proy:'P-125'},
+  {id:8,n:'Hotel Costa Azul',b:'Atlántida',src:'Web',reel:'',st:'presupuesto',m2:820,serv:'Áreas comunes',dias:12,proy:'P-127'},
+  {id:9,n:'Martina Olivera',b:'Pocitos',src:'Instagram',reel:'Cubre suelos: 4 tipos',st:'ganada',m2:95,serv:'Terraza',dias:15,proy:'P-123'},
+  {id:10,n:'Familia Arocena',b:'Colinas de Carrasco',src:'Referido',reel:'',st:'ganada',m2:650,serv:'Jardín nativo',dias:24,proy:'P-121'},
+];
+const LST = [['nueva','Consulta nueva'],['visita','Visita agendada'],['diseno','En diseño'],['presupuesto','Presupuesto enviado'],['ganada','Aprobado']];
+const REEL_STATS = [['El mejor césped',31,6],['Cubre suelos: 4 tipos',24,5],['El jardín en primavera',19,4],['Eugenia myrtifolia',14,2],['Huertas grandes',12,3],['Cómo lo hacemos',9,2],['Quiénes somos',6,1]];
+
+// ================= Mantenimiento =================
+const CUADRILLAS = [
+  {n:'Obras 1',lider:'Martín Pereira',int:['Bruno Silva','Diego Rocha'],foco:'Obras'},
+  {n:'Obras 2',lider:'Sebastián Núñez',int:['Nicolás Viera','Tomás Ibarra'],foco:'Obras'},
+  {n:'Mantenimiento A',lider:'Facundo Olivera',int:['Juan Cruz Sosa'],foco:'Mantenimiento'},
+  {n:'Mantenimiento B',lider:'Agustín Méndez',int:['Matías Duarte'],foco:'Mantenimiento'},
+  {n:'Huertas',lider:'Carolina Suárez',int:[],foco:'Huertas'},
+];
+let abonos = [
+  {cli:'Lucía Bentancor',b:'Punta Gorda',m2:310,frec:'Semanal',monto:320,cuad:'Mantenimiento A',dia:1,desde:'P-112'},
+  {cli:'Familia Viera',b:'Malvín',m2:140,frec:'Quincenal',monto:140,cuad:'Mantenimiento A',dia:1},
+  {cli:'Familia Castro',b:'Carrasco',m2:520,frec:'Semanal',monto:420,cuad:'Mantenimiento A',dia:2},
+  {cli:'Club de Golf del Este',b:'Carrasco',m2:2400,frec:'Semanal',monto:1350,cuad:'Mantenimiento B',dia:2},
+  {cli:'Familia Giménez',b:'Carrasco Norte',m2:380,frec:'Semanal',monto:360,cuad:'Mantenimiento A',dia:3},
+  {cli:'Edificio Mirador',b:'Punta Gorda',m2:600,frec:'Semanal',monto:480,cuad:'Mantenimiento B',dia:3},
+  {cli:'Familia Iglesias',b:'Colinas de Carrasco',m2:700,frec:'Semanal',monto:540,cuad:'Mantenimiento B',dia:4},
+  {cli:'Familia Costa',b:'Lagomar',m2:260,frec:'Quincenal',monto:180,cuad:'Mantenimiento A',dia:4},
+  {cli:'Café de la Rambla',b:'Punta Gorda',m2:120,frec:'Quincenal',monto:120,cuad:'Mantenimiento A',dia:5},
+  {cli:'Familia Márquez',b:'Shangrilá',m2:450,frec:'Semanal',monto:390,cuad:'Mantenimiento B',dia:5},
+  {cli:'Familia Suárez',b:'Solymar',m2:300,frec:'Mensual',monto:150,cuad:'Mantenimiento B',dia:6},
+  {cli:'Familia Rodríguez',b:'Punta Carretas',m2:90,frec:'Mensual',monto:90,cuad:'Mantenimiento A',dia:6},
+];
+let huertas = [
+  {cli:'Familia Castro',b:'Carrasco',tam:'Grande',m2:40,dia:2,cult:[['Tomate cherry',-38,70],['Lechuga',-30,45],['Albahaca',-20,50],['Zapallito',-25,60]],cos:6.4},
+  {cli:'Familia Iglesias',b:'Colinas de Carrasco',tam:'Grande',m2:60,dia:4,cult:[['Habas',-80,90],['Acelga',-35,50],['Frutilla',-60,75],['Rúcula',-18,35]],cos:9.1},
+  {cli:'Martina Olivera',b:'Pocitos',tam:'Chica',m2:6,dia:3,cult:[['Albahaca',-12,50],['Cherry',-12,70],['Perejil',-30,60]],cos:.8},
+  {cli:'Familia Giménez',b:'Carrasco Norte',tam:'Chica',m2:10,dia:3,cult:[['Lechuga',-40,45],['Rabanito',-20,28],['Ciboulette',-50,60]],cos:2.3},
+  {cli:'Escuela Los Pinos',b:'Solymar',tam:'Grande',m2:80,dia:5,cult:[['Papa',-70,100],['Arvejas',-60,80],['Lechuga',-25,45],['Remolacha',-40,70]],cos:14.6},
+];
+let visitasHechas = {};
+const TAREAS = {
+  base:['Corte de césped y bordes','Desmalezado de canteros','Revisión del riego','Soplado y limpieza','Fotos del antes y después'],
+  estacion:{9:['Fertilización de primavera del césped','Poda de limpieza de gramíneas','Control de pulgón en rosales'],10:['Fertilización de primavera del césped','Reposición de mulch','Control de hormigas'],11:['Aumentar frecuencia de riego','Poda de Eugenia'],12:['Riego de verano','Control de cochinilla']},
+};
+
+// ================= Equipo y compras =================
+const MAQUINAS = [
+  {n:'Cortadora de césped Husqvarna LC 353',tipo:'Corte',hs:46,serv:50,est:'ok'},
+  {n:'Bordeadora Stihl FS 131',tipo:'Corte',hs:104,serv:100,est:'vencido'},
+  {n:'Tijera de poda eléctrica a batería',tipo:'Poda',hs:210,serv:300,est:'ok'},
+  {n:'Sopladora Stihl BG 86',tipo:'Limpieza',hs:88,serv:100,est:'pronto'},
+  {n:'Motocultivador Honda',tipo:'Obra',hs:31,serv:50,est:'ok'},
+  {n:'Camioneta Hilux (reparto)',tipo:'Vehículo',hs:48200,serv:50000,est:'pronto',u:'km'},
+];
+let ordenes = [
+  {id:'OC-341',viv:'Vivero Carrasco',fecha:addD(-6),items:[[13,40],[11,120],[12,30]],est:'Recibida',proy:'P-118'},
+  {id:'OC-344',viv:'Nativas del Sur',fecha:addD(-2),items:[[1,160],[10,60],[20,80],[15,2]],est:'Pedida',proy:'P-121'},
+];
+
+// ================= Clima de la semana =================
+const CLIMA = [0,1,2,3,4,5,6].map(i=>{const d=addD(i);const lluvia=i===2?28:i===3?4:0;const viento=i===4?45:12+Math.round(rnd()*10);return {d,max:[21,23,17,16,19,22,24][i],min:[12,13,12,9,10,12,14][i],lluvia,viento,ic:lluvia>10?'rain':lluvia?'cloud':viento>35?'wind':'sun'};});
+
+// ================= Estado de la app =================
+let view='inicio', modActual='inicio', proySel=null, proyTab='diseno', mesFlor=HOY.getMonth()+1, zonaSel=null, filtroEsp={t:'Todas',nat:false,luz:'Todas'};
+const ultimaTab={};
+
+// ================= Navegación =================
+const MODS = [
+  ['inicio','Inicio','inicio',[['inicio','Hoy']],''],
+  ['comercial','Comercial','users',[['consultas','Consultas'],['presupuestos','Presupuestos'],['origen','De dónde vienen'],['clientes','Clientes']],'De la consulta al presupuesto aprobado'],
+  ['proyectos','Proyectos','plan',[['proyectos','Jardines']],'Diseño, obra y entrega de cada jardín'],
+  ['mant','Mantenimiento','shears',[['agenda','Agenda de la semana'],['abonos','Abonos'],['huertas','Huertas'],['estacion','Calendario de estación']],'Jardines y huertas que cuidamos'],
+  ['plantas','Plantas','leaf',[['catalogo','Paleta vegetal'],['stock','Stock y faltantes'],['compras','Pedidos a viveros']],'Especies, depósito y viveros'],
+  ['equipo','Equipo','team',[['cuadrillas','Cuadrillas'],['horas','Horas por obra'],['maquinas','Maquinaria']],'Gente, horas y herramientas'],
+  ['resultados','Resultados','chart',[['resultados','Estado de resultados'],['margenes','Margen por obra']],'Cómo le va al estudio'],
+];
+const TITLES={};MODS.forEach(m=>m[3].forEach(([k,l])=>TITLES[k]=[l]));
+const modDe = k => MODS.find(m=>m[0]===k)||MODS.find(m=>m[3].some(t=>t[0]===k));
+function renderNav(){
+  const nuevas=leads.filter(l=>l.st==='nueva').length;
+  $('#nav').innerHTML='<div style="height:4px"></div>'+MODS.map(m=>`<button class="nav ${modActual===m[0]?'on':''}" data-go="${m[0]}">${ico(m[2])}${m[1]}${m[0]==='comercial'&&nuevas?`<span class="cnt">${nuevas}</span>`:''}</button>`).join('');
+}
+function go(k){
+  const m=modDe(k);if(!m)return;
+  const tab=m[3].some(t=>t[0]===k)?k:(ultimaTab[m[0]]||m[3][0][0]);
+  if(m[0]!==modActual||k==='proyectos')proySel=null;
+  modActual=m[0];view=tab;ultimaTab[m[0]]=tab;renderNav();
+  $('#title').textContent=m[1];
+  $('#subtitle').textContent=m[4]||(DIAS[HOY.getDay()]+' '+HOY.getDate()+' de '+MESES[HOY.getMonth()]);
+  $('#view').innerHTML=(m[3].length>1?`<div class="mtabs">${m[3].map(([t,l])=>`<button class="mtab ${t===tab?'on':''}" data-go="${t}">${l}</button>`).join('')}</div>`:'')+'<div id="pane"></div>';
+  VIEWS[tab]();$('#view').scrollTop=0;
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){closeModal();go(b.dataset.go);}});
+function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=ico('check')+'<span>'+msg+'</span>';$('#toasts').appendChild(t);setTimeout(()=>t.remove(),3600);}
+function modal(title,body,foot,wide){$('#layer').innerHTML=`<div class="overlay" id="ov"><div class="modal ${wide?'wide':''}"><div class="mh"><h2>${title}</h2><button class="x" data-close>${ico('x')}</button></div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:''}</div></div>`;}
+function closeModal(){$('#layer').innerHTML='';}
+document.addEventListener('click',e=>{if(e.target.id==='ov'||e.target.closest('[data-close]'))closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openK();}});
+const etPill = et => ({diseno:'<span class="pill p-sky">Diseño</span>',presupuesto:'<span class="pill p-warn">Presupuesto</span>',aprobado:'<span class="pill p-lime">Aprobado</span>',obra:'<span class="pill p-ok">En obra</span>',terminado:'<span class="pill p-n">Terminado</span>'}[et]);
+const flores = (e) => `<div class="months">${[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`<span style="${e.fl.includes(m)?'background:'+e.col+';border:1px solid rgba(0,0,0,.08)':''}"></span>`).join('')}</div>`;
+
+// ================= Plano SVG =================
+function zoneFill(p,z,mes){
+  if(mes){const ls=lineasZona(p,z).filter(l=>S(l.id).fl.includes(mes)).sort((a,b)=>b.q-a.q);if(ls.length)return S(ls[0].id).col;return z.tipo==='cesped'?'#CFE3A6':z.tipo==='deck'?'#DCC7A1':z.tipo==='piedra'?'#D3CEC3':'#7FA36A';}
+  return BASE_COL[z.tipo];
+}
+function pip(x,y,pts){let c=false;for(let i=0,j=pts.length-1;i<pts.length;j=i++){const [xi,yi]=pts[i],[xj,yj]=pts[j];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c;}return c;}
+function planSVG(p,{mes=null,interactive=false,labels=true}={}){
+  const L=LAYOUTS[p.lay];
+  const dots=[];
+  zonas(p).forEach(z=>{if(z.tipo!=='cantero'&&z.tipo!=='huerta')return;const pts=z.pts.split(' ').map(s=>s.split(',').map(Number));const xs=pts.map(q=>q[0]),ys=pts.map(q=>q[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+    const ls=lineasZona(p,z);let k=0;for(let x=x0+2;x<x1-1;x+=3.2)for(let y=y0+2;y<y1-1;y+=3.2){if(!pip(x,y,pts))continue;const l=ls[k++%Math.max(ls.length,1)];if(!l)continue;const e=S(l.id);const on=mes?e.fl.includes(mes):false;dots.push(`<circle cx="${x+((k*7)%3-1)*.4}" cy="${y}" r="${on?1.25:.95}" fill="${on?e.col:'#5E8B4A'}" stroke="${on?'rgba(0,0,0,.15)':'none'}" stroke-width=".2" pointer-events="none"/>`);}});
+  return `<svg viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="100" height="70" fill="#EFEADF"/>
+    ${L.fijos.map(f=>`<polygon points="${f.pts}" fill="#E4DDCF"/><text x="${f.lx}" y="${f.ly}" font-size="2.6" text-anchor="middle" fill="#8A8373" font-family="Barlow">${f.lab}</text>`).join('')}
+    ${zonas(p).map(z=>`<polygon class="${interactive?'zone':''} ${zonaSel===z.k&&interactive?'sel':''}" data-z="${z.k}" points="${z.pts}" fill="${zoneFill(p,z,mes)}" stroke="#fff" stroke-width=".5"/>`).join('')}
+    ${z_deck(p)}
+    ${dots.join('')}
+    ${p.arboles.map(([id,x,y])=>{const e=S(id);const on=mes&&e.fl.includes(mes);return `<circle cx="${x}" cy="${y}" r="4.2" fill="${on?e.col:'#3F6E36'}" fill-opacity="${on?.9:.8}" stroke="#fff" stroke-width=".4" pointer-events="none"/><circle cx="${x}" cy="${y}" r=".6" fill="#fff" pointer-events="none"/>`;}).join('')}
+    ${labels?zonas(p).filter(z=>z.lx).map(z=>`<text x="${z.lx}" y="${z.ly}" font-size="2.3" font-weight="700" text-anchor="middle" fill="#123A22" font-family="Barlow" pointer-events="none" paint-order="stroke" stroke="rgba(255,255,255,.75)" stroke-width=".7">${z.n}</text>`).join(''):''}
+  </svg>`;
+}
+function z_deck(p){const z=zonas(p).find(z=>z.tipo==='deck');if(!z)return '';const pts=z.pts.split(' ').map(s=>s.split(',').map(Number));const x0=Math.min(...pts.map(q=>q[0])),x1=Math.max(...pts.map(q=>q[0])),y0=Math.min(...pts.map(q=>q[1])),y1=Math.max(...pts.map(q=>q[1]));let l='';for(let y=y0+1.6;y<y1;y+=1.6)l+=`<line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="#C9B28A" stroke-width=".15" pointer-events="none"/>`;return l;}
+
+// ================= Vistas =================
+const VIEWS={};
+
+VIEWS.inicio=()=>{
+  const obras=proyectos.filter(p=>p.et==='obra'), hoyD=HOY.getDay();
+  const visHoy=abonos.filter(a=>a.dia===hoyD), huHoy=huertas.filter(h=>h.dia===hoyD);
+  const mrr=sum(abonos,a=>a.monto), nuevas=leads.filter(l=>l.st==='nueva');
+  const lluvia=CLIMA.find(c=>c.lluvia>10), viento=CLIMA.find(c=>c.viento>35);
+  const pF=PR('P-118'), iPl=pF.crono.findIndex(c=>c.n.startsWith('Canteros'));
+  $('#pane').innerHTML=`
+  <div class="hero"><div><h2>Buen día, Lolo.</h2><p>Hoy salen ${obras.length} cuadrillas a obra y ${visHoy.length+huHoy.length} visitas de mantenimiento. Entraron ${nuevas.length} consultas nuevas por Instagram y WhatsApp.</p></div><button class="btn" data-go="consultas">${ico('users')}Ver consultas</button></div>
+  <div class="grid4">
+    <div class="card kpi"><div class="lab">${ico('plan')}Obras en curso</div><div class="val">${obras.length}</div><div class="d">${usd(sum(obras,p=>presupuesto(p).total))} en ejecución</div></div>
+    <div class="card kpi"><div class="lab">${ico('shears')}Abonos de mantenimiento</div><div class="val">${usd(mrr)}</div><div class="d">por mes, ${abonos.length} jardines</div></div>
+    <div class="card kpi"><div class="lab">${ico('doc')}Presupuestos enviados</div><div class="val">${usd(sum(proyectos.filter(p=>p.et==='presupuesto'),p=>presupuesto(p).total))}</div><div class="d n">${proyectos.filter(p=>p.et==='presupuesto').length} esperando respuesta</div></div>
+    <div class="card kpi"><div class="lab">${ico('insta')}Consultas del mes</div><div class="val">47</div><div class="d">68% llegan por Instagram</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>${ico('sun')}Clima de la semana<span class="act tiny">Montevideo y Canelones</span></h3>
+      <div class="wx">${CLIMA.map(c=>`<div class="wd ${c.lluvia>10||c.viento>35?'al':''}"><b>${fdia(c.d)}</b>${ico(c.ic)}<div class="t">${c.max}°</div><div class="tiny">${c.min}°</div><div class="r">${c.lluvia?c.lluvia+' mm':c.viento>35?c.viento+' km/h':'&nbsp;'}</div></div>`).join('')}</div>
+      ${lluvia?`<div class="alert" id="al-lluvia">${ico('rain')}<div><b>${fdia(lluvia.d)}: ${lluvia.lluvia} mm de lluvia</b><span class="tiny">La plantación de canteros del Jardín Ferrés cae ese día. Con el suelo saturado conviene correrla.</span></div><button class="btn sm" onclick="reprogramar()">Pasarla al ${fdia(addD(3))}</button></div>`:''}
+      ${viento?`<div class="alert sky">${ico('wind')}<div><b>${fdia(viento.d)}: viento de ${viento.viento} km/h</b><span class="tiny">No programar tratamientos fitosanitarios ni podas en altura. Hay 2 visitas de mantenimiento con control de plagas ese día.</span></div></div>`:''}
+      <div class="alert lime">${ico('sprout')}<div><b>Primavera: momento de fertilizar el césped</b><span class="tiny">${abonos.filter(a=>a.frec==='Semanal').length} jardines con abono semanal tienen la fertilización cargada para las próximas dos semanas.</span></div></div>
+    </div>
+    <div class="card"><h3>${ico('truck')}Quién está dónde hoy</h3>
+      ${obras.map(p=>`<div class="list-it" style="cursor:pointer" onclick="abrirProyecto('${p.id}')"><div class="av">${ini(p.cuad)}</div><div style="flex:1"><b>${p.n}</b><div class="tiny">Cuadrilla ${p.cuad} · ${p.b} · ${etapaActual(p)}</div></div><span class="pill p-ok">${p.av}%</span></div>`).join('')}
+      ${visHoy.map(a=>`<div class="list-it" style="cursor:pointer" onclick="verVisita('${esc(a.cli)}')"><div class="av" style="background:var(--lime-soft);color:#5E7A12">${ico('shears')}</div><div style="flex:1"><b>${a.cli}</b><div class="tiny">${a.cuad} · ${a.b} · mantenimiento ${a.frec.toLowerCase()}</div></div>${visitasHechas[a.cli]?'<span class="pill p-n">Hecha</span>':'<span class="pill p-lime">Hoy</span>'}</div>`).join('')}
+      ${huHoy.map(h=>`<div class="list-it"><div class="av" style="background:#F3E7D3;color:#8A6425">${ico('sprout')}</div><div style="flex:1"><b>Huerta ${h.cli}</b><div class="tiny">Huertas · ${h.b}</div></div><span class="pill p-lime">Hoy</span></div>`).join('')}
+      ${!visHoy.length&&!huHoy.length?'<p class="tiny">Hoy no hay visitas de mantenimiento programadas.</p>':''}
+    </div>
+  </div>
+  <div class="grid2e">
+    <div class="card"><h3>${ico('plan')}Obras en curso<button class="btn sm act" data-go="proyectos">Ver jardines</button></h3>${obras.map(p=>{const pr=presupuesto(p);return `<div style="margin-bottom:14px;cursor:pointer" onclick="abrirProyecto('${p.id}')"><div class="row" style="justify-content:space-between"><b>${p.n} <span class="tiny">${p.b}</span></b><span>${p.av}%</span></div><div class="bar" style="margin:6px 0"><i style="width:${p.av}%"></i></div><div class="tiny">${etapaActual(p)} · costo real ${p.desvio>1?`<span style="color:var(--bad)">${pct((p.desvio-1)*100)} arriba</span>`:'dentro de lo presupuestado'} · ${usd(pr.total)}</div></div>`}).join('')}</div>
+    <div class="card"><h3>${ico('users')}Consultas nuevas<button class="btn sm act" data-go="consultas">Ver embudo</button></h3>${nuevas.map(l=>`<div class="list-it"><div class="av">${ini(l.n)}</div><div style="flex:1"><b>${l.n}</b><div class="tiny">${l.serv} · ${l.b} · ${l.m2} m²</div></div>${l.reel?`<span class="pill p-lime">${ico('insta')}${l.reel}</span>`:`<span class="pill p-n">${l.src}</span>`}</div>`).join('')}</div>
+  </div>`;
+};
+function etapaActual(p){if(p.et!=='obra')return ETAPAS.find(e=>e[0]===p.et)[1];const tot=sum(p.crono,c=>c.d);let acc=0;for(const c of p.crono){acc+=c.d;if(acc/tot*100>p.av)return c.n;}return 'Entrega';}
+function reprogramar(){const p=PR('P-118');const c=p.crono.find(c=>c.n.startsWith('Canteros'));c.corrida=true;const el=$('#al-lluvia');if(el)el.remove();toast('Plantación del Jardín Ferrés corrida al '+fdia(addD(3))+'. Le avisamos a la cuadrilla y a la familia Ferrés.');}
+
+// ---------- Comercial ----------
+VIEWS.consultas=()=>{
+  $('#pane').innerHTML=`<div class="row" style="margin-bottom:14px"><span class="muted">Arrastrá cada consulta cuando avanza. Todo lo que entra por Instagram, WhatsApp y la web cae acá.</span><button class="btn pri" style="margin-left:auto" onclick="nuevaConsulta()">${ico('plus')}Nueva consulta</button></div>
+  <div class="kanban">${LST.map(([k,l])=>`<div class="col" data-col="${k}"><h4>${l}<span class="tiny">${leads.filter(x=>x.st===k).length}</span></h4>${leads.filter(x=>x.st===k).map(x=>`<div class="tk" draggable="true" data-id="${x.id}" onclick="verLead(${x.id})"><b>${x.n}</b><div class="tiny">${x.serv} · ${x.b}</div><div class="ft">${x.reel?`<span class="pill p-lime">${ico('insta')}${x.reel}</span>`:`<span class="pill p-n">${x.src}</span>`}<span class="tiny">${x.m2} m²</span></div></div>`).join('')}</div>`).join('')}</div>`;
+  document.querySelectorAll('.tk').forEach(t=>t.addEventListener('dragstart',e=>e.dataTransfer.setData('text',t.dataset.id)));
+  document.querySelectorAll('.col').forEach(c=>{c.addEventListener('dragover',e=>{e.preventDefault();c.classList.add('over');});c.addEventListener('dragleave',()=>c.classList.remove('over'));c.addEventListener('drop',e=>{e.preventDefault();const l=leads.find(x=>x.id==e.dataTransfer.getData('text'));if(l){moverLead(l,c.dataset.col);}});});
+};
+function moverLead(l,st){l.st=st;closeModal();renderNav();
+  if(st==='diseno'&&!l.proy){const id='P-'+(130+l.id);proyectos.push(Object.assign({id,n:'Jardín '+l.n.split(' ').slice(-1)[0],cli:l.n,b:l.b,m2:l.m2,lay:l.m2<150?'B':'A',pal:l.m2<150?'terraza':'jardin',et:'diseno',av:0,ini:20,cuad:'Obras 1',desvio:1,cobrado:0,origen:l.src+(l.reel?' · '+l.reel:'')},{}));const p=PR(id);p.plantas=JSON.parse(JSON.stringify(PAL[p.pal]));p.arboles=TREES[p.pal].map(t=>t.slice());p.crono=CRONO.map(([n,d])=>({n,d}));l.proy=id;VIEWS[view]();toast('Se creó el proyecto '+id+' con una paleta base. Ya podés diseñarlo.');return;}
+  if(st==='visita')toast('Visita agendada con '+l.n+'. Le llega la confirmación por WhatsApp.');
+  else if(st==='ganada'){if(l.proy)PR(l.proy).et='aprobado';toast('Aprobado. Se pidió la seña del 40% y se reservaron las plantas del depósito.');}
+  VIEWS[view]();}
+function verLead(id){const l=leads.find(x=>x.id===id);const i=LST.findIndex(s=>s[0]===l.st),sig=LST[i+1];
+  modal(l.n,`<div class="row" style="margin-bottom:12px">${l.reel?`<span class="pill p-lime">${ico('insta')}Llegó por el reel "${l.reel}"</span>`:`<span class="pill p-n">${l.src}</span>`}<span class="tiny">Hace ${l.dias} día${l.dias===1?'':'s'}</span></div>
+  <div class="stat-row"><span>Lo que busca</span><b>${l.serv}</b></div><div class="stat-row"><span>Zona</span><b>${l.b}</b></div><div class="stat-row"><span>Superficie estimada</span><b>${l.m2} m²</b></div><div class="stat-row"><span>Presupuesto estimado</span><b>${usd(l.m2*(l.serv==='Mantenimiento'?1:24))}${l.serv==='Mantenimiento'?' por mes':''}</b></div>
+  <h4 style="margin:16px 0 6px">Mensaje</h4><div class="portal" style="padding:12px;font-size:14px">Hola! Vi el video ${l.reel?'de "'+l.reel+'"':''} y me encantó. Tengo un jardín de unos ${l.m2} m² en ${l.b} y quiero ${l.serv.toLowerCase()}. ¿Pueden venir a verlo?</div>
+  ${l.proy?`<button class="btn" style="margin-top:12px" onclick="closeModal();abrirProyecto('${l.proy}')">${ico('plan')}Abrir proyecto ${l.proy}</button>`:''}`,
+  `<button class="btn" onclick="closeModal();toast('Abriendo WhatsApp con ${esc(l.n)}')">${ico('msg')}WhatsApp</button>${sig?`<button class="btn pri" onclick="moverLead(leads.find(x=>x.id===${id}),'${sig[0]}')">Pasar a ${sig[1].toLowerCase()}</button>`:''}`);}
+function nuevaConsulta(){modal('Nueva consulta',`<label class="f">Nombre<input id="lqn" value="Sofía Bordaberry"></label><div class="frow"><label class="f">Barrio<input id="lqb" value="Carrasco"></label><label class="f">m² aproximados<input id="lqm" type="number" value="300"></label></div><div class="frow"><label class="f">Qué busca<select id="lqs"><option>Jardín completo</option><option>Mantenimiento</option><option>Huerta grande</option><option>Terraza</option></select></label><label class="f">De dónde vino<select id="lqr">${REELS.map(r=>`<option>Instagram · ${r}</option>`).join('')}<option>WhatsApp</option><option>Referido</option></select></label></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarConsulta()">Guardar</button>`);}
+function guardarConsulta(){const r=$('#lqr').value,ig=r.startsWith('Instagram');leads.unshift({id:Date.now()%100000,n:$('#lqn').value,b:$('#lqb').value,src:ig?'Instagram':r,reel:ig?r.replace('Instagram · ',''):'',st:'nueva',m2:+$('#lqm').value||100,serv:$('#lqs').value,dias:0});closeModal();renderNav();VIEWS[view]();toast('Consulta cargada');}
+
+VIEWS.presupuestos=()=>{
+  const ps=proyectos.filter(p=>p.et!=='diseno');
+  $('#pane').innerHTML=`<div class="grid3"><div class="card kpi"><div class="lab">Enviados esperando respuesta</div><div class="val">${usd(sum(ps.filter(p=>p.et==='presupuesto'),p=>presupuesto(p).total))}</div><div class="d n">${ps.filter(p=>p.et==='presupuesto').length} presupuestos</div></div><div class="card kpi"><div class="lab">Aprobados este año</div><div class="val">${usd(sum(ps.filter(p=>p.et!=='presupuesto'),p=>presupuesto(p).total)+84200)}</div><div class="d">62% de los enviados</div></div><div class="card kpi"><div class="lab">Margen promedio presupuestado</div><div class="val">${pct(sum(ps,p=>presupuesto(p).margen)/sum(ps,p=>presupuesto(p).total)*100)}</div><div class="d n">plantas, materiales y mano de obra</div></div></div>
+  <div class="card"><h3>${ico('doc')}Presupuestos<span class="act tiny">Salen solos del diseño de cada jardín</span></h3><div class="tw"><table><tr><th>Proyecto</th><th>Cliente</th><th>Superficie</th><th>Estado</th><th class="num">Plantas</th><th class="num">Total</th><th class="num">Margen</th><th></th></tr>
+  ${ps.map(p=>{const pr=presupuesto(p);return `<tr class="cl" onclick="verPresupuesto('${p.id}')"><td><b>${p.n}</b><div class="tiny">${p.id}</div></td><td>${p.cli}<div class="tiny">${p.b}</div></td><td>${p.m2} m²</td><td>${etPill(p.et)}</td><td class="num">${num(sum(pr.pl,l=>l.q))}</td><td class="num"><b>${usd(pr.total)}</b></td><td class="num">${pct(pr.margen/pr.total*100)}</td><td class="num"><button class="btn sm">${ico('eye')}Ver</button></td></tr>`}).join('')}</table></div></div>`;
+};
+function verPresupuesto(id){const p=PR(id),pr=presupuesto(p);const gs=['Diseño','Plantas','Materiales','Mano de obra'];
+  modal('Presupuesto '+p.id+' · '+p.n,`<div class="row" style="margin-bottom:14px"><div class="plan" style="width:190px;flex:none;border-radius:10px;overflow:hidden">${planSVG(p,{labels:false})}</div><div><b style="font-size:17px">${p.cli}</b><div class="muted">${p.b} · ${p.m2} m²</div><div class="tiny" style="margin-top:6px">Válido por 15 días. Incluye diseño, plantas, materiales, mano de obra y garantía de prendimiento de 60 días.</div></div></div>
+  <table>${gs.map(g=>{const it=pr.items.filter(i=>i.g===g);return `<tr><th colspan="3">${g}</th><th class="num">${usd(sum(it,i=>i.q*i.pu))}</th></tr>${it.map(i=>`<tr><td>${i.n}</td><td class="num tiny">${num(i.q)} ${i.u}</td><td class="num tiny">${usd(i.pu)}</td><td class="num">${usd(i.q*i.pu)}</td></tr>`).join('')}`}).join('')}
+  <tr class="tot"><td colspan="3">Total (IVA incluido)</td><td class="num">${usd(pr.total)}</td></tr></table>
+  <div class="stat-row" style="margin-top:12px"><span class="muted">Forma de pago</span><b>40% al aprobar · 40% al plantar · 20% en la entrega</b></div>
+  <div class="stat-row"><span class="muted">Margen del estudio (solo lo ves vos)</span><b style="color:var(--ok)">${usd(pr.margen)} · ${pct(pr.margen/pr.total*100)}</b></div>`,
+  `<button class="btn" onclick="closeModal();abrirProyecto('${id}')">${ico('plan')}Editar diseño</button><button class="btn pri" onclick="closeModal();toast('Presupuesto enviado a ${esc(p.cli)} por WhatsApp, con el plano del jardín')">${ico('msg')}Enviar al cliente</button>`,true);}
+
+VIEWS.origen=()=>{
+  const mx=REEL_STATS[0][1];
+  $('#pane').innerHTML=`<div class="grid4"><div class="card kpi"><div class="lab">${ico('insta')}Seguidores</div><div class="val">40,1 mil</div><div class="d">+1.240 este mes</div></div><div class="card kpi"><div class="lab">Consultas por Instagram</div><div class="val">115</div><div class="d n">en los últimos 6 meses</div></div><div class="card kpi"><div class="lab">Se convierten en obra</div><div class="val">20%</div><div class="d">23 jardines</div></div><div class="card kpi"><div class="lab">Facturado gracias a los reels</div><div class="val">${usd(186400)}</div><div class="d">últimos 6 meses</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('insta')}Qué reels te traen clientes</h3><table><tr><th>Reel</th><th>Consultas</th><th class="num">Obras</th><th class="num">Conversión</th></tr>${REEL_STATS.map(([r,c,o])=>`<tr><td><b>${r}</b></td><td style="width:40%"><div class="row"><div class="bar" style="flex:1"><i style="width:${c/mx*100}%;background:var(--lime)"></i></div><span class="tiny">${c}</span></div></td><td class="num">${o}</td><td class="num"><span class="pill ${o/c>.2?'p-ok':'p-n'}">${pct(o/c*100)}</span></td></tr>`).join('')}</table>
+    <p class="tiny">Cada consulta que entra por Instagram queda asociada al reel que la trajo. Así sabés qué contenido conviene repetir.</p></div>
+  <div class="card"><h3>${ico('chart')}Por canal</h3>${[['Instagram',115,'var(--lime)'],['WhatsApp directo',28,'var(--brand)'],['Referidos',21,'var(--sky)'],['Web',6,'var(--ink-3)']].map(([n,v,c])=>`<div style="margin-bottom:12px"><div class="row" style="justify-content:space-between"><span>${n}</span><b>${v}</b></div><div class="bar"><i style="width:${v/115*100}%;background:${c}"></i></div></div>`).join('')}
+    <div class="alert lime" style="margin-top:14px">${ico('sprout')}<div><b>Idea para el próximo reel</b><span class="tiny">"Cubre suelos" convierte mejor que "Quiénes somos". Los videos de solución concreta traen consultas con presupuesto más alto.</span></div></div></div></div>`;
+};
+VIEWS.clientes=()=>{
+  const cl={};proyectos.forEach(p=>{const c=cl[p.cli]||(cl[p.cli]={n:p.cli,b:p.b,proy:[],ab:null});c.proy.push(p);});abonos.forEach(a=>{const c=cl[a.cli]||(cl[a.cli]={n:a.cli,b:a.b,proy:[],ab:null});c.ab=a;});
+  $('#pane').innerHTML=`<div class="card"><h3>${ico('users')}Clientes<span class="act tiny">Obras y mantenimiento en una sola ficha</span></h3><div class="tw"><table><tr><th>Cliente</th><th>Zona</th><th>Proyectos</th><th>Mantenimiento</th><th class="num">Facturado</th></tr>${Object.values(cl).map(c=>`<tr><td><div class="row"><div class="av">${ini(c.n)}</div><b>${c.n}</b></div></td><td>${c.b}</td><td>${c.proy.map(p=>`<span class="pill p-n" style="cursor:pointer;margin-right:4px" onclick="abrirProyecto('${p.id}')">${p.n}</span>`).join('')||'—'}</td><td>${c.ab?`<span class="pill p-lime">${c.ab.frec} · ${usd(c.ab.monto)}/mes</span>`:'—'}</td><td class="num">${usd(sum(c.proy,p=>presupuesto(p).total*p.cobrado)+(c.ab?c.ab.monto*7:0))}</td></tr>`).join('')}</table></div></div>`;
+};
+
+// ---------- Proyectos ----------
+VIEWS.proyectos=()=>{if(proySel)return vistaProyecto();
+  $('#pane').innerHTML=`<div class="tabs">${ETAPAS.map(([k,l])=>`<span class="pill ${k==='obra'?'p-ok':'p-n'}">${l}: ${proyectos.filter(p=>p.et===k).length}</span>`).join('')}<button class="btn pri" style="margin-left:auto" onclick="go('consultas')">${ico('plus')}Nuevo desde una consulta</button></div>
+  <div class="pgrid">${proyectos.map(p=>{const pr=presupuesto(p);return `<div class="pcard" onclick="abrirProyecto('${p.id}')"><div class="plan">${planSVG(p,{labels:false,mes:HOY.getMonth()+1})}</div><div class="pb"><div class="row" style="justify-content:space-between"><b style="font-size:16px">${p.n}</b>${etPill(p.et)}</div><div class="tiny">${p.cli} · ${p.b} · ${p.m2} m²</div>${p.et==='obra'?`<div class="bar" style="margin:8px 0 2px"><i style="width:${p.av}%"></i></div><div class="tiny">${p.av}% · ${etapaActual(p)}</div>`:`<div class="tiny" style="margin-top:8px">${sum(pr.pl,l=>l.q)} plantas · ${pr.pl.length} especies</div>`}<div class="row" style="justify-content:space-between;margin-top:8px"><b>${usd(pr.total)}</b><span class="tiny">${p.origen}</span></div></div></div>`}).join('')}</div>`;
+};
+function abrirProyecto(id){closeModal();if(modActual!=='proyectos')go('proyectos');proySel=id;proyTab='diseno';zonaSel=null;mesFlor=HOY.getMonth()+1;VIEWS.proyectos();$('#view').scrollTop=0;}
+function vistaProyecto(){
+  const p=PR(proySel),pr=presupuesto(p);
+  const TABS=[['diseno','Diseño y paleta'],['materiales','Plantas y materiales'],['crono','Cronograma'],['costos','Costos'],['cobros','Cobros']];
+  $('#pane').innerHTML=`<button class="back" onclick="proySel=null;VIEWS.proyectos()">${ico('back')}Todos los jardines</button>
+  <div class="row" style="margin-bottom:14px;flex-wrap:wrap"><div><div class="row"><h2 style="margin:0;font-size:26px;font-weight:800">${p.n}</h2>${etPill(p.et)}</div><div class="muted">${p.id} · ${p.cli} · ${p.b} · ${p.m2} m² · Cuadrilla ${p.cuad}</div></div>
+  <div class="row" style="margin-left:auto"><button class="btn" onclick="portal('${p.id}')">${ico('eye')}Así lo ve el cliente</button><button class="btn" onclick="verPresupuesto('${p.id}')">${ico('doc')}Presupuesto ${usd(pr.total)}</button>${sigEtapaBtn(p)}</div></div>
+  <div class="tabs">${TABS.map(([k,l])=>`<button class="tab ${proyTab===k?'on':''}" onclick="proyTab='${k}';vistaProyecto()">${l}</button>`).join('')}</div><div id="ptab"></div>`;
+  ({diseno:tabDiseno,materiales:tabMateriales,crono:tabCrono,costos:tabCostos,cobros:tabCobros})[proyTab](p,pr);
+}
+function sigEtapaBtn(p){const i=ETAPAS.findIndex(e=>e[0]===p.et),s=ETAPAS[i+1];if(!s)return '';return `<button class="btn pri" onclick="avanzarProyecto('${p.id}')">Pasar a ${s[1].toLowerCase()}</button>`;}
+function avanzarProyecto(id){const p=PR(id),i=ETAPAS.findIndex(e=>e[0]===p.et);p.et=ETAPAS[i+1][0];if(p.et==='obra'){p.av=5;p.cobrado=.4;}if(p.et==='terminado'){p.av=100;p.cobrado=1;abonos.push({cli:p.cli,b:p.b,m2:p.m2,frec:'Quincenal',monto:Math.round(p.m2*.5),cuad:'Mantenimiento A',dia:5,desde:p.id});}
+  const msg={presupuesto:'Presupuesto listo para enviar.',aprobado:'Aprobado: se pidió la seña y se reservaron las plantas del depósito.',obra:'Obra iniciada. La cuadrilla ya la ve en su agenda.',terminado:'Jardín entregado. Se le ofreció el abono de mantenimiento quincenal.'}[p.et];vistaProyecto();toast(msg);}
+
+function tabDiseno(p,pr){
+  const zs=zonas(p), z=zs.find(x=>x.k===zonaSel);
+  const flor=pr.pl.filter(l=>S(l.id).fl.includes(mesFlor)).sort((a,b)=>b.q-a.q);
+  $('#ptab').innerHTML=`<div class="grid2"><div class="card"><h3>${ico('plan')}Plano del jardín<span class="act tiny">Tocá una zona para ver y cambiar sus plantas</span></h3>
+    <div class="plan-big" id="planbox">${planSVG(p,{mes:mesFlor,interactive:true})}</div>
+    <div style="margin-top:14px"><div class="row" style="justify-content:space-between"><b>${ico('flower')} Cómo se ve en <span id="mesname" style="color:var(--brand);text-transform:capitalize">${MESES[mesFlor-1]}</span></b><span class="tiny">Mové la barra para recorrer el año</span></div>
+    <input type="range" min="1" max="12" value="${mesFlor}" id="mesr" style="margin-top:8px"><div class="mlab">${MC.map(m=>`<span>${m}</span>`).join('')}</div></div>
+    <div class="row" id="florchips" style="flex-wrap:wrap;gap:6px;margin-top:10px">${flor.length?flor.slice(0,8).map(l=>`<span class="pill p-n"><span class="swatch" style="background:${S(l.id).col}"></span>${S(l.id).n}</span>`).join(''):'<span class="tiny">En este mes el jardín es puro verde y textura: sin floraciones.</span>'}</div></div>
+  <div>${z?zonaPanel(p,z):resumenDiseno(p,pr)}</div></div>`;
+  bindZonas(p);
+  $('#mesr').oninput=e=>{mesFlor=+e.target.value;const pr2=presupuesto(p);$('#planbox').innerHTML=planSVG(p,{mes:mesFlor,interactive:true});bindZonas(p);$('#mesname').textContent=MESES[mesFlor-1];$('#florchips').innerHTML=chipsFlor(pr2);};
+}
+function bindZonas(p){document.querySelectorAll('#planbox .zone').forEach(el=>el.onclick=()=>{zonaSel=el.dataset.z;tabDiseno(p,presupuesto(p));});}
+function chipsFlor(pr){const flor=pr.pl.filter(l=>S(l.id).fl.includes(mesFlor)).sort((a,b)=>b.q-a.q);return flor.length?flor.slice(0,8).map(l=>`<span class="pill p-n"><span class="swatch" style="background:${S(l.id).col}"></span>${S(l.id).n}</span>`).join(''):'<span class="tiny">En este mes el jardín es puro verde y textura: sin floraciones.</span>';}
+function resumenDiseno(p,pr){
+  const tipos={};pr.pl.forEach(l=>{const t=S(l.id).t;tipos[t]=(tipos[t]||0)+l.q;});
+  const nat=sum(pr.pl.filter(l=>S(l.id).nat),l=>l.q),tot=sum(pr.pl,l=>l.q);
+  const meses=[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>pr.pl.filter(l=>S(l.id).fl.includes(m)).length);
+  return `<div class="card" style="margin-bottom:14px"><h3>${ico('leaf')}Paleta vegetal</h3>
+    <div class="grid2e" style="margin-bottom:10px"><div><div class="tiny">Plantas</div><b style="font-size:22px">${num(tot)}</b></div><div><div class="tiny">Especies nativas</div><b style="font-size:22px">${pct(nat/tot*100)}</b></div></div>
+    ${pr.pl.filter(l=>S(l.id).t!=='Huerta').sort((a,b)=>b.q-a.q).map(l=>{const e=S(l.id);return `<div class="list-it" style="padding:7px 0"><span class="swatch" style="background:${e.col}"></span><div style="flex:1"><b>${e.n}</b> <i class="tiny">${e.ci}</i>${e.nat?' <span class="pill p-lime" style="padding:0 6px">Nativa</span>':''}</div><span class="tiny">${num(l.q)}</span></div>`}).join('')}</div>
+  <div class="card"><h3>${ico('flower')}Algo florece todo el año</h3><div class="chart" style="height:90px">${meses.map((v,i)=>`<div class="c"><div class="stk" style="height:${v/Math.max(...meses)*100}%;background:${i+1===mesFlor?'var(--lime)':'var(--brand)'}"></div><span>${MC[i]}</span></div>`).join('')}</div><p class="tiny">Especies en flor por mes. ${meses.filter(v=>v===0).length?'Hay meses sin flor: sumar una especie de invierno ayuda.':'Ningún mes queda sin flor.'}</p></div>`;
+}
+function zonaPanel(p,z){
+  const ls=lineasZona(p,z);
+  const warn=ls.filter(l=>{const e=S(l.id);return z.luz==='Media sombra'&&e.sol==='Sol pleno';});
+  const opciones=ESP.filter(e=>z.tipo==='huerta'?e.t==='Huerta':e.t!=='Huerta'&&e.t!=='Árbol');
+  return `<div class="card"><h3>${ico('plan')}${z.n}<button class="btn sm act" onclick="zonaSel=null;tabDiseno(PR('${p.id}'),presupuesto(PR('${p.id}')))">${ico('x')}</button></h3>
+  <div class="row" style="margin-bottom:10px;flex-wrap:wrap"><span class="pill p-n">${z.m2} m²</span><span class="pill ${z.luz==='Sol pleno'?'p-warn':'p-sky'}">${ico(z.luz==='Sol pleno'?'sun':'cloud')}${z.luz}</span></div>
+  ${z.tipo==='cesped'?`<p class="muted">${z.m2} m² de tepes de Bermuda Tifway, con riego por aspersión. Es la especie que mejor aguanta el pisoteo y el verano de la costa.</p>`:z.tipo==='deck'||z.tipo==='piedra'?`<p class="muted">Superficie construida, sin plantas.</p>`:
+  `${ls.map((l,i)=>{const e=S(l.id);return `<div class="list-it"><span class="swatch" style="background:${e.col}"></span><div style="flex:1"><select class="inp" style="width:100%" onchange="cambiarEsp('${p.id}','${z.k}',${i},+this.value)">${opciones.map(o=>`<option value="${o.id}" ${o.id===e.id?'selected':''}>${o.n}${o.nat?' (nativa)':''}</option>`).join('')}</select><div class="tiny" style="margin-top:3px">${e.sol} · riego ${e.riego.toLowerCase()} · ${e.alt}</div>${flores(e)}</div><b style="width:44px;text-align:right">${l.q}</b><button class="x" onclick="quitarEsp('${p.id}','${z.k}',${i})">${ico('x')}</button></div>`}).join('')}
+  ${warn.map(l=>`<div class="alert">${ico('alert')}<div><b>${S(l.id).n} necesita sol pleno</b><span class="tiny">Esta zona tiene media sombra. Probá con ${z.tipo==='cerco'?'Eugenia':'Liriope u Ophiopogon'}.</span></div></div>`).join('')}
+  <button class="btn" style="margin-top:12px" onclick="sumarEsp('${p.id}','${z.k}')">${ico('plus')}Sumar especie</button>
+  <p class="tiny">Las cantidades salen de la superficie y de la densidad de plantación de cada especie. Al cambiar algo, se recalculan el presupuesto y la lista de compra.</p>`}</div>`;
+}
+function reparto(arr){const n=arr.length;arr.forEach(x=>x[1]=1/n);}
+function cambiarEsp(pid,zk,i,id){const p=PR(pid);p.plantas[zk][i][0]=id;tabDiseno(p,presupuesto(p));toast('Paleta actualizada. Presupuesto: '+usd(presupuesto(p).total));}
+function quitarEsp(pid,zk,i){const p=PR(pid);p.plantas[zk].splice(i,1);if(p.plantas[zk].length)reparto(p.plantas[zk]);tabDiseno(p,presupuesto(p));}
+function sumarEsp(pid,zk){const p=PR(pid);p.plantas[zk]=p.plantas[zk]||[];const z=zonas(p).find(x=>x.k===zk);const cand=ESP.find(e=>(z.tipo==='huerta'?e.t==='Huerta':e.t!=='Huerta'&&e.t!=='Árbol')&&!p.plantas[zk].some(x=>x[0]===e.id)&&(z.luz==='Sol pleno'||e.sol!=='Sol pleno'));p.plantas[zk].push([cand.id,0]);reparto(p.plantas[zk]);tabDiseno(p,presupuesto(p));}
+
+function tabMateriales(p,pr){
+  const faltan=pr.pl.map(l=>({...l,e:S(l.id),falta:Math.max(0,l.q-S(l.id).st)}));
+  $('#ptab').innerHTML=`<div class="grid2"><div class="card"><h3>${ico('leaf')}Plantas (${num(sum(pr.pl,l=>l.q))})<span class="act tiny">Sale sola del diseño</span></h3><div class="tw"><table><tr><th>Especie</th><th>Tamaño</th><th class="num">Cantidad</th><th class="num">En depósito</th><th>Estado</th><th class="num">Costo</th></tr>
+    ${faltan.map(l=>`<tr><td><div class="row"><span class="swatch" style="background:${l.e.col}"></span><div><b>${l.e.n}</b><div class="tiny"><i>${l.e.ci}</i></div></div></div></td><td class="tiny">${l.e.mac}</td><td class="num">${l.q}</td><td class="num">${l.e.st}</td><td>${p.et==='terminado'?'<span class="pill p-n">Plantada</span>':l.falta?`<span class="pill p-warn">Faltan ${l.falta}</span>`:'<span class="pill p-ok">Hay stock</span>'}</td><td class="num">${usd(l.q*l.e.costo)}</td></tr>`).join('')}</table></div></div>
+  <div><div class="card" style="margin-bottom:14px"><h3>${ico('box')}Materiales</h3>${pr.ins.map(i=>`<div class="stat-row"><span>${INSUMOS[i.k].n}</span><b>${num(i.q)} ${INSUMOS[i.k].u}</b></div>`).join('')}</div>
+  ${p.et!=='terminado'&&faltan.some(l=>l.falta)?`<div class="card"><h3>${ico('truck')}Falta comprar</h3>${[...new Set(faltan.filter(l=>l.falta).map(l=>l.e.viv))].map(v=>`<div class="stat-row"><span>${v}</span><b>${sum(faltan.filter(l=>l.falta&&l.e.viv===v),l=>l.falta)} plantas</b></div>`).join('')}<button class="btn pri" style="width:100%;justify-content:center;margin-top:12px" onclick="pedirFaltantes('${p.id}')">${ico('truck')}Armar pedidos a los viveros</button></div>`:''}</div></div>`;
+}
+function pedirFaltantes(pid){const p=PR(pid),pr=presupuesto(p);const f=pr.pl.map(l=>({id:l.id,falta:Math.max(0,l.q-S(l.id).st)})).filter(x=>x.falta);const vivs=[...new Set(f.map(x=>S(x.id).viv))];
+  vivs.forEach((v,i)=>ordenes.unshift({id:'OC-'+(350+ordenes.length),viv:v,fecha:new Date(),items:f.filter(x=>S(x.id).viv===v).map(x=>[x.id,x.falta]),est:'Pedida',proy:pid}));
+  toast(vivs.length+' pedido'+(vivs.length>1?'s':'')+' enviado'+(vivs.length>1?'s':'')+' por WhatsApp a '+vivs.join(' y '));go('compras');}
+
+function tabCrono(p){
+  const tot=sum(p.crono,c=>c.d);let acc=0,d=p.ini;
+  $('#ptab').innerHTML=`<div class="grid2"><div class="card steps"><h3>${ico('cal')}Cronograma de obra</h3>${p.crono.map((c,i)=>{const desde=addD(d+(c.corrida?1:0));d+=c.d;acc+=c.d;const done=acc/tot*100<=p.av,now=!done&&(acc-c.d)/tot*100<=p.av&&p.et==='obra';const cl=CLIMA.find(w=>w.lluvia>10&&Math.round((w.d-desde)/DAY)>=0&&Math.round((w.d-desde)/DAY)<c.d);
+    return `<div class="st"><div class="dot ${done?'done':now?'now':''}">${done?ico('check'):''}</div><div><b>${c.n}</b><div class="tiny">${fdia(desde)} · ${c.d} día${c.d>1?'s':''} · Cuadrilla ${p.cuad}${c.corrida?' · corrida por lluvia':''}</div></div>${cl&&!done&&!c.corrida?`<span class="pill p-warn">${ico('rain')}Lluvia ${fdia(cl.d)}</span>`:done?'<span class="pill p-ok">Hecho</span>':now?'<span class="pill p-lime">En curso</span>':''}</div>`;}).join('')}</div>
+  <div class="card"><h3>${ico('sun')}Clima en obra</h3><div class="wx" style="grid-template-columns:repeat(4,1fr)">${CLIMA.slice(0,4).map(c=>`<div class="wd ${c.lluvia>10?'al':''}"><b>${fdia(c.d)}</b>${ico(c.ic)}<div class="t">${c.max}°</div><div class="r">${c.lluvia?c.lluvia+' mm':'&nbsp;'}</div></div>`).join('')}</div>
+  <p class="tiny" style="margin-top:12px">Si llueve fuerte el día de plantación o de colocación de césped, el sistema avisa y propone correr la etapa. La familia recibe el cambio por WhatsApp.</p>
+  <button class="btn" onclick="closeModal();toast('Avance de obra enviado a ${esc(p.cli)} con fotos del día')">${ico('msg')}Mandar avance al cliente</button></div></div>`;
+}
+function tabCostos(p,pr){
+  const av=p.et==='terminado'?1:p.av/100, real=pr.costo*av*p.desvio;
+  const grupos=['Plantas','Materiales','Mano de obra'];
+  $('#ptab').innerHTML=`<div class="grid4"><div class="card kpi"><div class="lab">Precio al cliente</div><div class="val">${usd(pr.total)}</div></div><div class="card kpi"><div class="lab">Costo presupuestado</div><div class="val">${usd(pr.costo)}</div></div><div class="card kpi"><div class="lab">Costo real a hoy</div><div class="val">${usd(real)}</div><div class="d n">${pct(av*100)} de avance</div></div><div class="card kpi"><div class="lab">Margen proyectado</div><div class="val" style="color:${p.desvio>1.05?'var(--bad)':'var(--ok)'}">${pct((pr.total-pr.costo*p.desvio)/pr.total*100)}</div><div class="d ${p.desvio>1?'neg':''}">${p.desvio>1?'baja '+pct((p.desvio-1)*pr.costo/pr.total*100)+' por desvío':'según lo previsto'}</div></div></div>
+  <div class="card"><h3>${ico('chart')}Presupuestado contra real</h3><table><tr><th>Rubro</th><th class="num">Presupuestado</th><th class="num">Real a hoy</th><th class="num">Proyectado al cierre</th><th>Desvío</th></tr>
+  ${grupos.map(g=>{const c=sum(pr.items.filter(i=>i.g===g),i=>i.q*i.cu);const f=g==='Mano de obra'?p.desvio+(p.desvio-1)*1.5:g==='Plantas'?1+(p.desvio-1)*.4:1;return `<tr><td><b>${g}</b></td><td class="num">${usd(c)}</td><td class="num">${usd(c*av*f)}</td><td class="num">${usd(c*f)}</td><td>${f>1.03?`<span class="pill p-bad">+${pct((f-1)*100)}</span>`:'<span class="pill p-ok">En línea</span>'}</td></tr>`}).join('')}</table>
+  ${p.desvio>1.05?`<div class="alert">${ico('alert')}<div><b>La mano de obra viene ${pct((p.desvio-1)*250)} arriba</b><span class="tiny">La preparación de suelo llevó 2 días más de lo previsto por escombro enterrado. Si se repite, conviene sumar un ítem de "limpieza de terreno" a los presupuestos.</span></div></div>`:''}</div>`;
+}
+function tabCobros(p,pr){
+  const hitos=[['Seña al aprobar',.4],['Al terminar la plantación',.4],['Entrega del jardín',.2]];let acc=0;
+  $('#ptab').innerHTML=`<div class="card" style="max-width:760px"><h3>${ico('cash')}Cobros de la obra</h3><table><tr><th>Hito</th><th class="num">%</th><th class="num">Importe</th><th>Estado</th></tr>${hitos.map(([n,f])=>{acc+=f;const ok=p.cobrado>=acc-.001,cur=!ok&&p.cobrado>=acc-f-.001&&p.et!=='diseno'&&p.et!=='presupuesto';return `<tr><td><b>${n}</b></td><td class="num">${pct(f*100)}</td><td class="num">${usd(pr.total*f)}</td><td>${ok?'<span class="pill p-ok">Cobrado</span>':cur?`<button class="btn sm pri" onclick="cobrarHito('${p.id}',${acc})">Marcar cobrado</button> <button class="btn sm" onclick="toast('Recordatorio de pago enviado a ${esc(p.cli)}')">Recordar</button>`:'<span class="pill p-n">Pendiente</span>'}</td></tr>`}).join('')}
+  <tr class="tot"><td>Cobrado</td><td></td><td class="num">${usd(pr.total*p.cobrado)}</td><td class="tiny">Resta ${usd(pr.total*(1-p.cobrado))}</td></tr></table></div>`;
+}
+function cobrarHito(pid,f){PR(pid).cobrado=f;vistaProyecto();toast('Cobro registrado');}
+function portal(pid){const p=PR(pid),pr=presupuesto(p);
+  modal('Así lo ve '+p.cli,`<div class="portal"><div class="row" style="margin-bottom:10px"><svg width="30" height="30" viewBox="0 0 40 40"><path d="M20 5c5 4 9 9 9 15a9 9 0 0 1-18 0c0-6 4-11 9-15z" fill="#1E8A3C"/><path d="M24 12c-4-1-8 1-7 4s7 2 7 6-5 5-8 3" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg><div><b style="font-size:17px">Tu jardín · ${p.n}</b><div class="tiny">puravida.customerp.dev/jardin/${p.id.toLowerCase()}</div></div></div>
+  <div style="background:#fff;border-radius:12px;padding:10px">${planSVG(p,{mes:HOY.getMonth()+1})}</div>
+  ${p.et==='obra'?`<div style="margin-top:12px"><div class="row" style="justify-content:space-between"><b>Avance de la obra</b><b>${p.av}%</b></div><div class="bar" style="margin:6px 0"><i style="width:${p.av}%"></i></div><div class="tiny">Ahora: ${etapaActual(p)}</div></div>`:''}
+  <h4 style="margin:14px 0 6px">Tus plantas</h4><div class="row" style="flex-wrap:wrap;gap:6px">${pr.pl.filter(l=>S(l.id).t!=='Huerta').map(l=>`<span class="pill" style="background:#fff"><span class="swatch" style="background:${S(l.id).col}"></span>${S(l.id).n}</span>`).join('')}</div>
+  <h4 style="margin:14px 0 6px">Cuidados de esta semana</h4><div class="tiny" style="color:var(--ink-2)">Riego automático 2 veces por día, 10 minutos. No pisar los canteros nuevos por 15 días. El jueves llueve: el riego se apaga solo.</div></div>`,
+  `<button class="btn" data-close>Cerrar</button><button class="btn pri" onclick="closeModal();toast('Link del jardín enviado a ${esc(p.cli)}')">${ico('link')}Mandarle el link</button>`,true);}
+
+// ---------- Mantenimiento ----------
+VIEWS.agenda=()=>{
+  const dias=[1,2,3,4,5,6], lunes=addD(1-(HOY.getDay()||7));
+  const cz=CUADRILLAS.filter(c=>c.foco!=='Obras');
+  $('#pane').innerHTML=`<div class="row" style="margin-bottom:12px"><span class="muted">Semana del ${fcorta(lunes)} al ${fcorta(new Date(lunes.getTime()+5*DAY))}. Tocá una visita para abrir el checklist.</span><button class="btn" style="margin-left:auto" onclick="toast('Agenda enviada a cada cuadrilla por WhatsApp')">${ico('msg')}Mandar agenda a las cuadrillas</button></div>
+  <div class="card"><div class="week"><div></div>${dias.map(d=>{const f=new Date(lunes.getTime()+(d-1)*DAY);const w=CLIMA.find(c=>c.d.toDateString()===f.toDateString());return `<div class="h">${DIAS[d]} ${f.getDate()} ${w?`<span style="color:${w.lluvia>10?'var(--sky)':'var(--ink-3)'}">${ico(w.ic)}</span>`:''}</div>`}).join('')}
+  ${cz.map(c=>`<div class="cz">${c.n}<div class="tiny">${c.lider}</div></div>${dias.map(d=>`<div class="cell">${c.n==='Huertas'?huertas.filter(h=>h.dia===d).map(h=>`<div class="vis hu" onclick="verHuerta('${esc(h.cli)}')"><b>${h.cli}</b><div class="tiny">Huerta ${h.tam.toLowerCase()} · ${h.b}</div></div>`).join(''):abonos.filter(a=>a.cuad===c.n&&a.dia===d).map(a=>`<div class="vis ${visitasHechas[a.cli]?'done':''}" onclick="verVisita('${esc(a.cli)}')"><b>${a.cli}</b><div class="tiny">${a.b} · ${a.frec.toLowerCase()}</div></div>`).join('')}</div>`).join('')}`).join('')}</div></div>`;
+};
+function verVisita(cli){const a=abonos.find(x=>x.cli===cli);const mes=HOY.getMonth()+1;const tareas=[...TAREAS.base,...(TAREAS.estacion[mes]||TAREAS.estacion[10])];const hechas=visitasHechas[cli]||[];
+  modal('Visita · '+a.cli,`<div class="row" style="margin-bottom:10px"><span class="pill p-lime">${a.frec}</span><span class="tiny">${a.b} · ${a.m2} m² · ${a.cuad}</span></div>
+  <div id="chks">${tareas.map((t,i)=>`<div class="chk ${hechas.includes(i)||hechas===true?'on':''}" onclick="this.classList.toggle('on')"><span class="bx">${ico('check')}</span><span>${t}</span>${i>=TAREAS.base.length?'<span class="pill p-lime" style="margin-left:auto">Primavera</span>':''}</div>`).join('')}</div>
+  <label class="f" style="margin-top:14px">Nota para el cliente<input id="vnota" value="Se nota el arranque de la primavera. Las gramíneas ya están brotando."></label>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="cerrarVisita('${esc(cli)}')">${ico('msg')}Terminar y mandar reporte</button>`);}
+function cerrarVisita(cli){visitasHechas[cli]=[...document.querySelectorAll('#chks .chk')].map((c,i)=>c.classList.contains('on')?i:-1).filter(i=>i>=0);closeModal();VIEWS[view]();toast('Reporte con fotos enviado a '+cli+' por WhatsApp');}
+VIEWS.abonos=()=>{
+  const mrr=sum(abonos,a=>a.monto);
+  $('#pane').innerHTML=`<div class="grid4"><div class="card kpi"><div class="lab">Ingreso fijo por mes</div><div class="val">${usd(mrr)}</div><div class="d">+${usd(320)} este trimestre</div></div><div class="card kpi"><div class="lab">Jardines con abono</div><div class="val">${abonos.length}</div><div class="d n">${num(sum(abonos,a=>a.m2))} m² en cuidado</div></div><div class="card kpi"><div class="lab">Obras que pasaron a abono</div><div class="val">58%</div><div class="d">de los jardines entregados</div></div><div class="card kpi"><div class="lab">Precio promedio</div><div class="val">${usd(mrr/sum(abonos,a=>a.m2)*100)}</div><div class="d n">cada 100 m² por mes</div></div></div>
+  <div class="card"><h3>${ico('shears')}Abonos de mantenimiento</h3><div class="tw"><table><tr><th>Cliente</th><th>Zona</th><th class="num">m²</th><th>Frecuencia</th><th>Cuadrilla</th><th>Día</th><th>Origen</th><th class="num">Por mes</th></tr>${abonos.map(a=>`<tr><td><b>${a.cli}</b></td><td>${a.b}</td><td class="num">${num(a.m2)}</td><td><span class="pill p-lime">${a.frec}</span></td><td>${a.cuad}</td><td style="text-transform:capitalize">${DIAS[a.dia]}</td><td class="tiny">${a.desde?'Obra '+a.desde:'Directo'}</td><td class="num"><b>${usd(a.monto)}</b></td></tr>`).join('')}<tr class="tot"><td colspan="7">Total mensual</td><td class="num">${usd(mrr)}</td></tr></table></div></div>`;
+};
+VIEWS.huertas=()=>{
+  $('#pane').innerHTML=`<div class="grid3"><div class="card kpi"><div class="lab">${ico('sprout')}Huertas en cuidado</div><div class="val">${huertas.length}</div><div class="d n">${huertas.filter(h=>h.tam==='Grande').length} grandes · ${huertas.filter(h=>h.tam==='Chica').length} chicas</div></div><div class="card kpi"><div class="lab">Cosechado este mes</div><div class="val">${num(sum(huertas,h=>h.cos))} kg</div><div class="d">para mostrar en "Cosechas"</div></div><div class="card kpi"><div class="lab">Próximas cosechas</div><div class="val">${sum(huertas,h=>h.cult.filter(c=>c[2]+c[1]>0&&c[2]+c[1]<=14).length)}</div><div class="d n">en los próximos 14 días</div></div></div>
+  <div class="grid2e">${huertas.map(h=>`<div class="card"><h3>${ico('sprout')}${h.cli}<span class="pill ${h.tam==='Grande'?'p-lime':'p-n'} act">Huerta ${h.tam.toLowerCase()} · ${h.m2} m²</span></h3>${h.cult.map(([n,s,c])=>{const pr=Math.min(100,-s/c*100),falta=c+s;return `<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span><b>${n}</b> <span class="tiny">sembrado hace ${-s} días</span></span><span class="pill ${falta<=0?'p-ok':falta<=14?'p-lime':'p-n'}">${falta<=0?'Lista para cosechar':'Cosecha en '+falta+' días'}</span></div><div class="bar" style="margin-top:5px"><i style="width:${pr}%;background:${falta<=14?'var(--lime)':'var(--brand)'}"></i></div></div>`}).join('')}<div class="row" style="margin-top:6px"><span class="tiny">${h.b} · visita los ${DIAS[h.dia]}</span><button class="btn sm" style="margin-left:auto" onclick="verHuerta('${esc(h.cli)}')">Registrar cosecha</button></div></div>`).join('')}</div>`;
+};
+function verHuerta(cli){const h=huertas.find(x=>x.cli===cli);modal('Huerta · '+h.cli,`<label class="f">Qué se cosechó<select id="hc">${h.cult.map(c=>`<option>${c[0]}</option>`).join('')}</select></label><label class="f">Kilos<input id="hk" type="number" step="0.1" value="1.8"></label><p class="tiny">La cosecha le llega a la familia con una foto, y queda para el contenido de "Cosechas" en Instagram.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="huertas.find(x=>x.cli==='${esc(cli)}').cos+=(+$('#hk').value||0);closeModal();VIEWS[view]();toast('Cosecha registrada y enviada a ${esc(cli)}')">Guardar</button>`);}
+VIEWS.estacion=()=>{
+  const PLAN=[['Fertilización de césped',[9,10,3]],['Poda de gramíneas',[8,9]],['Poda de Eugenia y cercos',[11,2]],['Reposición de mulch',[10,4]],['Control de plagas preventivo',[10,11,12,1]],['Aireado y resiembra de césped',[3,4]],['Riego de verano (frecuencia alta)',[12,1,2]],['Plantación de bulbos',[4,5]],['Siembra de huerta de verano',[9,10,11]],['Siembra de huerta de invierno',[3,4,5]]];
+  const m=HOY.getMonth()+1;
+  $('#pane').innerHTML=`<div class="card"><h3>${ico('cal')}Calendario de la temporada<span class="act tiny">Estas tareas se suman solas al checklist de cada visita</span></h3><div class="tw"><table><tr><th>Tarea</th>${MC.map((c,i)=>`<th style="text-align:center;${i+1===m?'color:var(--brand)':''}">${c}</th>`).join('')}<th class="num">Jardines</th></tr>${PLAN.map(([t,ms])=>`<tr><td><b>${t}</b></td>${[1,2,3,4,5,6,7,8,9,10,11,12].map(i=>`<td style="text-align:center;padding:6px 2px">${ms.includes(i)?`<span style="display:block;height:12px;border-radius:4px;background:${i===m?'var(--lime)':'var(--brand-soft)'}"></span>`:''}</td>`).join('')}<td class="num">${t.includes('huerta')?huertas.length:abonos.filter(a=>t.includes('césped')?a.m2>150:true).length}</td></tr>`).join('')}</table></div></div>`;
+};
+
+// ---------- Plantas ----------
+VIEWS.catalogo=()=>{
+  const tipos=['Todas',...new Set(ESP.map(e=>e.t))];
+  const lista=ESP.filter(e=>(filtroEsp.t==='Todas'||e.t===filtroEsp.t)&&(!filtroEsp.nat||e.nat)&&(filtroEsp.luz==='Todas'||(filtroEsp.luz==='Sombra'?e.sol!=='Sol pleno':e.sol.startsWith('Sol'))));
+  $('#pane').innerHTML=`<div class="tabs">${tipos.map(t=>`<button class="tab ${filtroEsp.t===t?'on':''}" onclick="filtroEsp.t='${t}';VIEWS.catalogo()">${t}</button>`).join('')}<span style="width:12px"></span><button class="tab ${filtroEsp.nat?'on':''}" onclick="filtroEsp.nat=!filtroEsp.nat;VIEWS.catalogo()">Solo nativas</button><select class="inp" onchange="filtroEsp.luz=this.value;VIEWS.catalogo()">${['Todas','Sol','Sombra'].map(o=>`<option ${filtroEsp.luz===o?'selected':''}>${o==='Todas'?'Sol y sombra':o==='Sombra'?'Aguanta media sombra':'Sol'}</option>`).join('')}</select></div>
+  <div class="pgrid" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">${lista.map(e=>`<div class="spc" onclick="fichaEsp(${e.id})"><div class="top" style="background:linear-gradient(135deg,${e.col},#7FA36A)"><div style="position:absolute;right:8px;top:8px">${e.nat?'<span class="pill p-lime">Nativa</span>':''}</div></div><b style="font-size:16px">${e.n}</b><div class="tiny"><i>${e.ci}</i></div><div class="row" style="flex-wrap:wrap;gap:5px;margin:8px 0"><span class="pill p-n">${e.t}</span><span class="pill ${e.sol==='Sol pleno'?'p-warn':'p-sky'}">${e.sol}</span><span class="pill p-sky">${ico('drop')}${e.riego}</span></div>${flores(e)}<div class="mlab">${MC.map(m=>`<span>${m}</span>`).join('')}</div><div class="row" style="justify-content:space-between;margin-top:8px"><span class="tiny">${e.st} en depósito</span><b>${usd(e.precio)}</b></div></div>`).join('')}</div>`;
+};
+function fichaEsp(id){const e=S(id);const usos=proyectos.filter(p=>plantasProyecto(p).some(l=>l.id===id));
+  modal(e.n,`<div class="tiny" style="margin-top:-8px;margin-bottom:12px"><i>${e.ci}</i></div><div class="grid2e" style="margin-bottom:6px"><div>${[['Tipo',e.t],['Luz',e.sol],['Riego',e.riego],['Altura adulta',e.alt],['Origen',e.nat?'Nativa de Uruguay':'Introducida']].map(([a,b])=>`<div class="stat-row"><span class="muted">${a}</span><b>${b}</b></div>`).join('')}</div><div>${[['Tamaño de compra',e.mac],['Costo en vivero',usd(e.costo)],['Precio al cliente',usd(e.precio)],['Densidad',e.dens?e.dens+' por m²':'Ejemplar'],['Vivero',e.viv]].map(([a,b])=>`<div class="stat-row"><span class="muted">${a}</span><b>${b}</b></div>`).join('')}</div></div>
+  <div class="tiny" style="margin-top:6px">Floración</div>${flores(e)}<div class="mlab">${MC.map(m=>`<span>${m}</span>`).join('')}</div>
+  <h4 style="margin:16px 0 6px">Dónde la usamos</h4>${usos.map(p=>`<span class="pill p-n" style="margin:0 4px 4px 0;cursor:pointer" onclick="closeModal();abrirProyecto('${p.id}')">${p.n}</span>`).join('')||'<span class="tiny">Todavía en ningún proyecto.</span>'}`);}
+function reservado(id){return sum(proyectos.filter(p=>p.et==='aprobado'||p.et==='obra'),p=>(plantasProyecto(p).find(l=>l.id===id)||{q:0}).q*(p.et==='obra'?(1-p.av/100):1));}
+VIEWS.stock=()=>{
+  const rows=ESP.map(e=>{const r=Math.round(reservado(e.id));return {e,r,disp:e.st-r};}).sort((a,b)=>a.disp-b.disp);
+  const falt=rows.filter(x=>x.disp<0);
+  $('#pane').innerHTML=`<div class="grid4"><div class="card kpi"><div class="lab">${ico('leaf')}Plantas en depósito</div><div class="val">${num(sum(ESP,e=>e.st))}</div><div class="d n">${usd(sum(ESP,e=>e.st*e.costo))} al costo</div></div><div class="card kpi"><div class="lab">Reservadas para obras</div><div class="val">${num(sum(rows,x=>x.r))}</div><div class="d n">aprobadas y en curso</div></div><div class="card kpi"><div class="lab">Especies con faltante</div><div class="val">${falt.length}</div><div class="d ${falt.length?'neg':''}">${num(sum(falt,x=>-x.disp))} plantas por comprar</div></div><div class="card kpi"><div class="lab">${ico('box')}Materiales</div><div class="val">${INSUMOS.sust.st} m³</div><div class="d n">de sustrato · ${INSUMOS.mulch.st} m³ de mulch</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('leaf')}Depósito de plantas</h3><div class="tw"><table><tr><th>Especie</th><th class="num">En depósito</th><th class="num">Reservadas</th><th class="num">Disponibles</th><th>Vivero</th></tr>${rows.map(x=>`<tr><td><div class="row"><span class="swatch" style="background:${x.e.col}"></span><b>${x.e.n}</b></div></td><td class="num">${x.e.st}</td><td class="num">${x.r||'—'}</td><td class="num">${x.disp<0?`<span class="pill p-bad">Faltan ${-x.disp}</span>`:x.disp}</td><td class="tiny">${x.e.viv}</td></tr>`).join('')}</table></div></div>
+  <div class="card"><h3>${ico('truck')}Pedido sugerido</h3>${falt.length?[...new Set(falt.map(x=>x.e.viv))].map(v=>`<div style="margin-bottom:12px"><b>${v}</b>${falt.filter(x=>x.e.viv===v).map(x=>`<div class="stat-row"><span>${x.e.n}</span><b>${-x.disp}</b></div>`).join('')}</div>`).join('')+`<button class="btn pri" style="width:100%;justify-content:center" onclick="pedirStock()">${ico('msg')}Mandar pedidos a los viveros</button>`:'<div class="empty">No falta nada para las obras en curso.</div>'}</div></div>`;
+};
+function pedirStock(){const falt=ESP.map(e=>({e,f:Math.round(reservado(e.id))-e.st})).filter(x=>x.f>0);[...new Set(falt.map(x=>x.e.viv))].forEach(v=>ordenes.unshift({id:'OC-'+(350+ordenes.length),viv:v,fecha:new Date(),items:falt.filter(x=>x.e.viv===v).map(x=>[x.e.id,x.f]),est:'Pedida',proy:''}));go('compras');toast('Pedidos enviados a los viveros por WhatsApp');}
+VIEWS.compras=()=>{
+  $('#pane').innerHTML=`<div class="card"><h3>${ico('truck')}Pedidos a viveros<span class="act tiny">Al recibir, las plantas entran al depósito</span></h3><div class="tw"><table><tr><th>Pedido</th><th>Vivero</th><th>Fecha</th><th>Para</th><th>Detalle</th><th class="num">Costo</th><th>Estado</th></tr>${ordenes.map((o,i)=>`<tr><td><b>${o.id}</b></td><td>${o.viv}</td><td>${fcorta(o.fecha)}</td><td>${o.proy?PR(o.proy).n:'Depósito'}</td><td class="tiny">${o.items.map(([id,q])=>q+' '+S(id).n).join(', ')}</td><td class="num">${usd(sum(o.items,([id,q])=>q*S(id).costo))}</td><td>${o.est==='Recibida'?'<span class="pill p-ok">Recibida</span>':`<button class="btn sm pri" onclick="recibir(${i})">Recibir</button>`}</td></tr>`).join('')}</table></div></div>`;
+};
+function recibir(i){const o=ordenes[i];o.est='Recibida';o.items.forEach(([id,q])=>S(id).st+=q);VIEWS.compras();toast('Pedido '+o.id+' recibido. Plantas sumadas al depósito.');}
+
+// ---------- Equipo ----------
+VIEWS.cuadrillas=()=>{
+  $('#pane').innerHTML=`<div class="grid3" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">${[{n:'Lolo Diaz',rol:'Paisajista y director'},{n:'Valentina Ruiz',rol:'Diseño y presupuestos'}].map(x=>`<div class="card"><div class="row"><div class="av" style="width:44px;height:44px">${ini(x.n)}</div><div><b style="font-size:16px">${x.n}</b><div class="tiny">${x.rol}</div></div></div></div>`).join('')}
+  ${CUADRILLAS.map(c=>{const hoy=c.foco==='Obras'?proyectos.filter(p=>p.et==='obra'&&p.cuad===c.n).map(p=>p.n):c.foco==='Huertas'?huertas.filter(h=>h.dia===HOY.getDay()).map(h=>'Huerta '+h.cli):abonos.filter(a=>a.cuad===c.n&&a.dia===HOY.getDay()).map(a=>a.cli);return `<div class="card"><h3>${ico('team')}${c.n}<span class="pill ${c.foco==='Obras'?'p-ok':c.foco==='Huertas'?'p-warn':'p-lime'} act">${c.foco}</span></h3>${[c.lider+' (líder)',...c.int].map(n=>`<div class="list-it" style="padding:6px 0"><div class="av">${ini(n)}</div><span>${n}</span></div>`).join('')}<div class="tiny" style="margin-top:8px">Hoy: ${hoy.join(', ')||'sin asignación'}</div></div>`}).join('')}</div>`;
+};
+VIEWS.horas=()=>{
+  const ob=proyectos.filter(p=>p.et==='obra'||p.et==='terminado');
+  $('#pane').innerHTML=`<div class="card"><h3>${ico('cal')}Horas por obra<button class="btn pri sm act" onclick="cargarHoras()">${ico('plus')}Cargar parte del día</button></h3><div class="tw"><table><tr><th>Obra</th><th>Cuadrilla</th><th class="num">Horas presupuestadas</th><th class="num">Horas reales</th><th style="width:28%">Consumo</th><th>Desvío</th></tr>${ob.map(p=>{const pr=presupuesto(p),av=p.et==='terminado'?1:p.av/100,real=Math.round(pr.hs*av*(p.desvio+(p.desvio-1)*1.5));const uso=real/pr.hs*100;return `<tr><td><b>${p.n}</b><div class="tiny">${pct(av*100)} de avance</div></td><td>${p.cuad}</td><td class="num">${pr.hs}</td><td class="num">${real}</td><td><div class="bar"><i style="width:${Math.min(100,uso)}%;background:${uso>av*100+5?'var(--bad)':'var(--brand)'}"></i></div></td><td>${uso>av*100+5?`<span class="pill p-bad">+${pct(uso-av*100)}</span>`:'<span class="pill p-ok">En línea</span>'}</td></tr>`}).join('')}</table></div><p class="tiny">Cada cuadrilla carga sus horas desde el celular al terminar el día.</p></div>`;
+};
+function cargarHoras(){modal('Parte del día',`<label class="f">Obra<select>${proyectos.filter(p=>p.et==='obra').map(p=>`<option>${p.n}</option>`).join('')}</select></label><div class="frow"><label class="f">Cuadrilla<select>${CUADRILLAS.slice(0,2).map(c=>`<option>${c.n}</option>`).join('')}</select></label><label class="f">Horas<input type="number" value="24"></label></div><label class="f">Qué se hizo<input value="Preparación de canteros y colocación de riego"></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="closeModal();toast('Parte cargado. Ya impacta en los costos de la obra.')">Guardar</button>`);}
+VIEWS.maquinas=()=>{
+  $('#pane').innerHTML=`<div class="card"><h3>${ico('tool')}Maquinaria y herramientas</h3><div class="tw"><table><tr><th>Equipo</th><th>Tipo</th><th class="num">Uso</th><th class="num">Próximo service</th><th style="width:26%"></th><th>Estado</th></tr>${MAQUINAS.map((m,i)=>`<tr><td><b>${m.n}</b></td><td>${m.tipo}</td><td class="num">${num(m.hs)} ${m.u||'h'}</td><td class="num">${num(m.serv)} ${m.u||'h'}</td><td><div class="bar"><i style="width:${Math.min(100,m.hs/m.serv*100)}%;background:${m.est==='vencido'?'var(--bad)':m.est==='pronto'?'var(--warn)':'var(--brand)'}"></i></div></td><td>${m.est==='vencido'?`<button class="btn sm" onclick="MAQUINAS[${i}].hs=0;MAQUINAS[${i}].est='ok';VIEWS.maquinas();toast('Service registrado')">Service vencido · registrar</button>`:m.est==='pronto'?'<span class="pill p-warn">Service pronto</span>':'<span class="pill p-ok">Al día</span>'}</td></tr>`).join('')}</table></div></div>`;
+};
+
+// ---------- Resultados ----------
+VIEWS.resultados=()=>{
+  const meses=[5,4,3,2,1,0].map(k=>{const d=new Date(HOY.getFullYear(),HOY.getMonth()-k,1);return MESES[d.getMonth()].slice(0,3);});
+  const obras=[18400,22600,15800,12100,19700,26300], mant=[4210,4350,4380,4520,4760,sum(abonos,a=>a.monto)];
+  const mx=Math.max(...obras.map((o,i)=>o+mant[i]));
+  const ing=obras[5]+mant[5], cPl=obras[5]*.31, cMat=obras[5]*.12, sueld=9800, comb=1150, otros=1480, res=ing-cPl-cMat-sueld-comb-otros;
+  $('#pane').innerHTML=`<div class="grid4"><div class="card kpi"><div class="lab">Facturado en ${MESES[HOY.getMonth()]}</div><div class="val">${usd(ing)}</div><div class="d">+${pct((ing/(obras[4]+mant[4])-1)*100)} vs el mes anterior</div></div><div class="card kpi"><div class="lab">De obras</div><div class="val">${usd(obras[5])}</div><div class="d n">${pct(obras[5]/ing*100)} del total</div></div><div class="card kpi"><div class="lab">De mantenimiento</div><div class="val">${usd(mant[5])}</div><div class="d">ingreso fijo, todos los meses</div></div><div class="card kpi" style="background:var(--ok-soft)"><div class="lab">Resultado del mes</div><div class="val" style="color:var(--ok)">${usd(res)}</div><div class="d n">${pct(res/ing*100)} de lo facturado</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('chart')}Facturación por mes</h3><div class="chart">${obras.map((o,i)=>`<div class="c"><div class="stk" style="height:${(o+mant[i])/mx*100}%"><i style="height:${mant[i]/(o+mant[i])*100}%;background:var(--lime)"></i><i style="flex:1;background:var(--brand)"></i></div><span>${meses[i]}</span></div>`).join('')}</div><div class="legend"><span><i style="background:var(--brand)"></i>Obras</span><span><i style="background:var(--lime)"></i>Mantenimiento</span></div><p class="tiny">Las obras suben y bajan con la temporada. El mantenimiento es el piso que paga los sueldos en los meses flojos.</p></div>
+  <div class="card"><h3>${ico('doc')}Estado de resultados · ${MESES[HOY.getMonth()]}</h3>${[['Obras',obras[5],1],['Mantenimiento',mant[5],1],['Ingresos',ing,2],['Plantas',-cPl,1],['Materiales',-cMat,1],['Sueldos de cuadrillas',-sueld,1],['Combustible y fletes',-comb,1],['Otros gastos',-otros,1],['Resultado',res,2]].map(([n,v,t])=>`<div class="stat-row" style="${t===2?'font-weight:800;background:#FAF8F2;padding:8px 6px':''}"><span>${n}</span><b style="${v<0?'color:var(--ink-2)':''}">${v<0?'- ':''}${usd(Math.abs(v))}</b></div>`).join('')}</div></div>`;
+};
+VIEWS.margenes=()=>{
+  const ps=proyectos.filter(p=>p.et==='obra'||p.et==='terminado'||p.et==='aprobado');
+  $('#pane').innerHTML=`<div class="card"><h3>${ico('chart')}Margen por obra</h3><div class="tw"><table><tr><th>Obra</th><th>Estado</th><th class="num">Precio</th><th class="num">Costo previsto</th><th class="num">Costo real o proyectado</th><th class="num">Margen previsto</th><th class="num">Margen real</th></tr>${ps.map(p=>{const pr=presupuesto(p),cr=pr.costo*p.desvio;const mp=pr.margen/pr.total*100,mr=(pr.total-cr)/pr.total*100;return `<tr class="cl" onclick="abrirProyecto('${p.id}');proyTab='costos';vistaProyecto()"><td><b>${p.n}</b><div class="tiny">${p.b}</div></td><td>${etPill(p.et)}</td><td class="num">${usd(pr.total)}</td><td class="num">${usd(pr.costo)}</td><td class="num">${usd(cr)}</td><td class="num">${pct(mp)}</td><td class="num"><span class="pill ${mr<mp-3?'p-bad':'p-ok'}">${pct(mr)}</span></td></tr>`}).join('')}</table></div><p class="tiny">Tocá una obra para ver en qué rubro se fue el costo.</p></div>`;
+};
+
+// ---------- Búsqueda ----------
+function openK(){
+  modal('Buscar',`<input id="kq" placeholder="Ferrés, Stipa, Carrasco..." style="width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:10px"><div id="kr"></div>`);
+  const q=$('#kq');q.focus();const run=()=>{const s=q.value.toLowerCase();
+    const r=[...proyectos.filter(p=>(p.n+' '+p.cli+' '+p.b).toLowerCase().includes(s)).map(p=>({t:p.n,d:p.b,i:'plan',f:()=>abrirProyecto(p.id)})),
+      ...ESP.filter(e=>(e.n+' '+e.ci).toLowerCase().includes(s)).map(e=>({t:e.n,d:e.ci,i:'leaf',f:()=>fichaEsp(e.id)})),
+      ...abonos.filter(a=>a.cli.toLowerCase().includes(s)).map(a=>({t:a.cli,d:'Mantenimiento',i:'shears',f:()=>{go('agenda');verVisita(a.cli)}})),
+      ...leads.filter(l=>l.n.toLowerCase().includes(s)).map(l=>({t:l.n,d:'Consulta',i:'users',f:()=>{go('consultas');verLead(l.id)}}))].slice(0,9);
+    $('#kr').innerHTML=r.length?r.map((x,j)=>`<div class="kres" data-k="${j}">${ico(x.i)}<b>${x.t}</b><span class="tiny" style="margin-left:auto">${x.d}</span></div>`).join(''):'<div class="empty">Sin resultados</div>';
+    document.querySelectorAll('.kres').forEach(el=>el.onclick=()=>{closeModal();r[el.dataset.k].f();});};
+  q.oninput=run;run();
+}
+$('#openK').onclick=openK;
+
+go('inicio');
+</script>
+</body>
+</html>
