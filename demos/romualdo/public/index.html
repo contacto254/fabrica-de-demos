@@ -1034,9 +1034,8 @@ VIEWS.inicio = () => {
   if (dias328 >= 0 && dias328 <= 2) tareas.push({ c: 'g', i: 'i-tv', t: `${dias328 === 0 ? 'Hoy' : 'Mañana'} arranca el ${pr.nom}: ${lp.length} lotes nuestros`, s: `Primer lote nuestro: Nº ${lp[0].nro}, ${lp[0].cab} ${cat(lp[0].cat).nom.toLowerCase()} de ${prod(lp[0].prod).nom}, ${lp[0].hora}`, go: ['remate', 'PR328'] });
   rematesPR().forEach(r => tareas.push({ c: 'wa', i: 'i-link', t: `Difundir el link del ${r.nom}`, s: `${LOTES.filter(l => l.rem === r.id).length} lotes nuestros · armá el envío por zona y por lo que compra cada uno`, go: ['difusion'] }));
   const dd = COMPRADORES.filter(pideDD); if (dd.length) tareas.push({ c: 'i', i: 'i-escudo', t: `${dd.length} compradores pasaron los US$ 150.000 en el año`, s: `Debida diligencia (Art. 23, Ley 19.574): ${dd.map(c => c.nom).join(', ')}`, go: ['compradores'] });
-  particularesDisp().filter(l => !l.envios).forEach(l => tareas.push({ c: 'w', i: 'i-tag', t: `Negocio particular sin difundir: ${l.cab} ${cat(l.cat).nom.toLowerCase()}`, s: `${compradoresPara(l).length} compradores a los que les sirve`, go: ['difusion'] }));
   LOTES.filter(l => l.estado === 'Borrador').forEach(l => { const c = camposLote(l); tareas.push({ c: 'w', i: 'i-lote', t: `Lote ${l.id} incompleto: faltan ${c.total - c.ok} datos de la ficha`, s: `${prod(l.prod).nom} · ${cat(l.cat).nom} · ${l.rem ? rem(l.rem).nom : 'Negocio particular'}`, go: ['lote', l.id] }); });
-  LOTES.filter(l => ['En catálogo', 'Ofrecido'].includes(l.estado) && !l.envios).forEach(l => tareas.push({ c: 'i', i: 'i-enviar', t: `Lote ${l.id} todavía no se mandó a compradores`, s: `${compradoresPara(l).length} compradores le sirven`, go: ['lote', l.id] }));
+  LOTES.filter(l => ['En catálogo', 'Ofrecido'].includes(l.estado) && !l.envios).forEach(l => tareas.push({ c: 'i', i: 'i-enviar', t: `Lote ${l.id} tiene la ficha lista para compartir`, s: `${compradoresPara(l).length} compradores le sirven`, go: ['lote', l.id] }));
   PRODUCTORES.filter(p => p.incompleto).slice(0, 1).forEach(p => tareas.push({ c: 'i', i: 'i-user', t: 'Contactos importados de WhatsApp para completar', s: 'Campo, hectáreas y qué vende o compra', go: ['productores'] }));
 
   const refs = ['tm', 'th', 'n12', 'vi'].map(cat);
@@ -1283,7 +1282,7 @@ VIEWS.lote = (id) => {
     t: `Lote ${l.id}`, s: `${l.cab} ${c.nom.toLowerCase()} · ${p.est}, ${p.depto}`,
     a: `<button class="btn" data-act="fichaPDF" data-id="${l.id}">${ic('i-print')}<span>Ficha PDF</span></button>
        ${l.estado !== 'Vendido' ? `<button class="btn" data-act="editLote" data-id="${l.id}">${ic('i-lapiz')}<span>Formulario</span></button>` : ''}
-       ${!l.venta ? `<button class="btn wa" data-act="enviarLote" data-id="${l.id}">${ic('i-enviar')}<span>Enviar a compradores</span></button>` : ''}
+       ${!l.venta ? (esPart(l) ? `<button class="btn wa" data-act="compartir" data-id="${l.id}">${ic('i-wa')}<span>Compartir ficha</span></button>` : l.rem ? `<button class="btn wa" data-act="nuevoEnvio" data-rem="${l.rem}">${ic('i-link')}<span>Difundir el remate</span></button>` : '') : ''}
        ${['Borrador', 'Revisado', 'Sin vender'].includes(l.estado) ? `<button class="btn pri" data-act="aCatalogo" data-id="${l.id}">${ic('i-lote')}<span>${l.rem ? 'Pasar a catálogo' : 'Ofrecer'}</span></button>` : ''}
        ${vendible ? `<button class="btn pri" data-act="martillo" data-id="${l.id}">${ic('i-martillo')}<span>${l.rem ? 'Bajar martillo' : 'Cerrar venta'}</span></button>` : ''}
        ${!l.venta && l.estado !== 'Vendido' ? `<button class="btn" data-act="webRes" data-id="${l.id}">${ic('i-reloj')}<span>${l.res ? 'Quitar reserva' : 'Reservar'}</span></button>` : ''}${!l.web ? `<button class="btn" data-act="webPub" data-id="${l.id}">${ic('i-globo')}<span>Publicar en la web</span></button>` : ''}`,
@@ -1495,6 +1494,8 @@ function fichaPDF(id) {
 /* ---------- Envío automatizado a compradores ---------- */
 function enviarLote(id, preSel) {
   const l = lote(id), c = cat(l.cat), p = prod(l.prod), r = l.rem ? rem(l.rem) : null;
+  if (esPart(l) && !preSel) return compartirFicha(id);
+  if (l.rem && !preSel) return envioForm({ rem: l.rem });
   if (l.estado === 'Borrador') {
     modal(`${mHead('Primero completá el formulario')}<div class="modal-b"><p style="margin:0">El lote ${l.id} está en borrador. Para mandarlo a compradores tiene que estar revisado: así todos reciben la misma información, completa.</p></div><div class="modal-f"><button class="btn" data-act="close">Cerrar</button><button class="btn pri" id="goForm">${ic('i-lapiz')} Completar formulario</button></div>`);
     $('#goForm').onclick = () => loteForm(l);
@@ -1860,6 +1861,7 @@ function fichaProd(id) {
     <div class="flex wrap" style="margin-bottom:14px">${tempTag(p.temp)}<span class="tag">${esc(p.est)}</span>${p.has ? `<span class="tag">${num(p.has)} ha</span>` : ''}${p.desde ? `<span class="tag">Cliente desde ${p.desde}</span>` : ''}${p.real ? '<span class="tag gold">Lote en el Remate 328</span>' : ''}</div>
     <div class="facts f3 mb"><div><span>Ubicación</span><b>${esc(p.ubic || p.paraje + ', ' + p.depto)}</b></div><div><span>DICOSE</span><b>${p.dicose || 'Consultar escritorio'}</b></div><div><span>Teléfono</span><b>${esc(p.tel || 'sin cargar')}</b></div><div><span>Agente</span><b>${esc(ag(p.ag).nom)}</b></div><div><span>Lotes</span><b>${ls.length}</b></div><div><span>Vendido</span><b>${usd(pfs.reduce((a, x) => a + calcPF(x).bruto, 0))}</b></div></div>
     ${p.incompleto ? `<div class="note i mb">${ic('i-wa')}<span>Importado de WhatsApp. Falta completar campo, hectáreas y qué vende: se puede hacer de a poco, desde el celular.</span></div>` : ''}<div class="facts f3 mb"><div><span>Campo o campos</span><b>${esc(p.campos || p.paraje + ', ' + p.depto)}</b></div><div><span>Qué vende generalmente</span><b>${esc(p.vende || (LOTES.filter(l => l.prod === p.id).map(l => cat(l.cat).nom)[0] || 'A completar'))}</b></div><div><span>Agente</span><b>${esc(ag(p.ag).nom)}</b></div></div>
+    ${(h => `<b>Con Romualdo</b><div class="facts f3 mb" style="margin-top:8px"><div><span>Negocios a través del escritorio</span><b>${h.n}${p.desde ? ' desde ' + p.desde : ''}</b></div><div><span>Última venta</span><b>${h.ult}</b></div><div><span>Cabezas vendidas</span><b>${num(h.cab)}</b></div></div>`)(histProd(p))}
     <b>Lotes</b>
     <div class="tbl-wrap" style="margin:8px -18px 0"><table><tbody>${ls.map(l => `<tr class="click" data-act="close" data-go="lote" data-arg="${l.id}"><td class="strong">${l.id}</td><td>${l.cab} ${esc(cat(l.cat).nom.toLowerCase())}</td><td>${l.rem ? esc(rem(l.rem).nom) : 'Negocio particular'}</td><td class="num">${precioLote(l)}</td><td>${estTag(l.estado)}</td></tr>`).join('') || `<tr><td>${empty('i-lote', 'Todavía no tiene lotes.')}</td></tr>`}</tbody></table></div>
   </div><div class="modal-f"><button class="btn" data-act="tempProd" data-id="${p.id}">${p.temp === 'frío' ? 'Marcar caliente' : 'Marcar en frío'}</button><span class="grow"></span>${th ? `<button class="btn wa" data-act="close" data-go="bandeja" data-arg="${th.id}">${ic('i-wa')} Conversación</button>` : `<button class="btn wa" data-act="waProd" data-id="${p.id}">${ic('i-wa')} Escribirle</button>`}<button class="btn pri" data-act="nuevoLote" data-prod="${p.id}">${ic('i-mas')} Cargar lote</button></div>`, 'lg');
@@ -1882,8 +1884,9 @@ function fichaComp(id) {
   const sirven = LOTES.filter(l => ['En catálogo', 'Ofrecido', 'Revisado'].includes(l.estado) && match(l, c).s >= 2);
   modal(`${mHead(esc(c.nom))}<div class="modal-b">
     <div class="facts f3 mb"><div><span>Tipo</span><b>${esc(c.tipo)}</b></div><div><span>Zona</span><b>${esc(c.depto)}</b></div><div><span>Teléfono</span><b>${esc(c.tel)}</b></div><div><span>Agente</span><b>${esc(ag(c.ag).nom)}</b></div><div><span>Compras del año</span><b>${usd(comprasAnio(c))}</b></div><div><span>Preofertas</span><b>${c.autorizado ? 'Autorizado por el escritorio' : 'Sin autorizar'}</b></div></div>
+    ${(h => `<b>Con Romualdo</b><div class="facts f3 mb" style="margin-top:8px"><div><span>Compras a través del escritorio</span><b>${h.n} desde ${h.desde}</b></div><div><span>Última compra</span><b>${h.ult}</b></div><div><span>Cabezas compradas</span><b>${num(h.cab)}</b></div><div><span>Qué compra generalmente</span><b>${c.cats.map(k => cat(k).nom).slice(0, 3).join(', ')}</b></div><div><span>Dónde compra</span><b>${esc((c.zonas || [c.depto]).join(', '))}</b></div><div><span>Nota</span><b>${esc(c.nota || 'Paga contado, prefiere lotes parejos')}</b></div></div>`)(histComp(c))}
     ${pideDD(c) ? `<div class="note i mb">${ic('i-escudo')}<span>Pasó los US$ 150.000 en compras en el año. Por el Art. 23 del reglamento (Ley 19.574) hay que completar la debida diligencia dentro de los 20 días posteriores al remate.</span></div>` : ''}
-    <b>Qué busca</b> <span class="muted" style="font-size:12px">tocá para cambiarlo, los envíos automáticos se ajustan solos</span>
+    <b>Qué busca</b> <span class="muted" style="font-size:12px">tocá para cambiarlo, los filtros de difusión lo usan</span>
     <div class="pill-row" style="margin:8px 0 14px">${CATS.map(k => `<button class="chip ${c.cats.includes(k.id) ? 'on' : ''}" data-act="togCat" data-id="${c.id}" data-c="${k.id}">${k.nom}</button>`).join('')}</div>
     <b>Lotes disponibles que le sirven (${sirven.length})</b>
     <div class="tbl-wrap" style="margin:8px -18px 0"><table><tbody>${sirven.map(l => `<tr class="click" data-act="close" data-go="lote" data-arg="${l.id}"><td class="strong">${l.id}</td><td>${l.cab} ${esc(cat(l.cat).nom.toLowerCase())}</td><td>${esc(prod(l.prod).depto)}</td><td class="num">${kgTxt(l)}</td><td class="num">${precioLote(l)}</td></tr>`).join('') || `<tr><td>${empty('i-lote', 'Ahora no hay lotes con su perfil.')}</td></tr>`}</tbody></table></div>
@@ -2038,7 +2041,6 @@ function formWeb() {
 const ENVIOS = [
   { id: 'E-31', tipo: 'Plaza Rural', que: 'Remate 328 · Plaza Angus', link: 'plazarural.com.uy/remate-328', filtro: 'Compradores de terneros y novillos · Florida, Durazno, Flores, San José', desde: 'WhatsApp de cada agente', n: 48, ent: 48, leidos: 41, clics: 29, resp: 9, fecha: dd(-3) },
   { id: 'E-30', tipo: 'Plaza Rural', que: 'Remate 328 · Plaza Angus', link: 'plazarural.com.uy/remate-328', filtro: 'Productores de Tacuarembó, Rivera y Cerro Largo · aviso de catálogo', desde: 'WhatsApp de cada agente', n: 63, ent: 62, leidos: 50, clics: 22, resp: 6, fecha: dd(-6) },
-  { id: 'E-29', tipo: 'Negocio particular', que: '160 novillos Hereford · Paysandú', link: 'romualdo.com.uy/lote/rc-1082', filtro: 'Frigoríficos e invernadores que buscan novillos', desde: 'WhatsApp de cada agente', n: 14, ent: 14, leidos: 13, clics: 11, resp: 4, fecha: dd(-9) },
   { id: 'E-28', tipo: 'Plaza Rural', que: 'Remate 327 · Plaza Rural', link: 'plazarural.com.uy/remate-327', filtro: 'Todos los compradores activos', desde: 'WhatsApp del escritorio', n: 112, ent: 109, leidos: 88, clics: 51, resp: 14, fecha: dd(-24) },
 ];
 let ENV_N = 31, DIF = null;
@@ -2057,7 +2059,8 @@ function textoEnvio(f, d) {
   const a = ag(d ? d.ag : 'a2'), nom = d ? d.nom.split(' ')[0] : 'Juan';
   if (f.tipo === 'Plaza Rural') {
     const r = rem(f.rem), ls = LOTES.filter(l => l.rem === r.id);
-    return `Hola ${nom}, ¿cómo andás? Te paso el link del ${r.nom}: plazarural.com.uy/remate-${r.id.slice(2)}\n\n${fechaRem(r)}. Llevamos ${ls.length} lotes, ${num(ls.reduce((s, l) => s + l.cab, 0))} cabezas.${f.grupos.length ? ' Hay ' + f.grupos.join(' y ').toLowerCase() + ' que te pueden servir.' : ''}\n\nCualquier consulta, ${a.nom} · ${a.tel}`;
+    return `Hola ${nom}, ¿cómo andás? Te paso el link del ${r.nom}:
+${f.link}\n\n${fechaRem(r)}. Llevamos ${ls.length} lotes, ${num(ls.reduce((s, l) => s + l.cab, 0))} cabezas.${f.grupos.length ? ' Hay ' + f.grupos.join(' y ').toLowerCase() + ' que te pueden servir.' : ''}\n\nCualquier consulta, ${a.nom} · ${a.tel}`;
   }
   const l = lote(f.lote), c = cat(l.cat), p = prod(l.prod);
   return `Hola ${nom}, te ofrezco un negocio particular:\n\n${l.cab} ${c.nom.toLowerCase()} ${l.raza || ''}, ${l.kg ? l.kg + ' kg promedio' : 'kg a confirmar'}, en ${p.depto}.\n${l.precioBase ? 'Base: ' + precioU(c, l.precioBase) + '. ' : ''}Plazo: ${plazoTxt(l.plazo)}.\n\nFicha y fotos: romualdo.com.uy/lote/${l.id.toLowerCase()}\n${a.nom} · ${a.tel}`;
@@ -2066,37 +2069,37 @@ VIEWS.difusion = () => {
   const tot = ENVIOS.reduce((a, e) => a + e.n, 0), lei = ENVIOS.reduce((a, e) => a + e.leidos, 0), cli = ENVIOS.reduce((a, e) => a + e.clics, 0);
   const prox = rematesPR()[0], parts = particularesDisp();
   return {
-    t: 'Difusión', s: 'El link del remate y los negocios particulares, a cada uno según lo que busca',
+    t: 'Difusión de Plaza Rural', s: 'El link de cada remate, tal cual lo publica Plaza Rural, a quien le sirve',
     a: `<button class="btn pri" data-act="nuevoEnvio">${ic('i-enviar')}<span>Nuevo envío</span></button>`,
     h: `<div class="grid g4 mb">
-      <div class="card kpi"><div class="ico w">${ic('i-enviar')}</div><div class="lbl">Mensajes enviados en el mes</div><div class="val">${num(tot)}</div><div class="foot">${ENVIOS.length} envíos armados con filtros</div></div>
+      <div class="card kpi"><div class="ico w">${ic('i-enviar')}</div><div class="lbl">Mensajes enviados en el mes</div><div class="val">${num(tot)}</div><div class="foot">${ENVIOS.length} envíos del link del remate</div></div>
       <div class="card kpi"><div class="ico">${ic('i-ojo')}</div><div class="lbl">Los leyeron</div><div class="val">${Math.round(lei / tot * 100)}%</div><div class="foot">${num(lei)} contactos</div></div>
-      <div class="card kpi"><div class="ico g">${ic('i-link')}</div><div class="lbl">Abrieron el link</div><div class="val">${num(cli)}</div><div class="foot">remate o ficha del lote</div></div>
+      <div class="card kpi"><div class="ico g">${ic('i-link')}</div><div class="lbl">Abrieron el link</div><div class="val">${num(cli)}</div><div class="foot">el link de Plaza Rural</div></div>
       <div class="card kpi"><div class="ico w">${ic('i-wa')}</div><div class="lbl">Respondieron</div><div class="val">${ENVIOS.reduce((a, e) => a + e.resp, 0)}</div><div class="foot">van directo al agente de la zona</div></div>
     </div>
     <div class="grid g21 mb" style="align-items:start">
       <div class="card"><h3>${ic('i-reloj')} Envíos</h3>
         <div class="tbl-wrap" style="margin:0 -18px"><table><thead><tr><th>Qué se difundió</th><th>A quién</th><th class="num">Enviados</th><th class="num">Leídos</th><th class="num">Abrieron</th><th>Fecha</th></tr></thead><tbody>
-        ${ENVIOS.map(e => `<tr class="click" data-act="verEnvio" data-id="${e.id}"><td><span class="tag ${e.tipo === 'Plaza Rural' ? 'g' : 'gold'}">${e.tipo}</span><div class="strong" style="margin-top:4px">${esc(e.que)}</div></td><td class="muted" style="max-width:260px;font-size:12.5px">${esc(e.filtro)}</td><td class="num">${e.ent}/${e.n}</td><td class="num">${e.leidos}</td><td class="num"><b>${e.clics}</b></td><td>${e.ent < e.n ? '<span class="tag warn">Enviando</span>' : rel(e.fecha)}</td></tr>`).join('')}
+        ${ENVIOS.map(e => `<tr class="click" data-act="verEnvio" data-id="${e.id}"><td><span class="tag ${e.tipo === 'Plaza Rural' ? 'g' : 'gold'}">${e.tipo}</span><div class="strong" style="margin-top:4px">${esc(e.que)}</div></td><td class="muted" style="max-width:260px;font-size:12.5px">${esc(e.filtro)}</td><td class="num">${e.ent}/${e.n}</td><td class="num">${e.leidos}</td><td class="num"><b>${e.clics}</b></td><td>${e.enviando ? '<span class="tag warn">Enviando</span>' : e.prog ? '<span class="tag">Programado</span>' : rel(e.fecha)}</td></tr>`).join('')}
         </tbody></table></div></div>
       <div class="grid" style="align-content:start">
         ${prox ? `<div class="card"><h3>${ic('i-tv')} Próximo remate</h3><div class="t strong">${esc(prox.nom)}</div><div class="muted" style="font-size:13px;margin:2px 0 12px">${fechaRem(prox)} · ${LOTES.filter(l => l.rem === prox.id).length} lotes nuestros</div><button class="btn wa" style="width:100%;justify-content:center" data-act="nuevoEnvio" data-rem="${prox.id}">${ic('i-link')} Difundir el link del remate</button></div>` : ''}
-        <div class="card"><h3>${ic('i-tag')} Negocios particulares disponibles</h3><div class="list">${parts.map(l => `<div class="li"><div class="grow"><div class="t">${l.cab} ${esc(cat(l.cat).nom.toLowerCase())} · ${esc(prod(l.prod).depto)}</div><div class="s">${compradoresPara(l).length} compradores les sirve · ${l.envios ? 'difundido' : 'sin difundir'}</div></div><button class="btn sm wa" data-act="nuevoEnvio" data-lote="${l.id}">Difundir</button></div>`).join('') || empty('i-tag', 'No hay negocios particulares abiertos.')}</div></div>
+        <div class="card"><h3>${ic('i-tag')} Fichas de negocios particulares</h3><div class="muted" style="font-size:12.5px;margin:-4px 0 8px">Los negocios particulares se mandan a mano, a quien cada uno conoce. Acá está la ficha lista para compartir.</div><div class="list">${parts.map(l => `<div class="li"><div class="grow"><div class="t">${l.cab} ${esc(cat(l.cat).nom.toLowerCase())} · ${esc(prod(l.prod).depto)}</div><div class="s">${camposLote(l).ok} de ${camposLote(l).total} datos · ${esc(ag(l.ag).nom)}</div></div><button class="btn sm wa" data-act="compartir" data-id="${l.id}">Compartir</button></div>`).join('') || empty('i-tag', 'No hay negocios particulares abiertos.')}</div></div>
       </div>
     </div>`
   };
 };
 function envioForm(pre = {}) {
   const prox = rematesPR();
-  const f = DIF = Object.assign({ tipo: pre.lote ? 'Negocio particular' : 'Plaza Rural', rem: pre.rem || (prox[0] || {}).id, lote: pre.lote || (particularesDisp()[0] || {}).id, aud: pre.lote ? 'Compradores' : 'Compradores', zonas: [], grupos: [], ag: '', soloAct: false, desde: 'agente' }, pre.keep ? DIF : {});
+  const f = DIF = Object.assign({ tipo: 'Plaza Rural', rem: pre.rem || (prox[0] || {}).id, link: '', aud: 'Compradores', zonas: [], grupos: [], ag: '', soloAct: false }, pre.keep ? DIF : {});
+  if (!f.link || !pre.keep) f.link = 'https://www.plazarural.com.uy/remate/' + (f.rem || '').replace('PR', '');
   const deptos = [...new Set(COMPRADORES.map(c => c.depto).concat(PRODUCTORES.map(p => p.depto)))].sort();
   const grupos = [...new Set(CATS.map(c => c.grupo))];
-  const ds = destinatarios(f.tipo === 'Negocio particular' ? f : Object.assign({}, f, { lote: null }));
-  modal(`${mHead('Nuevo envío')}<div class="modal-b">
-    <b class="muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.6px">1 · Qué difundís</b>
-    <div class="flex wrap" style="margin:8px 0 10px">${['Plaza Rural', 'Negocio particular'].map(t => `<button class="chip ${f.tipo === t ? 'on' : ''}" data-dif="tipo" data-v="${t}">${t === 'Plaza Rural' ? 'Link de un remate de Plaza Rural' : 'Un negocio particular'}</button>`).join('')}</div>
-    ${f.tipo === 'Plaza Rural' ? `<select class="sel" id="dRem" style="width:100%">${prox.map(r => `<option value="${r.id}" ${f.rem === r.id ? 'selected' : ''}>${esc(r.nom)} · ${fechaRem(r)}</option>`).join('')}</select>`
-      : `<select class="sel" id="dLote" style="width:100%">${particularesDisp().map(l => `<option value="${l.id}" ${f.lote === l.id ? 'selected' : ''}>${l.id} · ${l.cab} ${esc(cat(l.cat).nom.toLowerCase())} · ${esc(prod(l.prod).depto)}</option>`).join('')}</select><div class="muted" style="font-size:12.5px;margin-top:6px">Por defecto va a los compradores a los que les sirve este lote. Podés abrirlo más con los filtros.</div>`}
+  const ds = destinatarios(Object.assign({}, f, { lote: null }));
+  modal(`${mHead('Difundir un remate de Plaza Rural')}<div class="modal-b">
+    <b class="muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.6px">1 · El remate y su link</b>
+    <select class="sel" id="dRem" style="width:100%;margin-top:8px">${prox.map(r => `<option value="${r.id}" ${f.rem === r.id ? 'selected' : ''}>${esc(r.nom)} · ${fechaRem(r)}</option>`).join('')}</select>
+    <div class="field" style="margin-top:10px"><label for="dLink">Link de Plaza Rural</label><input class="inp" id="dLink" value="${esc(f.link)}" style="width:100%"><span class="hint">Se pega el link que publica Plaza Rural y se manda tal cual. El sistema no lo toca.</span></div>
     <div class="sep"></div>
     <b class="muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.6px">2 · A quién</b>
     <div class="flex wrap" style="margin:8px 0">${['Compradores', 'Productores', 'Ambos'].map(t => `<button class="chip ${f.aud === t ? 'on' : ''}" data-dif="aud" data-v="${t}">${t}</button>`).join('')}<span class="grow"></span><select class="sel" id="dAg"><option value="">Todos los agentes</option>${AGENTES.map(a => `<option value="${a.id}" ${f.ag === a.id ? 'selected' : ''}>${esc(a.nom)}</option>`).join('')}</select></div>
@@ -2107,31 +2110,59 @@ function envioForm(pre = {}) {
     <div class="sep"></div>
     <b class="muted" style="font-size:12px;text-transform:uppercase;letter-spacing:.6px">3 · El mensaje</b>
     <div style="background:#E7F3E8;border-radius:12px;padding:12px 14px;margin-top:8px;white-space:pre-line;font-size:13.5px;line-height:1.45">${esc(textoEnvio(f, ds[0]))}</div>
-    <div class="muted" style="font-size:12.5px;margin-top:6px">A cada uno le llega con su nombre, y desde el WhatsApp del agente de su zona. Las respuestas le caen a ese agente.</div>
+    <div class="muted" style="font-size:12.5px;margin-top:6px">A cada uno le llega con su nombre, desde el WhatsApp del agente de su zona. Las respuestas le caen a ese agente.</div>
   </div><div class="modal-f"><button class="btn" data-act="close">Cancelar</button><span class="grow"></span><button class="btn" id="dProg">${ic('i-cal')} Programar para mañana 7:00</button><button class="btn wa" id="dOk" ${ds.length ? '' : 'disabled'}>${ic('i-enviar')} Enviar a ${ds.length}</button></div>`, 'lg');
   $$('[data-dif]').forEach(b => b.onclick = () => { const k = b.dataset.dif, v = b.dataset.v; if (Array.isArray(f[k])) { const i = f[k].indexOf(v); if (i >= 0) f[k].splice(i, 1); else f[k].push(v); } else f[k] = v; envioForm({ keep: true }); });
-  if ($('#dRem')) $('#dRem').onchange = e => { f.rem = e.target.value; envioForm({ keep: true }); };
-  if ($('#dLote')) $('#dLote').onchange = e => { f.lote = e.target.value; envioForm({ keep: true }); };
+  $('#dRem').onchange = e => { f.rem = e.target.value; f.link = ''; envioForm({ keep: true, rem: f.rem }); };
+  $('#dLink').oninput = e => { f.link = e.target.value; };
   $('#dAg').onchange = e => { f.ag = e.target.value; envioForm({ keep: true }); };
   if ($('#dAct')) $('#dAct').onchange = e => { f.soloAct = e.target.checked; envioForm({ keep: true }); };
   const crear = (prog) => {
-    const que = f.tipo === 'Plaza Rural' ? rem(f.rem).nom : (() => { const l = lote(f.lote); return `${l.cab} ${cat(l.cat).nom.toLowerCase()} · ${prod(l.prod).depto}`; })();
     const desc = [f.aud, f.grupos.length ? 'de ' + f.grupos.join(', ').toLowerCase() : '', f.zonas.length ? '· ' + f.zonas.join(', ') : '· todo el país', f.ag ? '· ' + ag(f.ag).nom : ''].filter(Boolean).join(' ');
-    const e = { id: 'E-' + (++ENV_N), tipo: f.tipo, que, filtro: desc, n: ds.length, ent: prog ? 0 : 0, leidos: 0, clics: 0, resp: 0, fecha: ahora(), prog };
+    const e = { id: 'E-' + (++ENV_N), tipo: 'Plaza Rural', que: rem(f.rem).nom, link: f.link, filtro: desc, n: ds.length, ent: 0, leidos: 0, clics: 0, resp: 0, fecha: ahora(), prog };
     ENVIOS.unshift(e);
-    if (f.tipo === 'Negocio particular') { const l = lote(f.lote); l.envios += ds.length; }
     closeModal(); go('difusion');
     if (prog) { toast(`Envío programado para mañana a las 7:00: ${ds.length} contactos.`, { ico: 'i-cal' }); return; }
-    toast(`Enviando a ${ds.length} contactos por WhatsApp.`, { cls: 'wa', ico: 'i-wa' });
+    e.enviando = true;
+    toast(`Enviando el link a ${ds.length} contactos por WhatsApp.`, { cls: 'wa', ico: 'i-wa' });
     const t = setInterval(() => {
       e.ent = Math.min(e.n, e.ent + Math.ceil(e.n / 4));
       e.leidos = Math.min(e.ent, Math.round(e.ent * .8)); e.clics = Math.round(e.leidos * .6); e.resp = Math.round(e.clics * .3);
       if (S.view === 'difusion' && !$('#scrim').classList.contains('on')) render();
-      if (e.ent >= e.n) { clearInterval(t); toast(`${e.leidos} leyeron el mensaje y ${e.clics} abrieron el link. ${e.resp} respondieron a su agente.`, { cls: 'wa', ico: 'i-wa', ms: 6000 }); }
+      if (e.ent >= e.n) { clearInterval(t); e.enviando = false; if (S.view === 'difusion' && !$('#scrim').classList.contains('on')) render(); toast(`${e.leidos} leyeron el mensaje y ${e.clics} abrieron el link de Plaza Rural. ${e.resp} ${e.resp === 1 ? 'respondió' : 'respondieron'} a su agente.`, { cls: 'wa', ico: 'i-wa', ms: 6000 }); }
     }, 900);
   };
   $('#dOk').onclick = () => crear(false);
   $('#dProg').onclick = () => crear(true);
+}
+// Negocio particular: se manda a mano; el sistema sólo tiene la ficha pronta
+function compartirFicha(id) {
+  const l = lote(id), c = cat(l.cat), p = prod(l.prod), a = ag(l.ag), cl = camposLote(l);
+  modal(`${mHead('Ficha del negocio · ' + l.id)}<div class="modal-b">
+    <div class="note i mb">${ic('i-wa')}<span>Los negocios particulares los manda cada uno a mano, a quien conoce. La ficha está siempre pronta: se comparte desde el celular en un toque.</span></div>
+    <div style="border:1px solid var(--line);border-radius:12px;padding:14px">
+      <span class="tag gold">Negocio particular</span>
+      <div style="font-size:18px;font-weight:800;margin:8px 0 2px">${l.cab} ${esc(c.nom.toLowerCase())} ${esc(l.raza || '')}</div>
+      <div class="muted">${esc(p.paraje)}, ${esc(p.depto)} · ${l.kg ? l.kg + ' kg promedio' : 'kg a confirmar'}</div>
+      <div class="facts f3" style="margin-top:12px"><div><span>Base</span><b>${l.precioBase ? precioU(c, l.precioBase) : 'A convenir'}</b></div><div><span>Plazo</span><b>${plazoTxt(l.plazo)}</b></div><div><span>Agente</span><b>${esc(a.nom)} · ${a.tel}</b></div></div>
+      <div class="muted" style="font-size:12.5px;margin-top:10px">romualdo.com.uy/lote/${l.id.toLowerCase()} · ${cl.ok} de ${cl.total} datos completos</div>
+    </div>
+  </div><div class="modal-f"><button class="btn" data-act="fichaPDF" data-id="${l.id}">${ic('i-print')} PDF</button><button class="btn" id="cpLink">${ic('i-link')} Copiar link</button><span class="grow"></span><button class="btn wa" id="cpWa">${ic('i-wa')} Compartir por WhatsApp</button></div>`);
+  $('#cpLink').onclick = () => toast('Link de la ficha copiado. Pegalo en cualquier chat.', { ico: 'i-link' });
+  $('#cpWa').onclick = () => { closeModal(); toast('Se abre WhatsApp con la ficha lista: elegís a quién se la mandás.', { cls: 'wa', ico: 'i-wa' }); };
+}
+// Historial de cada contacto con el escritorio
+function histComp(c) {
+  const cs = LOTES.filter(l => l.venta && l.venta.comp === c.id).sort((a, b) => b.venta.fecha - a.venta.fecha);
+  const k = +c.id.slice(1), n = cs.length + 3 + (k * 7) % 14, cab = cs.reduce((a, l) => a + l.cab, 0) + (n - cs.length) * (60 + (k * 13) % 90);
+  const ult = cs[0] ? `${cs[0].cab} ${cat(cs[0].cat).nom.toLowerCase()} · ${fdate(cs[0].venta.fecha)}` : `${cat(c.cats[0]).nom} · hace ${2 + k % 5} meses`;
+  return { n, cab, ult, desde: c.desde || 2015 };
+}
+function histProd(p) {
+  const vs = LOTES.filter(l => l.prod === p.id && l.venta).sort((a, b) => b.venta.fecha - a.venta.fecha);
+  const k = +p.id.slice(1), n = p.incompleto ? 0 : vs.length + 2 + (k * 5) % 11, cab = vs.reduce((a, l) => a + l.cab, 0) + Math.max(0, n - vs.length) * (70 + (k * 11) % 110);
+  const ult = vs[0] ? `${vs[0].cab} ${cat(vs[0].cat).nom.toLowerCase()} · ${fdate(vs[0].venta.fecha)}` : n ? `Hace ${3 + k % 6} meses` : 'Todavía ninguna';
+  return { n, cab, ult };
 }
 function verEnvio(id) {
   const e = ENVIOS.find(x => x.id === id);
@@ -2273,7 +2304,8 @@ function altaComp(v) {
 /* ================= Acciones ================= */
 const ACT = {
   back: () => back(),
-  nuevoEnvio: d => envioForm({ rem: d.rem, lote: d.lote }),
+  nuevoEnvio: d => envioForm({ rem: d.rem }),
+  compartir: d => compartirFicha(d.id),
   verEnvio: d => verEnvio(d.id),
   importarWA: () => importarWA(),
   webSite: () => webSite(),
@@ -2381,8 +2413,8 @@ const ACT = {
   tempProd: d => { const p = prod(d.id); p.temp = p.temp === 'frío' ? 'caliente' : 'frío'; fichaProd(p.id); if (S.view === 'productores') render(); toast(`${p.nom} marcado ${p.temp === 'frío' ? 'en frío' : 'caliente'}.`); },
   waProd: d => { const p = prod(d.id); closeModal(); toast(`Se abre WhatsApp con ${esc(p.nom)} desde el celular de ${esc(ag(p.ag).nom)}.`, { cls: 'wa', ico: 'i-wa' }); },
   togCat: d => { const c = comp(d.id); c.cats = c.cats.includes(d.c) ? c.cats.filter(x => x !== d.c) : c.cats.concat(d.c); fichaComp(c.id); },
-  mandarComp: d => { const c = comp(d.id); const ls = LOTES.filter(l => ['En catálogo', 'Ofrecido', 'Revisado'].includes(l.estado) && match(l, c).s >= 2); ls.forEach(l => { l.envios++; if (!l.interes.includes(c.id)) l.interes.push(c.id); }); closeModal(); toast(`${ls.length} lotes enviados a ${esc(c.nom)} en un solo mensaje, con las fichas PDF.`, { cls: 'wa', ico: 'i-wa' }); },
-  mandarSel: () => { const c = comp(S.f.oComp); const ls = S.ofVis || []; ls.forEach(l => { l.envios++; if (!l.interes.includes(c.id)) l.interes.push(c.id); }); render(); toast(`${ls.length} lotes enviados a ${esc(c.nom)} por WhatsApp.`, { cls: 'wa', ico: 'i-wa' }); },
+  mandarComp: d => { const c = comp(d.id); const ls = LOTES.filter(l => ['En catálogo', 'Ofrecido', 'Revisado'].includes(l.estado) && match(l, c).s >= 2); ls.forEach(l => { l.envios++; if (!l.interes.includes(c.id)) l.interes.push(c.id); }); closeModal(); toast(`Se abre tu WhatsApp con ${esc(c.nom)} y las ${ls.length} fichas listas para mandar.`, { cls: 'wa', ico: 'i-wa' }); },
+  mandarSel: () => { const c = comp(S.f.oComp); const ls = S.ofVis || []; ls.forEach(l => { l.envios++; if (!l.interes.includes(c.id)) l.interes.push(c.id); }); render(); toast(`Se abre tu WhatsApp con ${esc(c.nom)} y las ${ls.length} fichas listas para mandar.`, { cls: 'wa', ico: 'i-wa' }); },
 
   fset: d => { S.f[d.k] = d.v; render(); },
   ftog: d => { const a = (S.f[d.k] || []).slice(); const i = a.indexOf(d.v); if (i >= 0) a.splice(i, 1); else a.push(d.v); S.f[d.k] = a; render(); },
@@ -2526,8 +2558,8 @@ document.addEventListener('click', e => { if (innerWidth <= 900 && $('#side').cl
 /* ================= Recorrido guiado ================= */
 let tourOn = false, tourI = 0, tourEls = null;
 const TOUR = [
-  { sel: '#nav-difusion', v: 'difusion', t: 'Difusión con filtros', p: 'El link del remate de Plaza Rural o un negocio particular, a los productores y compradores que elijas por zona y por lo que compran. Sale del WhatsApp del agente de cada zona.' },
-  { sel: '#nav-lotes', v: 'lotes', t: 'Una ficha por negocio', p: 'Obligatorio lo justo: productor, cabezas y kilos. Lo demás es opcional. Si va a Plaza Rural, pide lo del catálogo.' },
+  { sel: '#nav-difusion', v: 'difusion', t: 'El link del remate, a quien le sirve', p: 'El link de Plaza Rural se manda tal cual a los productores y compradores que elijas por zona y por lo que compran, desde el WhatsApp del agente de cada zona.' },
+  { sel: '#nav-lotes', v: 'lotes', t: 'La ficha siempre pronta', p: 'Cada negocio con su ficha. Los particulares se comparten a mano por WhatsApp, en un toque. Si va a Plaza Rural, pide lo del catálogo.' },
   { sel: '#nav-web', v: 'web', t: 'La web, conectada', p: 'Cada lote con su agente y celular. Reservado o vendido con un toque, y la web cambia al instante.' }
 ];
 function startTour() {
