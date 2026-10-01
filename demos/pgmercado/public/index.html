@@ -392,6 +392,8 @@ const MODS = [
   ['caja','Caja','caja',[['caja','Turno y cierres']],'Apertura, retiros, cierre y arqueo'],
   ['compras','Compras','camion',[['compras','Facturas de compra'],['proveedores','Proveedores']],'Mercadería y gastos del local'],
   ['productos','Productos','tag',[['productos','Precios y stock'],['margenes','Márgenes']],'Precio, costo y lo que deja cada producto'],
+  ['vencimientos','Vencimientos','clock',[['vencimientos','Lotes y alarmas']],'Lotes, fechas de vencimiento y rotación'],
+  ['mermas','Mermas y bajas','trash',[['mermas','Registro y análisis']],'Qué se pierde, por qué y cuánto cuesta'],
   ['resultados','Resultados','chart',[['estado','Estado de resultados'],['iva','IVA']],'Facturas de venta menos facturas de compra'],
   ['config','Configuración','gear',[['config','Local y conexiones'],['equipo','Equipo y permisos']],'Datos del local, usuarios y conexiones'],
   ['delivery','Delivery','moto',[['delivery','Fase 2']],'Próximamente'],
@@ -401,8 +403,8 @@ const modDe = k => MODS.find(m=>m[0]===k) || MODS.find(m=>m[3].some(t=>t[0]===k)
 const ultimaTab = {};
 let modActual = 'inicio';
 function renderNav(){
-  const item = m => `<button class="nav ${modActual===m[0]?'on':''}" data-go="${m[0]}">${ico(m[2])}${m[1]}${m[0]==='ventas'&&carrito.length?`<span class="cnt">${carrito.length}</span>`:''}${m[0]==='delivery'?'<span class="cnt">Pronto</span>':''}</button>`;
-  $('#nav').innerHTML = '<div style="height:6px"></div>' + MODS.slice(0,6).map(item).join('') + '<div class="navg" style="margin-top:22px"></div>' + item(MODS[6]) + '<div class="navg">Próximamente</div>' + item(MODS[7]);
+  const item = m => `<button class="nav ${modActual===m[0]?'on':''}" data-go="${m[0]}">${ico(m[2])}${m[1]}${m[0]==='ventas'&&carrito.length?`<span class="cnt">${carrito.length}</span>`:''}${m[0]==='vencimientos'&&urgentes()?`<span class="cnt" style="background:var(--bad)">${urgentes()}</span>`:''}${m[0]==='delivery'?'<span class="cnt">Pronto</span>':''}</button>`;
+  $('#nav').innerHTML = '<div style="height:6px"></div>' + MODS.slice(0,8).map(item).join('') + '<div class="navg" style="margin-top:22px"></div>' + item(MODS[8]) + '<div class="navg">Próximamente</div>' + item(MODS[9]);
 }
 function renderHeader(){
   const cs = $('#cajastate');
@@ -442,6 +444,7 @@ VIEWS.inicio = () => {
   const horas=[9,10,11,12,13,14,15,16,17,18,19,20]; const porHora = horas.map(h=>sum(vh.filter(v=>v.fecha.getHours()===h),v=>v.total));
   $('#pane').innerHTML = `
   <div class="hero"><div><h2>Buen día, ${usuario.split(' ')[0]}.</h2><p>${caja.abierta?`La caja está abierta desde las ${hhmm(caja.desde)}. Las ventas del POS Getnet entran solas a la planilla.`:'La caja está cerrada. Abrila para empezar a vender.'}</p></div>${caja.abierta?`<button class="btn" data-go="vender">${ico('cart')}Nueva venta</button>`:`<button class="btn" onclick="abrirCaja()">${ico('unlock')}Abrir caja</button>`}</div>
+  ${urgentes()?`<div class="promo" style="margin-bottom:14px;cursor:pointer" data-go="vencimientos">${ico('clock')}<span>${urgentes()} lote${urgentes()>1?'s':''} vence${urgentes()>1?'n':''} en 48 horas o ya venció. Tocá para ver qué poner en oferta o dar de baja.</span></div>`:''}
   <div class="grid4">
     <div class="card kpi"><div class="lab">${ico('caja')}Vendido hoy</div><div class="val">${fmt(tot)}</div><div class="d">${vh.length} ventas · ticket ${fmt(tot/Math.max(vh.length,1))}</div></div>
     <div class="card kpi"><div class="lab">${ico('pct')}Margen de hoy</div><div class="val">${pct(mg/Math.max(tot,1)*100)}</div><div class="d">${fmt(mg)} de ganancia bruta</div></div>
@@ -470,7 +473,7 @@ VIEWS.vender = () => {
   const promosHoy = Object.keys(TARJETAS).filter(t=>reglaPara(t,HOY.getDay()));
   $('#pane').innerHTML = `<div class="pos"><div>
     <div class="tabs">${cats.map(c=>`<button class="tab ${c===filtroCat?'on':''}" onclick="filtroCat='${c}';VIEWS.vender()">${c}</button>`).join('')}</div>
-    <div class="prods">${lista.map(p=>`<button class="prod" onclick="agregar(${p.id})"><div class="cat">${p.c}</div><b>${p.n}</b><div class="pr">${fmt(p.p)} / ${p.u}</div><div class="tiny">${p.u==='kg'?'Bandeja al vacío':'Por unidad'}</div></button>`).join('')}</div>
+    <div class="prods">${lista.map(p=>`<button class="prod" onclick="agregar(${p.id})"><div class="cat">${p.c}</div><b>${p.n}</b><div class="pr">${fmt(p.p)} / ${p.u}${p.ofertaPct?` <span class="pill p-san" style="padding:0 6px">-${p.ofertaPct}%</span>`:''}</div><div class="tiny">${p.u==='kg'?'Bandeja al vacío':'Por unidad'}</div></button>`).join('')}</div>
   </div>
   <div class="card ticket"><h3>${ico('cart')}Venta en curso<span class="act tiny">${usuario.split(' ')[0]} · Caja 1</span></h3>
     ${carrito.length?carrito.map((c,i)=>`<div class="tline"><div><b>${c.n}</b><div class="tiny">${c.u==='kg'?kgf(c.q):c.q+' u'} x ${fmt(c.p)}</div></div><div class="row"><b>${fmt(c.q*c.p)}</b><button class="x" onclick="carrito.splice(${i},1);renderNav();VIEWS.vender()">${ico('trash')}</button></div></div>`).join(''):'<div class="empty">Tocá un producto o escaneá la etiqueta de la bandeja.</div>'}
@@ -488,7 +491,7 @@ function agregar(id){
   const p=P(id);
   if(p.u==='u'){const ex=carrito.find(c=>c.id===id);ex?ex.q++:carrito.push({id,n:p.n,u:p.u,q:1,p:p.p});renderNav();VIEWS.vender();return;}
   const peso=(Math.round((0.7+Math.random()*1.1)*100)/100).toFixed(2);
-  modal('Bandeja de '+p.n,`<p class="muted" style="margin-top:0">El peso se lee de la etiqueta de la bandeja. Si hace falta, lo corregís a mano.</p><label class="f">Peso de la bandeja (kg)<input id="peso" type="number" step="0.01" value="${peso}"></label><div class="stat-row"><span>Precio por kilo</span><b>${fmt(p.p)}</b></div><div class="stat-row"><span>Importe</span><b id="imp">${fmt(peso*p.p)}</b></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="confirmPeso(${id})">Agregar</button>`);
+  modal('Bandeja de '+p.n,`<p class="muted" style="margin-top:0">El peso se lee de la etiqueta de la bandeja. Si hace falta, lo corregís a mano.</p>${hintLote(id)}<label class="f">Peso de la bandeja (kg)<input id="peso" type="number" step="0.01" value="${peso}"></label><div class="stat-row"><span>Precio por kilo</span><b>${fmt(p.p)}</b></div><div class="stat-row"><span>Importe</span><b id="imp">${fmt(peso*p.p)}</b></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="confirmPeso(${id})">Agregar</button>`);
   setTimeout(()=>{const i=$('#peso');i.focus();i.select();i.oninput=()=>$('#imp').textContent=fmt((parseFloat(i.value)||0)*p.p);i.onkeydown=e=>{if(e.key==='Enter')confirmPeso(id)};},50);
 }
 function confirmPeso(id){const p=P(id);const q=parseFloat($('#peso').value)||0;if(q<=0)return;carrito.push({id,n:p.n,u:p.u,q,p:p.p});closeModal();renderNav();VIEWS.vender();}
@@ -499,7 +502,7 @@ function cobrar(){
   setTimeout(()=>{closeModal();finalizar('POS Getnet');},1400);
 }
 function finalizar(origen){
-  carrito.forEach(c=>{const p=P(c.id);p.st=Math.max(0,Math.round((p.st-c.q)*100)/100);});
+  carrito.forEach(c=>{const p=P(c.id);p.st=Math.max(0,Math.round((p.st-c.q)*100)/100);consumirLotes(c.id,c.q);});
   const v=armarVenta(new Date(),usuario,pago,carrito.map(c=>({...c})),origen);ventas.unshift(v);
   caja.movs.push({h:v.fecha,t:'Venta '+v.cfe,d:TARJETAS[v.tar].n+(v.desc?' · desc. '+fmt(v.desc):''),tipo:'v',m:v.total});
   carrito=[];renderNav();VIEWS.vender();
@@ -671,7 +674,7 @@ function tipoFactura(t){
 }
 function guardarFactura(){
   const t=$('#fform').dataset.t;
-  if(t==='m'){const p=P(+$('#ccp').value),q=+$('#cck').value||0,c=+$('#ccc').value||p.costo;p.costo=c;p.st+=q;const neto=Math.round(q*c);
+  if(t==='m'){const p=P(+$('#ccp').value),q=+$('#cck').value||0,c=+$('#ccc').value||p.costo;p.costo=c;p.st+=q;if(VIDA[p.c])nuevoLoteV(p.id,q,VIDA[p.c]);const neto=Math.round(q*c);
     fcompras.unshift({id:++nroFC,fecha:new Date(),prov:$('#fprov').value,rut:'',cat:'Mercadería',nro:'A '+(20000+nroFC),neto,iva:Math.round(neto*TASA(p.c)),pagada:false});
     const m=(p.p-p.costo)/p.p*100;closeModal();compraFiltro.mes=3;VIEWS[view]();toast(m<32?`Factura cargada. Ojo: el margen de ${p.n} bajó a ${pct(m)}.`:`Factura cargada. Costo de ${p.n} actualizado, margen ${pct(m)}.`);}
   else{const neto=+$('#fneto').value||0,tasa=+$('#fiva').value;fcompras.unshift({id:++nroFC,fecha:new Date(),prov:$('#fprov').value,rut:'',cat:$('#fcat').value,nro:'A '+(20000+nroFC),neto,iva:Math.round(neto*tasa),pagada:false});closeModal();compraFiltro.mes=3;VIEWS[view]();toast('Gasto cargado. Ya impacta en el resultado del mes.');}
@@ -702,7 +705,7 @@ VIEWS.estado = () => {
     ${cats.map(c=>fila(c,a.gastos[c]||0,b&&(b.gastos[c]||0),{ind:1,neg:1,inv:1,link:`verCompras(${mesSel},'${c}')`})).join('')}
     ${fila('Gastos del local',a.tg,b&&b.tg,{b:1,neg:1,inv:1})}
     ${fila('Resultado del mes',a.res,b&&b.res,{tot:1})}
-  </table></div><p class="tiny">Descuentos Santander otorgados en el mes: ${fmt(a.desc)}. Ya están descontados de las ventas; el banco reintegra ${fmt(a.reint)}.</p></div>
+  </table></div><p class="tiny">El costo de la mercadería vendida incluye ${fmt(sum(MERMAS.filter(m=>mesDe(m.fecha)===mesSel),m=>m.costo))} de mermas y bajas del mes. Descuentos Santander otorgados en el mes: ${fmt(a.desc)}. Ya están descontados de las ventas; el banco reintegra ${fmt(a.reint)}.</p></div>
   <div><div class="card" style="margin-bottom:14px"><h3>${ico('chart')}Resultado por mes</h3>${chart(res.map(r=>Math.max(r.res,0)),res.map(r=>MESES[r.M.m].slice(0,3)),[mesSel])}<div class="tiny">En dorado, el mes seleccionado.</div></div>
   <div class="card"><h3>${ico('pct')}De cada $ 100 que vendés</h3>${[['Mercadería',a.cmv,'var(--brand)'],['Sueldos',a.gastos['Sueldos y cargas sociales']||0,'var(--gold)'],['Otros gastos',a.tg-(a.gastos['Sueldos y cargas sociales']||0),'var(--ink-3)'],['Te queda',Math.max(a.res,0),'var(--ok)']].map(([l,x,c])=>`<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span>${l}</span><b>$ ${Math.round(x/a.ing*100)}</b></div><div class="bar"><i style="width:${x/a.ing*100}%;background:${c}"></i></div></div>`).join('')}</div></div></div>`;
 };
@@ -725,6 +728,123 @@ VIEWS.iva = () => {
   <p class="tiny">Carnes, pollo y preparados van con tasa mínima. Vinos y almacén, con tasa básica. El importe final lo confirma el contador en la declaración.</p></div>
   <div class="card"><h3>${ico('check')}Para el contador</h3><div class="stat-row"><span>Facturas de venta del mes</span><b>${ventas.filter(v=>mesDe(v.fecha)===mesSel).length + (mesSel<3?Math.round(a.V/1500):Math.round(BASE_ACTUAL/1500))}</b></div><div class="stat-row"><span>Facturas de compra del mes</span><b>${a.fc.length}</b></div><div class="stat-row"><span>Estado de resultados</span><b>Listo</b></div><button class="btn pri" style="width:100%;justify-content:center;margin-top:12px" onclick="toast('Paquete del mes enviado al Estudio Contable Ferrés')">${ico('doc')}Mandar todo al contador</button></div></div>`;
 };
+
+// ---------- Vencimientos y lotes ----------
+const DIA_MS = 86400000;
+const VIDA = {'Cortes premium':28,'Parrilla':21,'Granja':7,'Preparados':4,'Almacén':120};
+let AVISO = {'Cortes premium':5,'Parrilla':4,'Granja':2,'Preparados':2,'Almacén':20};
+const PROV_CAT = {'Cortes premium':'Frigorífico Las Moras','Parrilla':'Frigorífico Las Moras','Granja':'Granja Los Aromos','Preparados':'Elaborados Don Julio','Almacén':'Agroindustrial Garzón'};
+const PREF = {'Frigorífico Las Moras':'FLM','Granja Los Aromos':'GLA','Elaborados Don Julio':'EDJ','Agroindustrial Garzón':'AGZ'};
+let LOTESV = [], LVN = 400;
+const diasV = l => Math.ceil((l.vence - HOY) / DIA_MS);
+const fV = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+function nuevoLoteV(pid, cant, venceEn, prov){
+  const p = P(pid), pr = prov || PROV_CAT[p.c];
+  const vence = new Date(HOY.getTime() + venceEn*DIA_MS), ingreso = new Date(vence.getTime() - VIDA[p.c]*DIA_MS);
+  const l = {id:'L-'+(++LVN), pid, prov:pr, nro:PREF[pr]+'-'+fV(ingreso).replace('/','')+'-'+(LVN%90+10), ingreso:ingreso>HOY?HOY:ingreso, vence, cant, inicial:cant};
+  LOTESV.push(l); return l;
+}
+(() => {
+  const base = [-1, 1, 2, 3, 6, 9, 12, 16, 4, 2, 8, 5];
+  productos.filter(p => VIDA[p.c]).forEach((p, i) => {
+    const vida = VIDA[p.c], b = Math.min(base[i % base.length], vida - 1);
+    const n = p.u === 'kg' && p.st > 6 ? 2 : 1;
+    const parte = p.u === 'kg' ? Math.round(p.st / n * 100) / 100 : Math.max(1, Math.floor(p.st / n));
+    for (let k = 0; k < n; k++) nuevoLoteV(p.id, k === n - 1 ? Math.round((p.st - parte * (n - 1)) * 100) / 100 : parte, b + Math.round(vida * .45) * k);
+  });
+})();
+const lotesDe = pid => LOTESV.filter(l => l.pid === pid && l.cant > 0).sort((a, b) => a.vence - b.vence);
+function consumirLotes(pid, q){ for (const l of lotesDe(pid)) { if (q <= 0) break; const t = Math.min(l.cant, q); l.cant = Math.round((l.cant - t) * 100) / 100; q -= t; } }
+const estadoV = l => { const d = diasV(l), av = AVISO[P(l.pid).c] || 3; return d < 0 ? ['Vencido','p-bad'] : d === 0 ? ['Vence hoy','p-bad'] : d <= 2 ? ['Vence en '+d+' día'+(d>1?'s':''),'p-bad'] : d <= av ? ['Vence en '+d+' días','p-warn'] : ['En fecha','p-ok']; };
+const alarmas = () => LOTESV.filter(l => l.cant > 0 && diasV(l) <= (AVISO[P(l.pid).c] || 3)).sort((a, b) => a.vence - b.vence);
+const urgentes = () => alarmas().filter(l => diasV(l) <= 2).length;
+const cantTxt = (p, q) => p.u === 'kg' ? kgf(q) : q + ' u';
+function hintLote(pid){ const l = lotesDe(pid)[0]; if (!l) return ''; const d = diasV(l); return `<div class="promo" style="background:${d<=2?'var(--warn-soft)':'var(--ok-soft)'};color:${d<=2?'#9A6412':'var(--ok)'};border-color:transparent">${ico('clock')}<span>Rotación: sacá primero la bandeja del lote ${l.nro} (vence ${d<0?'ya vencido':d===0?'hoy':'el '+fV(l.vence)}).</span></div>`; }
+
+VIEWS.vencimientos = () => {
+  const al = alarmas(), venc = al.filter(l => diasV(l) < 0), urg = al.filter(l => diasV(l) >= 0 && diasV(l) <= 2), sem = al.filter(l => diasV(l) > 2);
+  const riesgo = sum(al, l => l.cant * P(l.pid).costo);
+  const activos = LOTESV.filter(l => l.cant > 0).sort((a, b) => P(a.pid).n.localeCompare(P(b.pid).n) || a.vence - b.vence);
+  const primero = {}; activos.forEach(l => { if (!primero[l.pid]) primero[l.pid] = l.id; });
+  $('#pane').innerHTML = `<div class="row" style="margin-bottom:14px"><span class="muted">Cada ingreso de mercadería queda como un lote con su vencimiento. Lo que vence primero, sale primero.</span><button class="btn pri" style="margin-left:auto" onclick="ingresoLote()">${ico('plus')}Registrar ingreso de lote</button></div>
+  <div class="grid4">
+    <div class="card kpi" style="${venc.length?'background:var(--bad-soft)':''}"><div class="lab">${ico('alert')}Vencidos</div><div class="val">${venc.length}</div><div class="d ${venc.length?'neg':'n'}">${venc.length?'para dar de baja':'nada vencido'}</div></div>
+    <div class="card kpi"><div class="lab">${ico('clock')}Vencen en 48 h</div><div class="val">${urg.length}</div><div class="d ${urg.length?'neg':'n'}">conviene ponerlos en oferta</div></div>
+    <div class="card kpi"><div class="lab">${ico('clock')}Vencen esta semana</div><div class="val">${sem.length}</div><div class="d n">dentro del aviso de cada categoría</div></div>
+    <div class="card kpi"><div class="lab">${ico('caja')}Plata en riesgo</div><div class="val">${fmt(riesgo)}</div><div class="d n">al costo, si no se vende</div></div>
+  </div>
+  <div class="grid2"><div class="card"><h3>${ico('alert')}Alarmas<span class="act tiny">Ordenadas por fecha de vencimiento</span></h3>
+    ${al.length ? `<div class="tw"><table><tr><th>Producto</th><th>Lote</th><th class="num">Queda</th><th>Vence</th><th>Estado</th><th class="num">Qué hacer</th></tr>${al.map(l => { const p = P(l.pid), [t, c] = estadoV(l), d = diasV(l); return `<tr><td><b>${p.n}</b>${p.ofertaPct?` <span class="pill p-san">Oferta -${p.ofertaPct}%</span>`:''}<div class="tiny">${p.c}</div></td><td class="tiny" style="white-space:nowrap">${l.nro}</td><td class="num">${cantTxt(p, l.cant)}</td><td>${fV(l.vence)}</td><td><span class="pill ${c}">${t}</span></td><td class="num" style="white-space:nowrap">${d < 0 ? `<button class="btn sm pri" onclick="registrarBaja({pid:${p.id},lid:'${l.id}',cant:${l.cant},motivo:'Vencimiento'})">Dar de baja</button>` : `${p.ofertaPct ? `<button class="btn sm" onclick="quitarOferta(${p.id})">Quitar oferta</button>` : `<button class="btn sm pri" onclick="ponerOferta(${p.id},${d <= 2 ? 30 : 15},'${l.id}')">Oferta -${d <= 2 ? 30 : 15}%</button>`} <button class="btn sm" onclick="registrarBaja({pid:${p.id},lid:'${l.id}',cant:${l.cant}})">Baja</button>`}</td></tr>`; }).join('')}</table></div>` : '<div class="empty">No hay nada por vencer. Todo en fecha.</div>'}</div>
+  <div><div class="card" style="margin-bottom:14px"><h3>${ico('gear')}Cuándo avisa</h3>${Object.keys(AVISO).map(k => `<div class="stat-row" style="align-items:center"><span>${k}</span><span class="row" style="gap:6px"><input class="inp" type="number" min="1" value="${AVISO[k]}" style="width:64px;text-align:right" onchange="AVISO['${k}']=+this.value||1;VIEWS.vencimientos();toast('Aviso de ${k.toLowerCase()} actualizado')"><span class="tiny">días antes</span></span></div>`).join('')}
+    <p class="tiny" style="margin-top:10px">Todas las mañanas a las 8:00 le llega al encargado por WhatsApp la lista de lo que vence.</p></div>
+    <div class="card"><h3>${ico('pct')}Por qué ofertar antes de tirar</h3><p class="muted" style="margin:0 0 8px">Una picaña con 30% de descuento todavía deja plata. La misma picaña vencida es costo perdido.</p><div class="stat-row"><span>Recuperado con ofertas, últimos 30 días</span><b style="color:var(--ok)">${fmt(48600)}</b></div><div class="stat-row"><span>Perdido por vencimiento, últimos 30 días</span><b style="color:var(--bad)">${fmt(sum(MERMAS.filter(m => m.motivo === 'Vencimiento' && m.fecha >= new Date(HOY.getTime() - 30 * DIA_MS)), m => m.costo))}</b></div></div></div></div>
+  <div class="card"><h3>${ico('tag')}Lotes en el local<span class="act tiny">"Sale primero" marca la bandeja que hay que vender antes</span></h3><div class="tw"><table><tr><th>Producto</th><th>Lote</th><th>Proveedor</th><th>Ingresó</th><th>Vence</th><th class="num">Queda</th><th style="width:16%">Vendido</th><th>Estado</th></tr>
+  ${activos.map(l => { const p = P(l.pid), [t, c] = estadoV(l); return `<tr><td><b>${p.n}</b>${primero[l.pid] === l.id && lotesDe(l.pid).length > 1 ? ' <span class="pill p-gold">Sale primero</span>' : ''}</td><td class="tiny" style="white-space:nowrap">${l.nro}</td><td class="tiny">${l.prov}</td><td>${fV(l.ingreso)}</td><td>${fV(l.vence)}</td><td class="num">${cantTxt(p, l.cant)}</td><td><div class="bar"><i style="width:${Math.min(100, (1 - l.cant / l.inicial) * 100)}%"></i></div></td><td><span class="pill ${c}">${t}</span></td></tr>`; }).join('')}</table></div></div>`;
+};
+function ponerOferta(pid, pctO, lid){
+  const p = P(pid), l = LOTESV.find(x => x.id === lid), nuevo = Math.round(p.p * (1 - pctO / 100) / 10) * 10, mg = (nuevo - p.costo) / nuevo * 100;
+  modal('Oferta · '+p.n, `<div class="promo">${ico('clock')}<span>Lote ${l.nro}: quedan ${cantTxt(p, l.cant)} y vence el ${fV(l.vence)}.</span></div>
+  <label class="f">Descuento<select id="ofp">${[10,15,20,25,30,40].map(x => `<option value="${x}" ${x === pctO ? 'selected' : ''}>${x}%</option>`).join('')}</select></label>
+  <div id="ofr"></div>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="confirmarOferta(${pid},+$('#ofp').value)">Poner en oferta</button>`);
+  const upd = () => { const x = +$('#ofp').value, n = Math.round(p.p * (1 - x / 100) / 10) * 10, m = (n - p.costo) / n * 100; $('#ofr').innerHTML = `<div class="stat-row"><span>Precio actual</span><b>${fmt(p.p)} / ${p.u}</b></div><div class="stat-row"><span>Precio en oferta</span><b style="color:var(--san)">${fmt(n)} / ${p.u}</b></div><div class="stat-row"><span>Margen con la oferta</span><b style="color:${m > 0 ? 'var(--ok)' : 'var(--bad)'}">${pct(m)}</b></div><div class="stat-row"><span>Si se vende todo el lote</span><b>${fmt(l.cant * n)} contra ${fmt(l.cant * p.costo)} perdidos si vence</b></div>`; };
+  $('#ofp').onchange = upd; upd();
+}
+function confirmarOferta(pid, x){ const p = P(pid); p.pOrig = p.pOrig || p.p; p.ofertaPct = x; p.p = Math.round(p.pOrig * (1 - x / 100) / 10) * 10; closeModal(); VIEWS[view](); toast(`${p.n} en oferta a ${fmt(p.p)}. Ya cobra ese precio en caja y en el POS.`); }
+function quitarOferta(pid){ const p = P(pid); if (p.pOrig) p.p = p.pOrig; delete p.ofertaPct; delete p.pOrig; VIEWS[view](); toast(`${p.n} vuelve a ${fmt(p.p)}.`); }
+function ingresoLote(){
+  modal('Ingreso de lote', `<label class="f">Producto<select id="ilp">${productos.filter(p => VIDA[p.c]).map(p => `<option value="${p.id}">${p.n}</option>`).join('')}</select></label>
+  <div class="frow"><label class="f">Cantidad<input id="ilc" type="number" step="0.1" value="12"></label><label class="f">Vence en (días)<input id="ild" type="number" value="21"></label></div>
+  <label class="f">Lote del proveedor<input id="iln" value="FLM-0110-22"></label><p class="tiny">Al cargar una factura de compra de mercadería el lote se crea solo. Esto es para ingresos sin factura.</p>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarIngreso()">Registrar</button>`);
+}
+function guardarIngreso(){ const p = P(+$('#ilp').value), q = +$('#ilc').value || 0, l = nuevoLoteV(p.id, q, +$('#ild').value || 1); l.nro = $('#iln').value || l.nro; p.st = Math.round((p.st + q) * 100) / 100; closeModal(); VIEWS[view](); renderNav(); toast(`Lote ${l.nro} de ${p.n} registrado. Vence el ${fV(l.vence)}.`); }
+
+// ---------- Mermas y bajas ----------
+const MOTIVOS = ['Vencimiento','Pérdida de vacío o envase roto','Corte de cadena de frío','Devolución de cliente','Degustación','Consumo interno','Error de inventario','Otro'];
+let MERMAS = [];
+(() => {
+  const rs = [[1,'Vencimiento',.9,2],[13,'Pérdida de vacío o envase roto',1.2,3],[12,'Vencimiento',.8,4],[11,'Vencimiento',2,5],[9,'Degustación',.6,6],[14,'Vencimiento',1.1,8],[3,'Pérdida de vacío o envase roto',.7,9],[11,'Corte de cadena de frío',3,11],[16,'Otro',1,12],[6,'Devolución de cliente',.5,14],[10,'Vencimiento',1.4,16],[1,'Degustación',.4,19],[13,'Vencimiento',1.6,22],[21,'Consumo interno',1,24],[4,'Pérdida de vacío o envase roto',.9,27],[12,'Vencimiento',1.3,33],[11,'Vencimiento',1,38]];
+  const notas = {'Vencimiento':'No se vendió antes de la fecha','Pérdida de vacío o envase roto':'Bandeja con el vacío perdido','Corte de cadena de frío':'Se cortó la luz de madrugada','Devolución de cliente':'El cliente la trajo de vuelta','Degustación':'Degustación del sábado','Consumo interno':'Almuerzo del equipo','Otro':'Botella rota en la góndola'};
+  rs.forEach(([pid, motivo, q, d]) => { const p = P(pid), f = new Date(HOY.getTime() - d * DIA_MS); f.setHours(19, 30); const cant = p.u === 'u' ? Math.max(1, Math.round(q)) : q; MERMAS.push({fecha:f, pid, lote:PREF[PROV_CAT[p.c]||'Agroindustrial Garzón']+'-'+fV(f).replace('/','')+'-'+(pid*7%90+10), cant, motivo, costo:Math.round(cant * p.costo), quien:f.getHours() < 15 ? 'Camila Núñez' : 'Nicolás Ferreira', nota:notas[motivo]||''}); });
+})();
+let filtroMerma = 'todos';
+VIEWS.mermas = () => {
+  const mes = MERMAS.filter(m => m.fecha >= new Date(HOY.getTime() - 30 * DIA_MS));
+  const ventasMesN = datosMes(2).V || 1, tot = sum(mes, m => m.costo);
+  const porMot = MOTIVOS.map(k => [k, sum(mes.filter(m => m.motivo === k), m => m.costo)]).filter(x => x[1]).sort((a, b) => b[1] - a[1]);
+  const porProd = {}; mes.forEach(m => porProd[m.pid] = (porProd[m.pid] || 0) + m.costo);
+  const top = Object.entries(porProd).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const lista = MERMAS.filter(m => filtroMerma === 'todos' || m.motivo === filtroMerma).sort((a, b) => b.fecha - a.fecha);
+  $('#pane').innerHTML = `<div class="tabs"><select class="inp" onchange="filtroMerma=this.value;VIEWS.mermas()"><option value="todos">Todos los motivos</option>${MOTIVOS.map(k => `<option ${filtroMerma === k ? 'selected' : ''}>${k}</option>`).join('')}</select><button class="btn pri" style="margin-left:auto" onclick="registrarBaja({})">${ico('plus')}Registrar baja</button></div>
+  <div class="grid4"><div class="card kpi"><div class="lab">${ico('trash')}Mermas, últimos 30 días</div><div class="val">${fmt(tot)}</div><div class="d n">al costo</div></div><div class="card kpi"><div class="lab">${ico('pct')}Sobre las ventas</div><div class="val">${(tot / ventasMesN * 100).toFixed(1).replace('.', ',')}%</div><div class="d ${tot / ventasMesN > .015 ? 'neg' : ''}">objetivo: menos de 1,5%</div></div><div class="card kpi"><div class="lab">${ico('doc')}Bajas registradas</div><div class="val">${mes.length}</div><div class="d n">en 30 días</div></div><div class="card kpi"><div class="lab">${ico('alert')}Motivo principal</div><div class="val" style="font-size:19px;margin-top:10px">${porMot[0] ? porMot[0][0] : '—'}</div><div class="d n">${porMot[0] ? pct(porMot[0][1] / tot * 100) + ' del costo' : ''}</div></div></div>
+  <div class="grid2e"><div class="card"><h3>${ico('chart')}Por motivo</h3>${porMot.map(([k, v]) => `<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span>${k}</span><b>${fmt(v)}</b></div><div class="bar"><i style="width:${v / porMot[0][1] * 100}%;${k === 'Vencimiento' ? 'background:var(--bad)' : ''}"></i></div></div>`).join('') || '<div class="empty">Sin bajas en 30 días</div>'}</div>
+  <div class="card"><h3>${ico('tag')}Productos con más merma</h3>${top.map(([pid, v]) => `<div class="list-it"><div style="flex:1"><b>${P(+pid).n}</b><div class="tiny">${(n => n + (n === 1 ? ' baja' : ' bajas'))(mes.filter(m => m.pid === +pid).length)} en 30 días</div></div><b>${fmt(v)}</b></div>`).join('') || '<div class="empty">Sin bajas en los últimos 30 días</div>'}
+    ${top[0] ? `<p class="tiny" style="margin-top:8px">Si ${P(+top[0][0]).n.toLowerCase()} se pierde seguido, conviene pedir menos cantidad por vez o ponerlo en oferta antes.</p>` : ''}</div></div>
+  <div class="card"><h3>${ico('doc')}Registro de bajas<span class="act tiny">Nada se borra: cada baja queda con fecha, motivo y responsable</span></h3><div class="tw"><table><tr><th>Fecha</th><th>Producto</th><th>Lote</th><th class="num">Cantidad</th><th>Motivo</th><th>Registró</th><th>Nota</th><th class="num">Costo</th></tr>
+  ${lista.map(m => { const p = P(m.pid); return `<tr><td>${fechaCorta(m.fecha)}</td><td><b>${p.n}</b></td><td class="tiny" style="white-space:nowrap">${m.lote}</td><td class="num">${cantTxt(p, m.cant)}</td><td><span class="pill ${m.motivo === 'Vencimiento' ? 'p-bad' : 'p-n'}">${m.motivo}</span></td><td>${m.quien.split(' ')[0]}</td><td class="tiny">${m.nota}</td><td class="num"><b>${fmt(m.costo)}</b></td></tr>`; }).join('')}
+  <tr class="tot"><td colspan="7">${lista.length} bajas</td><td class="num">${fmt(sum(lista, m => m.costo))}</td></tr></table></div></div>`;
+};
+function registrarBaja(pre){
+  const ps = productos.filter(p => p.st > 0 || p.id === pre.pid);
+  modal('Registrar baja', `<label class="f">Producto<select id="bp">${ps.map(p => `<option value="${p.id}" ${p.id === pre.pid ? 'selected' : ''}>${p.n}</option>`).join('')}</select></label>
+  <div class="frow"><label class="f">Lote<select id="bl"></select></label><label class="f">Cantidad<input id="bc" type="number" step="0.01" value="${pre.cant || 1}"></label></div>
+  <label class="f">Motivo<select id="bm">${MOTIVOS.map(k => `<option ${k === pre.motivo ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
+  <label class="f">Nota<input id="bn" placeholder="Qué pasó"></label>
+  <div id="bcost"></div>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarBaja()">${ico('trash')}Dar de baja</button>`);
+  const lotes = () => { const p = P(+$('#bp').value), ls = lotesDe(p.id); $('#bl').innerHTML = (ls.length ? ls.map(l => `<option value="${l.id}" ${l.id === pre.lid ? 'selected' : ''}>${l.nro} · vence ${fV(l.vence)} · ${cantTxt(p, l.cant)}</option>`).join('') : '') + '<option value="">Sin lote</option>'; cost(); };
+  const cost = () => { const p = P(+$('#bp').value), q = +$('#bc').value || 0; $('#bcost').innerHTML = `<div class="stat-row"><span>Costo de la baja</span><b style="color:var(--bad)">${fmt(q * p.costo)}</b></div><div class="stat-row"><span>Stock después</span><b>${cantTxt(p, Math.max(0, Math.round((p.st - q) * 100) / 100))}</b></div>`; };
+  $('#bp').onchange = lotes; $('#bc').oninput = cost; lotes();
+}
+function guardarBaja(){
+  const p = P(+$('#bp').value), q = +$('#bc').value || 0, lid = $('#bl').value, l = LOTESV.find(x => x.id === lid);
+  if (q <= 0) return;
+  if (l) l.cant = Math.max(0, Math.round((l.cant - q) * 100) / 100); else consumirLotes(p.id, q);
+  p.st = Math.max(0, Math.round((p.st - q) * 100) / 100);
+  MERMAS.push({fecha:new Date(), pid:p.id, lote:l ? l.nro : 'Sin lote', cant:q, motivo:$('#bm').value, costo:Math.round(q * p.costo), quien:usuario, nota:$('#bn').value || ''});
+  closeModal(); VIEWS[view](); renderNav(); toast(`Baja registrada: ${cantTxt(p, q)} de ${p.n}, ${fmt(q * p.costo)} al costo. Ya figura en Mermas y en Resultados.`);
+}
 
 // ---------- Clientes ----------
 VIEWS.clientes = () => {
