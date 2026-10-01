@@ -85,7 +85,7 @@ li::marker{color:var(--tinta)}
 .nuevo{display:inline-block;background:var(--rojo);color:#fff;font-family:"IBM Plex Mono",monospace;font-size:6pt;letter-spacing:.1em;padding:.4mm 1.4mm;margin-left:1.5mm;vertical-align:1px}
 .firmas{display:grid;grid-template-columns:1fr 1fr;gap:10mm;margin-top:14mm}
 .firma{border-top:1.5px solid var(--tinta);padding-top:2.5mm;font-size:9pt}
-.firma .lab{display:block;margin-bottom:9mm}
+.firma .lab{display:block;margin-bottom:3mm}
 .firma .linea{border-bottom:1px solid var(--tinta);height:6mm;margin-bottom:1.5mm}
 .ini{font-family:"IBM Plex Mono",monospace}
 </style>
@@ -100,50 +100,34 @@ li::marker{color:var(--tinta)}
     <div class="sub">Sistema de gestión a medida de PG Mercado de Carnes.</div>
     <div class="meta">
       <div><div class="lab">Cliente</div>PG Mercado de Carnes</div>
-      <div><div class="lab">Lugar y fecha</div>Montevideo, <span class="blank" style="border-color:#fff;min-width:28mm"></span></div>
-      <div><div class="lab">Versión</div>Para firmar</div>
     </div>
   </div>
   <div class="body">
-    <h2>Las partes</h2>
-    <div class="parts">
-      <div class="box"><div class="lab">El proveedor</div><p><b>CustomERP</b>, representado por <b>Guillermo Stewart</b>.</p><p>CI o RUT: <span class="blank"></span></p><p>Domicilio: <span class="blank" style="min-width:52mm"></span></p><p>sales@customerp.dev · 093 836 535</p></div>
-      <div class="box"><div class="lab">El cliente</div><p><b>PG Mercado de Carnes</b>, representado por <b>Juan Vique</b>.</p><p>CI o RUT: <span class="blank"></span></p><p>Domicilio: Av. Gral. José María Paz 1425, Montevideo</p><p>Contacto: +598 98 789 200</p></div>
-    </div>
-
     <div class="cl"><h3><span>01</span>Objeto</h3><p>CustomERP desarrolla, pone en marcha y mantiene un sistema de gestión a medida para el local de PG Mercado de Carnes, con los módulos que se detallan en la cláusula 2. El sistema funciona en la web, se usa desde la computadora de la caja, una tablet o un celular, y queda disponible en una dirección propia del cliente.</p></div>
 
-
+    <div class="cl"><h3><span>02</span>Módulos incluidos</h3>
+      <table class="mods">
+        <tr><th style="width:25%">Módulo</th><th>Qué incluye</th></tr>
+        <tr><td>Inicio</td><td>Resumen del día: ventas, margen, promociones activas, alertas de vencimiento y últimas ventas.</td></tr>
+        <tr><td>Ventas</td><td>Venta por peso y por unidad, descuentos Santander automáticos, integración con el POS, planilla de ventas con descarga a Excel, facturas emitidas (e-Ticket y e-Factura) y clientes.</td></tr>
+        <tr><td>Caja</td><td>Apertura con fondo y responsable, retiros con motivo, cierre y arqueo, conciliación con el lote del POS e historial de cierres.</td></tr>
+        <tr><td>Compras</td><td>Facturas de compra de mercadería y gastos del local, proveedores y saldos a pagar.</td></tr>
+        <tr><td>Productos</td><td>Precios, costos y stock, márgenes por producto y por categoría, con simulador de precio.</td></tr>
+        <tr><td>Vencimientos y lotes<span class="nuevo">NUEVO</span></td><td>Registro de cada lote con su fecha de vencimiento, rotación (lo que vence primero sale primero), alarmas configurables por categoría y acción directa para poner en oferta o dar de baja.</td></tr>
+        <tr><td>Mermas y bajas<span class="nuevo">NUEVO</span></td><td>Registro de cada baja con producto, lote, cantidad, motivo, responsable y costo. Análisis por motivo y por producto, e impacto en el resultado del mes.</td></tr>
+        <tr><td>Resultados</td><td>Estado de resultados mensual (facturas de venta menos facturas de compra) e IVA de ventas y de compras.</td></tr>
+        <tr><td>Configuración</td><td>Datos del local, conexiones, usuarios y permisos por rol.</td></tr>
+      </table>
+    </div>
   </div>
-  <div class="foot"><span>CustomERP · Contrato · PG Mercado de Carnes</span><span>Iniciales <span class="ini">____ ____</span> · 1 de 4</span></div>
-</section>
-
-<!-- 1b -->
-<section class="page">
-  <div class="head"><span class="logo">Custom<i></i></span><span class="lab">Contrato · PG Mercado de Carnes</span></div>
-  <div class="cl"><h3><span>02</span>Módulos incluidos</h3>
-    <table class="mods">
-      <tr><th style="width:25%">Módulo</th><th>Qué incluye</th></tr>
-      <tr><td>Inicio</td><td>Resumen del día: ventas, margen, promociones activas, alertas de vencimiento y últimas ventas.</td></tr>
-      <tr><td>Ventas</td><td>Venta por peso y por unidad, descuentos Santander automáticos, integración con el POS, planilla de ventas con descarga a Excel, facturas emitidas (e-Ticket y e-Factura) y clientes.</td></tr>
-      <tr><td>Caja</td><td>Apertura con fondo y responsable, retiros con motivo, cierre y arqueo, conciliación con el lote del POS e historial de cierres.</td></tr>
-      <tr><td>Compras</td><td>Facturas de compra de mercadería y gastos del local, proveedores y saldos a pagar.</td></tr>
-      <tr><td>Productos</td><td>Precios, costos y stock, márgenes por producto y por categoría, con simulador de precio.</td></tr>
-      <tr><td>Vencimientos y lotes<span class="nuevo">NUEVO</span></td><td>Registro de cada lote con su fecha de vencimiento, rotación (lo que vence primero sale primero), alarmas configurables por categoría y acción directa para poner en oferta o dar de baja.</td></tr>
-      <tr><td>Mermas y bajas<span class="nuevo">NUEVO</span></td><td>Registro de cada baja con producto, lote, cantidad, motivo, responsable y costo. Análisis por motivo y por producto, e impacto en el resultado del mes.</td></tr>
-      <tr><td>Resultados</td><td>Estado de resultados mensual (facturas de venta menos facturas de compra) e IVA de ventas y de compras.</td></tr>
-      <tr><td>Configuración</td><td>Datos del local, conexiones, usuarios y permisos por rol.</td></tr>
-    </table>
-  </div>
-
-  <div class="cl"><h3><span>03</span>Alcance y cambios</h3><p>El trabajo comprende lo detallado en la cláusula 2. Lo que no figure allí se cotiza aparte y solo se realiza con la aprobación previa y por escrito del cliente. Las modificaciones y mejoras leves están incluidas en la mensualidad, según la cláusula 6.</p><p>Qué datos son obligatorios y cuáles opcionales en cada pantalla, y los detalles de funcionamiento de cada módulo, se definen entre las partes durante la puesta en marcha.</p></div>
-
-  <div class="foot"><span>CustomERP · Contrato · PG Mercado de Carnes</span><span>Iniciales <span class="ini">____ ____</span> · 2 de 4</span></div>
+  <div class="foot"><span>CustomERP · Contrato · PG Mercado de Carnes</span><span>Iniciales <span class="ini">____ ____</span> · 1 de 3</span></div>
 </section>
 
 <!-- 2 -->
 <section class="page">
   <div class="head"><span class="logo">Custom<i></i></span><span class="lab">Contrato · PG Mercado de Carnes</span></div>
+
+  <div class="cl"><h3><span>03</span>Alcance y cambios</h3><p>El trabajo comprende lo detallado en la cláusula 2. Lo que no figure allí se cotiza aparte y solo se realiza con la aprobación previa y por escrito del cliente. Las modificaciones y mejoras leves están incluidas en la mensualidad, según la cláusula 6.</p><p>Qué datos son obligatorios y cuáles opcionales en cada pantalla, y los detalles de funcionamiento de cada módulo, se definen entre las partes durante la puesta en marcha.</p></div>
 
   <div class="cl"><h3><span>04</span>Precio</h3>
     <div class="price" style="margin-top:2mm">
@@ -161,7 +145,7 @@ li::marker{color:var(--tinta)}
 
   <div class="cl"><h3><span>08</span>Lo que aporta el cliente</h3><p>La lista de productos con precios y costos; el modelo de POS y el contacto de la adquirente; el proveedor de facturación electrónica; las condiciones de las promociones Santander; y una persona del equipo como referente. Los costos de servicios de terceros (POS, facturación electrónica, mensajería) no están incluidos en este contrato.</p></div>
 
-  <div class="foot"><span>CustomERP · Contrato · PG Mercado de Carnes</span><span>Iniciales <span class="ini">____ ____</span> · 3 de 4</span></div>
+  <div class="foot"><span>CustomERP · Contrato · PG Mercado de Carnes</span><span>Iniciales <span class="ini">____ ____</span> · 2 de 3</span></div>
 </section>
 
 <!-- 3 -->
@@ -178,14 +162,14 @@ li::marker{color:var(--tinta)}
 
   <div class="cl"><h3><span>13</span>Comunicaciones y jurisdicción</h3><p>Las comunicaciones entre las partes son válidas por correo electrónico o WhatsApp a los contactos indicados en este contrato. Para cualquier diferencia, las partes se someten a la ley y los tribunales de Montevideo, Uruguay.</p></div>
 
-  <p style="margin-top:6mm">En prueba de conformidad, se firman dos ejemplares de un mismo tenor en el lugar y la fecha indicados.</p>
+  <p style="margin-top:6mm">En prueba de conformidad, las partes firman dos ejemplares de un mismo tenor.</p>
 
   <div class="firmas">
-    <div class="firma"><span class="lab">Por CustomERP</span><div class="linea"></div><b>Guillermo Stewart</b><div class="muted" style="color:var(--gris)">CI: <span class="blank" style="min-width:38mm"></span></div></div>
-    <div class="firma"><span class="lab">Por PG Mercado de Carnes</span><div class="linea"></div><b>Juan Vique</b><div class="muted" style="color:var(--gris)">CI: <span class="blank" style="min-width:38mm"></span></div></div>
+    <div class="firma"><span class="lab">El proveedor</span><b style="font-size:11pt">CustomERP</b><div style="color:var(--gris)">Representado por Guillermo Stewart</div><div style="color:var(--gris)">sales@customerp.dev · 093 836 535</div><div class="linea" style="margin-top:14mm"></div><b>Guillermo Stewart</b><div style="color:var(--gris)">Firma</div></div>
+    <div class="firma"><span class="lab">El cliente</span><b style="font-size:11pt">PG Mercado de Carnes</b><div style="color:var(--gris)">Representado por Juan Vique</div><div style="color:var(--gris)">099 272 465</div><div class="linea" style="margin-top:14mm"></div><b>Juan Vique</b><div style="color:var(--gris)">Firma</div></div>
   </div>
 
-  <div class="foot"><span>CustomERP · Contrato · PG Mercado de Carnes</span><span>Iniciales <span class="ini">____ ____</span> · 4 de 4</span></div>
+  <div class="foot"><span>CustomERP · Contrato · PG Mercado de Carnes</span><span>Iniciales <span class="ini">____ ____</span> · 3 de 3</span></div>
 </section>
 </body>
 
