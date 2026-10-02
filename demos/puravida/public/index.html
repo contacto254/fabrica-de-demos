@@ -220,7 +220,7 @@ input[type=range]{width:100%;accent-color:var(--brand)}
     <header>
       <div><h1 id="title">Inicio</h1><div class="sub" id="subtitle"></div></div>
       <div class="search" id="openK"><svg class="ic"><use href="#i-search"/></svg>Buscar jardín, cliente, planta<kbd>Ctrl K</kbd></div>
-      <div class="user"><div class="av">LD</div><div><div>Lolo Diaz</div><div class="tiny">Paisajista</div></div></div>
+      <div class="user" id="userbox" style="cursor:pointer" title="Cambiar de usuario" onclick="cambiarUsuario()"></div>
     </header>
     <div class="content" id="view"></div>
   </main>
@@ -429,21 +429,25 @@ const ultimaTab={};
 // ================= Navegación =================
 const MODS = [
   ['inicio','Inicio','inicio',[['inicio','Hoy']],''],
-  ['comercial','Comercial','users',[['consultas','Consultas'],['presupuestos','Presupuestos'],['origen','De dónde vienen'],['clientes','Clientes']],'De la consulta al presupuesto aprobado'],
-  ['proyectos','Proyectos','plan',[['proyectos','Jardines']],'Diseño, obra y entrega de cada jardín'],
+  ['comercial','Comercial','users',[['consultas','Consultas'],['origen','De dónde vienen'],['clientes','Clientes']],'Consultas y clientes'],
+  ['proyectos','Proyectos y puestas a punto','plan',[['proyectos','Proyectos'],['puestas','Puestas a punto']],'Las obras y los trabajos de una sola vez'],
   ['mant','Mantenimiento','shears',[['agenda','Agenda de la semana'],['abonos','Abonos'],['huertas','Huertas'],['estacion','Calendario de estación']],'Jardines y huertas que cuidamos'],
+  ['cobros','Cobros y cotizaciones','cash',[['cotizaciones','Cotizaciones'],['cuentas','Estados de cuenta'],['caja','Entradas y salidas']],'De la visita a la cotización final, y la plata que entra y sale'],
+  ['portal','Portal del cliente','link',[['solicitudes','Pedidos y reclamos'],['links','Links de clientes']],'Lo que cada cliente ve y pide desde su link'],
   ['plantas','Plantas','leaf',[['catalogo','Paleta vegetal'],['stock','Stock y faltantes'],['compras','Pedidos a viveros']],'Especies, depósito y viveros'],
-  ['equipo','Equipo','team',[['cuadrillas','Cuadrillas'],['horas','Horas por obra'],['maquinas','Maquinaria']],'Gente, horas y herramientas'],
+  ['equipo','Equipo','team',[['planif','Planificación'],['jornaleros','Jornaleros'],['cuadrillas','Cuadrillas'],['horas','Horas por obra'],['maquinas','Maquinaria'],['accesos','Usuarios y accesos']],'Quién va a dónde, a qué hora, y qué ve cada uno'],
+  ['midia','Mi día','cal',[['midia','Mi día']],'Dónde ir, a qué hora y qué hacer'],
   ['resultados','Resultados','chart',[['resultados','Estado de resultados'],['margenes','Margen por obra']],'Cómo le va al estudio'],
 ];
 const TITLES={};MODS.forEach(m=>m[3].forEach(([k,l])=>TITLES[k]=[l]));
 const modDe = k => MODS.find(m=>m[0]===k)||MODS.find(m=>m[3].some(t=>t[0]===k));
 function renderNav(){
-  const nuevas=leads.filter(l=>l.st==='nueva').length;
-  $('#nav').innerHTML='<div style="height:4px"></div>'+MODS.map(m=>`<button class="nav ${modActual===m[0]?'on':''}" data-go="${m[0]}">${ico(m[2])}${m[1]}${m[0]==='comercial'&&nuevas?`<span class="cnt">${nuevas}</span>`:''}</button>`).join('');
+  const nuevas=leads.filter(l=>l.st==='nueva').length, sn=SOLIC.filter(s=>s.estado==='Nuevo').length;
+  $('#nav').innerHTML='<div style="height:4px"></div>'+MODS.filter(m=>permitido(m[0])).map(m=>`<button class="nav ${modActual===m[0]?'on':''}" data-go="${m[0]}">${ico(m[2])}${m[1]}${m[0]==='comercial'&&nuevas?`<span class="cnt">${nuevas}</span>`:''}${m[0]==='portal'&&sn?`<span class="cnt">${sn}</span>`:''}</button>`).join('');
 }
 function go(k){
-  const m=modDe(k);if(!m)return;
+  let m=modDe(k);if(!m)return;
+  if(!permitido(m[0])){m=MODS.find(x=>permitido(x[0]));k=m[0];}
   const tab=m[3].some(t=>t[0]===k)?k:(ultimaTab[m[0]]||m[3][0][0]);
   if(m[0]!==modActual||k==='proyectos')proySel=null;
   modActual=m[0];view=tab;ultimaTab[m[0]]=tab;renderNav();
@@ -495,6 +499,11 @@ VIEWS.inicio=()=>{
   const pF=PR('P-118'), iPl=pF.crono.findIndex(c=>c.n.startsWith('Canteros'));
   $('#pane').innerHTML=`
   <div class="hero"><div><h2>Buen día, Lolo.</h2><p>Hoy salen ${obras.length} cuadrillas a obra y ${visHoy.length+huHoy.length} visitas de mantenimiento. Entraron ${nuevas.length} consultas nuevas por Instagram y WhatsApp.</p></div><button class="btn" data-go="consultas">${ico('users')}Ver consultas</button></div>
+  <div class="grid3">
+    <div class="card kpi" style="cursor:pointer;border-left:5px solid var(--brand)" data-go="proyectos"><div class="lab">${ico('plan')}Proyectos</div><div class="val">${proyectos.filter(p=>p.et==='obra').length} en obra</div><div class="d">${proyectos.filter(p=>['diseno','presupuesto','aprobado'].includes(p.et)).length} en diseño o por arrancar</div></div>
+    <div class="card kpi" style="cursor:pointer;border-left:5px solid #D9962B" data-go="puestas"><div class="lab">${ico('shears')}Puestas a punto</div><div class="val">${puestas.filter(p=>p.estado==='Agendada').length} agendadas</div><div class="d n">trabajos de una sola vez</div></div>
+    <div class="card kpi" style="cursor:pointer;border-left:5px solid #7FA334" data-go="abonos"><div class="lab">${ico('cal')}Mantenimiento</div><div class="val">${abonos.length} abonos</div><div class="d">${usd(sum(abonos,a=>a.monto))} por mes</div></div>
+  </div>
   <div class="grid4">
     <div class="card kpi"><div class="lab">${ico('plan')}Obras en curso</div><div class="val">${obras.length}</div><div class="d">${usd(sum(obras,p=>presupuesto(p).total))} en ejecución</div></div>
     <div class="card kpi"><div class="lab">${ico('shears')}Abonos de mantenimiento</div><div class="val">${usd(mrr)}</div><div class="d">por mes, ${abonos.length} jardines</div></div>
@@ -574,15 +583,16 @@ VIEWS.clientes=()=>{
 // ---------- Proyectos ----------
 VIEWS.proyectos=()=>{if(proySel)return vistaProyecto();
   $('#pane').innerHTML=`<div class="tabs">${ETAPAS.map(([k,l])=>`<span class="pill ${k==='obra'?'p-ok':'p-n'}">${l}: ${proyectos.filter(p=>p.et===k).length}</span>`).join('')}<button class="btn pri" style="margin-left:auto" onclick="go('consultas')">${ico('plus')}Nuevo desde una consulta</button></div>
-  <div class="pgrid">${proyectos.map(p=>{const pr=presupuesto(p);return `<div class="pcard" onclick="abrirProyecto('${p.id}')"><div class="plan">${planSVG(p,{labels:false,mes:HOY.getMonth()+1})}</div><div class="pb"><div class="row" style="justify-content:space-between"><b style="font-size:16px">${p.n}</b>${etPill(p.et)}</div><div class="tiny">${p.cli} · ${p.b} · ${p.m2} m²</div>${p.et==='obra'?`<div class="bar" style="margin:8px 0 2px"><i style="width:${p.av}%"></i></div><div class="tiny">${p.av}% · ${etapaActual(p)}</div>`:`<div class="tiny" style="margin-top:8px">${sum(pr.pl,l=>l.q)} plantas · ${pr.pl.length} especies</div>`}<div class="row" style="justify-content:space-between;margin-top:8px"><b>${usd(pr.total)}</b><span class="tiny">${p.origen}</span></div></div></div>`}).join('')}</div>`;
+  <div class="pgrid">${proyectos.map(p=>{const pr=presupuesto(p);return `<div class="pcard" onclick="abrirProyecto('${p.id}')"><div class="plan">${planSVG(p,{labels:false,mes:HOY.getMonth()+1})}</div><div class="pb"><div class="row" style="justify-content:space-between"><b style="font-size:16px">${p.n}</b>${etPill(p.et)}</div><div class="tiny">${p.cli} · ${p.b} · ${p.m2} m²</div><div class="row" style="gap:4px;margin-top:6px;flex-wrap:wrap">${(TECNICAS[p.id]||[]).slice(0,2).map(t=>`<span class="pill p-sky" style="font-size:11px">${t}</span>`).join('')}</div>${p.et==='obra'?`<div class="bar" style="margin:8px 0 2px"><i style="width:${p.av}%"></i></div><div class="tiny">${p.av}% · ${etapaActual(p)}</div>`:`<div class="tiny" style="margin-top:8px">${sum(pr.pl,l=>l.q)} plantas · ${pr.pl.length} especies</div>`}<div class="row" style="justify-content:space-between;margin-top:8px"><b>${usd(pr.total)}</b><span class="tiny">${p.origen}</span></div></div></div>`}).join('')}</div>`;
 };
 function abrirProyecto(id){closeModal();if(modActual!=='proyectos')go('proyectos');proySel=id;proyTab='diseno';zonaSel=null;mesFlor=HOY.getMonth()+1;VIEWS.proyectos();$('#view').scrollTop=0;}
 function vistaProyecto(){
   const p=PR(proySel),pr=presupuesto(p);
-  const TABS=[['diseno','Diseño y paleta'],['materiales','Plantas y materiales'],['crono','Cronograma'],['costos','Costos'],['cobros','Cobros']];
+  const TABS=[['diseno','Diseño y paleta'],['materiales','Plantas y materiales'],['crono','Cronograma'],['costos','Costos'],['cobros','Cobros']].filter(t=>!ocultoRol(t[0]));
+  if(ocultoRol(proyTab))proyTab='diseno';
   $('#pane').innerHTML=`<button class="back" onclick="proySel=null;VIEWS.proyectos()">${ico('back')}Todos los jardines</button>
-  <div class="row" style="margin-bottom:14px;flex-wrap:wrap"><div><div class="row"><h2 style="margin:0;font-size:26px;font-weight:800">${p.n}</h2>${etPill(p.et)}</div><div class="muted">${p.id} · ${p.cli} · ${p.b} · ${p.m2} m² · Cuadrilla ${p.cuad}</div></div>
-  <div class="row" style="margin-left:auto"><button class="btn" onclick="portal('${p.id}')">${ico('eye')}Así lo ve el cliente</button><button class="btn" onclick="verPresupuesto('${p.id}')">${ico('doc')}Presupuesto ${usd(pr.total)}</button>${sigEtapaBtn(p)}</div></div>
+  <div class="row" style="margin-bottom:14px;flex-wrap:wrap"><div><div class="row"><h2 style="margin:0;font-size:26px;font-weight:800">${p.n}</h2>${etPill(p.et)}</div><div class="muted">${p.id} · ${p.cli} · ${p.b} · ${p.m2} m² · Cuadrilla ${p.cuad}</div><div class="row" style="gap:5px;margin-top:6px;flex-wrap:wrap">${tecChips(p.id)}</div></div>
+  <div class="row" style="margin-left:auto"><button class="btn" onclick="portal('${p.id}')">${ico('eye')}Así lo ve el cliente</button>${ocultoRol('cobros')?'':`<button class="btn" onclick="verPresupuesto('${p.id}')">${ico('doc')}Presupuesto ${usd(pr.total)}</button>`}${sigEtapaBtn(p)}</div></div>
   <div class="tabs">${TABS.map(([k,l])=>`<button class="tab ${proyTab===k?'on':''}" onclick="proyTab='${k}';vistaProyecto()">${l}</button>`).join('')}</div><div id="ptab"></div>`;
   ({diseno:tabDiseno,materiales:tabMateriales,crono:tabCrono,costos:tabCostos,cobros:tabCobros})[proyTab](p,pr);
 }
@@ -755,6 +765,257 @@ VIEWS.margenes=()=>{
   $('#pane').innerHTML=`<div class="card"><h3>${ico('chart')}Margen por obra</h3><div class="tw"><table><tr><th>Obra</th><th>Estado</th><th class="num">Precio</th><th class="num">Costo previsto</th><th class="num">Costo real o proyectado</th><th class="num">Margen previsto</th><th class="num">Margen real</th></tr>${ps.map(p=>{const pr=presupuesto(p),cr=pr.costo*p.desvio;const mp=pr.margen/pr.total*100,mr=(pr.total-cr)/pr.total*100;return `<tr class="cl" onclick="abrirProyecto('${p.id}');proyTab='costos';vistaProyecto()"><td><b>${p.n}</b><div class="tiny">${p.b}</div></td><td>${etPill(p.et)}</td><td class="num">${usd(pr.total)}</td><td class="num">${usd(pr.costo)}</td><td class="num">${usd(cr)}</td><td class="num">${pct(mp)}</td><td class="num"><span class="pill ${mr<mp-3?'p-bad':'p-ok'}">${pct(mr)}</span></td></tr>`}).join('')}</table></div><p class="tiny">Tocá una obra para ver en qué rubro se fue el costo.</p></div>`;
 };
 
+// ================= Tres líneas de negocio =================
+const TECNICAS = {'P-118':['Riego por goteo','Césped en tepes','Canteros con mulch'],'P-121':['Jardín nativo de bajo riego','Drenaje francés'],'P-123':['Impermeabilización de terraza','Riego automatizado','Huerta en altura'],'P-125':['Jardín costero resistente al viento','Riego por goteo'],'P-126':['Paisajismo de chacra','Huerta orgánica grande','Captación de agua de lluvia'],'P-127':['Áreas de alto tránsito','Riego por zonas'],'P-112':['Riego por goteo','Césped en tepes'],'P-109':['Macetones con drenaje','Riego automatizado']};
+const tecChips = id => (TECNICAS[id]||[]).map(t=>`<span class="pill p-sky">${t}</span>`).join(' ');
+let puestas = [
+  {id:'PP-41',cli:'Familia Rodríguez',b:'Punta Carretas',m2:90,dia:1,trab:['Poda de formación','Limpieza de canteros','Reposición de mulch'],precio:680,estado:'Agendada'},
+  {id:'PP-42',cli:'Edificio Las Gaviotas',b:'Malvín',m2:450,dia:3,trab:['Resiembra de césped','Corrección del riego','Poda de cercos'],precio:1450,estado:'Agendada'},
+  {id:'PP-43',cli:'Clínica Dental Rambla',b:'Pocitos',m2:60,dia:4,trab:['Cambio de plantas de macetones','Limpieza general'],precio:390,estado:'Agendada'},
+  {id:'PP-39',cli:'Familia Sosa',b:'Solymar',m2:380,dia:-6,trab:['Puesta a punto de primavera','Fertilización','Control de hormigas'],precio:920,estado:'Hecha',pago:true},
+  {id:'PP-38',cli:'Familia Costa',b:'Lagomar',m2:260,dia:-11,trab:['Poda de gramíneas','Desmalezado profundo'],precio:610,estado:'Hecha',pago:false},
+  {id:'PP-44',cli:'Florencia Castro',b:'Punta Gorda',m2:250,dia:8,trab:['Recuperación de césped','Canteros nuevos'],precio:0,estado:'Cotizando'},
+];
+VIEWS.puestas=()=>{
+  const prox=puestas.filter(p=>p.estado!=='Hecha'),hechas=puestas.filter(p=>p.estado==='Hecha');
+  $('#pane').innerHTML=`<div class="row" style="margin-bottom:14px"><span class="muted">Trabajos de una sola vez: se hacen y no se vuelve a la casa por unos meses. Si el cliente queda contento, se le ofrece el abono de mantenimiento.</span><button class="btn pri" style="margin-left:auto" onclick="nuevaPuesta()">${ico('plus')}Nueva puesta a punto</button></div>
+  <div class="grid3"><div class="card kpi"><div class="lab">${ico('cal')}Agendadas</div><div class="val">${prox.filter(p=>p.estado==='Agendada').length}</div><div class="d n">próximos 10 días</div></div><div class="card kpi"><div class="lab">${ico('cash')}Facturado en el mes</div><div class="val">${usd(sum(hechas,p=>p.precio))}</div><div class="d">${hechas.length} hechas</div></div><div class="card kpi"><div class="lab">${ico('shears')}Pasaron a mantenimiento</div><div class="val">34%</div><div class="d">de las puestas a punto del año</div></div></div>
+  <div class="card"><div class="tw"><table><tr><th>Trabajo</th><th>Cliente</th><th>Qué se hace</th><th>Fecha</th><th>Estado</th><th class="num">Precio</th><th></th></tr>${puestas.slice().sort((a,b)=>a.dia-b.dia).map(p=>`<tr><td><b>${p.id}</b></td><td>${p.cli}<div class="tiny">${p.b} · ${p.m2} m²</div></td><td class="tiny">${p.trab.join(' · ')}</td><td>${fdia(addD(p.dia))}</td><td><span class="pill ${p.estado==='Hecha'?'p-ok':p.estado==='Agendada'?'p-lime':'p-warn'}">${p.estado}</span></td><td class="num">${p.precio?usd(p.precio):'A cotizar'}</td><td class="num">${p.estado==='Hecha'?(p.pago?'<span class="pill p-ok">Cobrada</span>':`<button class="btn sm" onclick="toast('Estado de cuenta enviado a ${esc(p.cli)}')">Cobrar</button>`):p.estado==='Agendada'?`<button class="btn sm" onclick="go('planif')">Ver equipo</button>`:''}</td></tr>`).join('')}</table></div></div>`;
+};
+function nuevaPuesta(){modal('Nueva puesta a punto',`<label class="f">Cliente<input id="npc" value="Familia Bordaberry"></label><div class="frow"><label class="f">Barrio<input id="npb" value="Carrasco"></label><label class="f">m²<input id="npm" type="number" value="300"></label></div><label class="f">Qué se hace<input id="npt" value="Poda, limpieza de canteros, fertilización"></label><div class="frow"><label class="f">En cuántos días<input id="npd" type="number" value="5"></label><label class="f">Precio US$<input id="npp" type="number" value="750"></label></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarPuesta()">Agendar</button>`);}
+function guardarPuesta(){puestas.push({id:'PP-'+(45+puestas.length),cli:$('#npc').value,b:$('#npb').value,m2:+$('#npm').value||100,dia:+$('#npd').value||3,trab:$('#npt').value.split(',').map(s=>s.trim()),precio:+$('#npp').value||0,estado:'Agendada'});closeModal();VIEWS[view]();toast('Puesta a punto agendada. Asigná el equipo en Planificación.');}
+
+// ================= Usuarios y accesos =================
+const ROLES = {
+  admin:{n:'Administrador',desc:'Ve y edita todo, incluida la plata y los márgenes.',mods:'*'},
+  oficina:{n:'Administración',desc:'Comercial, cobros, clientes y agenda. No ve resultados ni márgenes.',mods:['inicio','comercial','proyectos','mant','plantas','cobros','portal','equipo','midia'],ocultar:['costos']},
+  jefe:{n:'Jefe de proyecto',desc:'Sus proyectos, la agenda y el equipo. No ve precios, cobros ni márgenes.',mods:['midia','proyectos','mant','plantas','equipo'],ocultar:['costos','cobros']},
+  jornalero:{n:'Jardinero o jornalero',desc:'Solo su día: a dónde ir, a qué hora, con quién y qué hacer.',mods:['midia']},
+};
+let USUARIOS = [
+  {n:'Lolo Diaz',rol:'admin',puesto:'Paisajista y director'},
+  {n:'Valentina Ruiz',rol:'oficina',puesto:'Administración'},
+  {n:'Martín Pereira',rol:'jefe',puesto:'Jefe de proyecto'},
+  {n:'Bruno Silva',rol:'jornalero',puesto:'Jardinero'},
+];
+let usuarioAct = USUARIOS[0];
+const permitido = mod => { const r=ROLES[usuarioAct.rol]; return r.mods==='*'||r.mods.includes(mod); };
+const ocultoRol = k => (ROLES[usuarioAct.rol].ocultar||[]).includes(k);
+function pintarUsuario(){const u=usuarioAct;$('#userbox').innerHTML=`<div class="av">${ini(u.n)}</div><div><div>${u.n}</div><div class="tiny">${ROLES[u.rol].n}</div></div>`;}
+function cambiarUsuario(){modal('Entrar como',`<p class="muted" style="margin-top:0">Cada persona entra con su usuario y ve solo lo que le corresponde.</p>${USUARIOS.map((u,i)=>`<div class="kres" onclick="usuarioAct=USUARIOS[${i}];closeModal();pintarUsuario();go(permitido('inicio')?'inicio':'midia');toast('Entraste como ${esc(u.n)} · ${ROLES[u.rol].n}')"><div class="av">${ini(u.n)}</div><div style="flex:1"><b>${u.n}</b><div class="tiny">${u.puesto} · ${ROLES[u.rol].n}</div></div>${u===usuarioAct?'<span class="pill p-ok">Ahora</span>':''}</div>`).join('')}`);}
+VIEWS.accesos=()=>{
+  const items=[...MODS.map(m=>[m[0],m[1]]),['costos','Costos y márgenes de cada obra']];
+  $('#pane').innerHTML=`<div class="grid2"><div class="card"><h3>${ico('team')}Qué ve cada rol<span class="act tiny">Tocá un casillero para cambiarlo</span></h3><div class="tw"><table><tr><th>Módulo</th>${Object.values(ROLES).map(r=>`<th style="text-align:center">${r.n}</th>`).join('')}</tr>
+  ${items.map(([k,l])=>`<tr><td><b>${l}</b></td>${Object.entries(ROLES).map(([rk,r])=>{const on=k==='costos'?(r.mods==='*'||!(r.ocultar||[]).includes('costos'))&&(r.mods==='*'||r.mods.includes('proyectos')):(r.mods==='*'||r.mods.includes(k));return `<td style="text-align:center">${rk==='admin'?'<span class="pill p-ok">'+ico('check')+'</span>':`<button class="btn sm" style="${on?'background:var(--ok-soft);color:var(--ok);border-color:transparent':''}" onclick="togAcceso('${rk}','${k}')">${on?ico('check'):ico('x')}</button>`}</td>`;}).join('')}</tr>`).join('')}</table></div></div>
+  <div class="card"><h3>${ico('users')}Usuarios</h3>${USUARIOS.map((u,i)=>`<div class="list-it"><div class="av">${ini(u.n)}</div><div style="flex:1"><b>${u.n}</b><div class="tiny">${u.puesto}</div></div><select class="inp" onchange="USUARIOS[${i}].rol=this.value;VIEWS.accesos();toast('Rol de ${esc(u.n)} actualizado')">${Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${u.rol===k?'selected':''}>${r.n}</option>`).join('')}</select></div>`).join('')}
+  <button class="btn" style="margin-top:12px" onclick="nuevoUsuario()">${ico('plus')}Invitar usuario</button>
+  <div style="margin-top:16px">${Object.values(ROLES).map(r=>`<div class="stat-row"><b>${r.n}</b><span class="tiny" style="max-width:60%;text-align:right">${r.desc}</span></div>`).join('')}</div>
+  <p class="tiny" style="margin-top:10px">Probá entrar como otro usuario tocando el nombre arriba a la derecha.</p></div></div>`;
+};
+function togAcceso(rk,k){const r=ROLES[rk];if(k==='costos'){r.ocultar=r.ocultar||[];const i=r.ocultar.indexOf('costos');if(i>=0)r.ocultar.splice(i,1);else r.ocultar.push('costos');}else{const i=r.mods.indexOf(k);if(i>=0)r.mods.splice(i,1);else r.mods.push(k);}VIEWS.accesos();toast('Acceso de '+r.n+' actualizado');}
+function nuevoUsuario(){modal('Invitar usuario',`<label class="f">Nombre<input id="nun" value="Federico Pintos"></label><label class="f">Celular<input value="099 334 128"></label><label class="f">Rol<select id="nur">${Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${k==='jornalero'?'selected':''}>${r.n}</option>`).join('')}</select></label><p class="tiny">Le llega un link por WhatsApp para entrar desde el celular. No hace falta instalar nada.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="USUARIOS.push({n:$('#nun').value,rol:$('#nur').value,puesto:ROLES[$('#nur').value].n});closeModal();VIEWS.accesos();toast('Invitación enviada por WhatsApp')">Invitar</button>`);}
+
+// ================= Equipo: personas, jornaleros y planificación =================
+const PERSONAS = [
+  {n:'Martín Pereira',tipo:'Jefe de proyecto',tel:'099 411 203'},{n:'Sebastián Núñez',tipo:'Jefe de proyecto',tel:'098 220 774'},
+  {n:'Facundo Olivera',tipo:'Encargado de mantenimiento',tel:'099 873 510'},{n:'Agustín Méndez',tipo:'Encargado de mantenimiento',tel:'091 560 228'},
+  {n:'Carolina Suárez',tipo:'Huertas',tel:'099 102 845'},
+  {n:'Bruno Silva',tipo:'Jornalero',tel:'099 334 019',jornal:48,disp:[1,2,3,4,5]},{n:'Diego Rocha',tipo:'Jornalero',tel:'098 712 330',jornal:48,disp:[1,2,3,4,5,6]},
+  {n:'Nicolás Viera',tipo:'Jornalero',tel:'099 556 120',jornal:45,disp:[1,2,3,4,5]},{n:'Tomás Ibarra',tipo:'Jornalero',tel:'091 223 870',jornal:45,disp:[1,3,4,5]},
+  {n:'Juan Cruz Sosa',tipo:'Jornalero',tel:'099 640 312',jornal:42,disp:[1,2,3,4,5,6]},{n:'Matías Duarte',tipo:'Jornalero',tel:'098 901 445',jornal:42,disp:[2,3,4,5,6]},
+  {n:'Federico Pintos',tipo:'Jornalero',tel:'099 334 128',jornal:45,disp:[1,3,5]},{n:'Leandro Cabrera',tipo:'Jornalero',tel:'092 118 604',jornal:45,disp:[2,4,6]},
+];
+const PER = n => PERSONAS.find(p=>p.n===n);
+const LUNES = addD(1-(HOY.getDay()||7));
+const fechaDia = d => new Date(LUNES.getTime()+(d-1)*DAY);
+const hm = s => { const [h,m]=s.split(':').map(Number); return h+m/60; };
+const hs = x => String(Math.floor(x)).padStart(2,'0')+':'+(x%1?'30':'00');
+const DIRS = {'Carrasco':'Av. Arocena 1580','Colinas de Carrasco':'Camino de los Horneros km 2','Pocitos':'Rambla Gandhi 640','Barra de Carrasco':'Calle 12 y Rambla','Pando, Canelones':'Ruta 8 km 31','Punta Gorda':'Av. Gral. Paz 1890','Malvín':'Michigan 1450','Lagomar':'Av. Giannattasio km 21','Shangrilá':'Av. Racine 2210','Solymar':'Calle Brasil 340','Punta Carretas':'Ellauri 1102','Carrasco Norte':'Camino Carrasco 6120','Atlántida':'Calle 11 y 22'};
+let ASIG = [], asigN = 0, diaPlan = Math.min(6,Math.max(1,HOY.getDay()||1)), midiaHechos = {};
+const asignar = (d,persona,tipo,ref,n,lugar,desde,hasta,tarea) => ASIG.push({id:++asigN,d,persona,tipo,ref,n,lugar,desde,hasta,tarea});
+(()=>{
+  for(let d=1;d<=6;d++){
+    if(d<=5){
+      ['Martín Pereira','Bruno Silva','Diego Rocha'].forEach(p=>asignar(d,p,'Proyecto','P-118','Jardín Ferrés','Carrasco','07:30','16:30',d<=2?'Canteros y plantación':'Césped en tepes'));
+      ['Sebastián Núñez','Nicolás Viera'].concat(d===diaPlan?['Tomás Ibarra']:[]).forEach(p=>asignar(d,p,'Proyecto','P-121','Casa Arocena','Colinas de Carrasco','07:30','16:30','Instalación de riego'));
+    }
+    const ab=abonos.filter(a=>a.dia===d);
+    [['Mantenimiento A',['Facundo Olivera','Juan Cruz Sosa']],['Mantenimiento B',['Agustín Méndez','Matías Duarte']]].forEach(([cz,gente])=>{let t=8;ab.filter(a=>a.cuad===cz).forEach(a=>{const dur=a.m2<300?1.5:a.m2<700?2.5:4;gente.forEach(p=>asignar(d,p,'Mantenimiento',a.cli,a.cli,a.b,hs(t),hs(t+dur),'Mantenimiento '+a.frec.toLowerCase()));t+=dur+.5;});});
+    let th=9;huertas.filter(h=>h.dia===d).forEach(h=>{asignar(d,'Carolina Suárez','Huerta',h.cli,'Huerta '+h.cli,h.b,hs(th),hs(th+1.5),'Huerta '+h.tam.toLowerCase());th+=2;});
+  }
+  // puestas a punto de esta semana
+  [['PP-41',2,['Federico Pintos','Leandro Cabrera'],'08:00','13:00'],['PP-42',diaPlan,['Leandro Cabrera','Tomás Ibarra','Federico Pintos'],'13:00','17:30'],['PP-43',4,['Federico Pintos'],'08:00','11:30']].forEach(([id,d,gente,a,b])=>{const pp=puestas.find(x=>x.id===id);gente.forEach(p=>asignar(d,p,'Puesta a punto',id,pp.cli,pp.b,a,b,pp.trab[0]));});
+})();
+const choques = d => { const out=[]; const xs=ASIG.filter(a=>a.d===d); xs.forEach((a,i)=>xs.slice(i+1).forEach(b=>{ if(a.persona===b.persona&&hm(a.desde)<hm(b.hasta)&&hm(b.desde)<hm(a.hasta)) out.push([a,b]); })); return out; };
+const enChoque = (a) => choques(a.d).some(([x,y])=>x.id===a.id||y.id===a.id);
+const COL_T = {'Proyecto':'var(--brand)','Mantenimiento':'#7FA334','Puesta a punto':'#D9962B','Huerta':'#A97B43'};
+VIEWS.planif=()=>{
+  const d=diaPlan, xs=ASIG.filter(a=>a.d===d), ch=choques(d);
+  const gente=PERSONAS.filter(p=>xs.some(a=>a.persona===p.n)), libres=PERSONAS.filter(p=>!xs.some(a=>a.persona===p.n)&&(!p.disp||p.disp.includes(d)));
+  const H0=7,H1=18.5,pos=x=>(x-H0)/(H1-H0)*100;
+  $('#pane').innerHTML=`<div class="tabs">${[1,2,3,4,5,6].map(i=>`<button class="tab ${i===d?'on':''}" onclick="diaPlan=${i};VIEWS.planif()" style="text-transform:capitalize">${fdia(fechaDia(i))}${choques(i).length?' · revisar':''}</button>`).join('')}<button class="btn" style="margin-left:auto" onclick="toast('Cada persona recibió su día por WhatsApp: ${gente.length} mensajes')">${ico('msg')}Mandar el día a cada uno</button><button class="btn pri" onclick="nuevaAsig()">${ico('plus')}Asignar</button></div>
+  ${ch.map(([a,b])=>`<div class="alert" style="background:var(--bad-soft);margin-bottom:10px">${ico('alert')}<div><b>${a.persona} quedó en dos lugares a la vez</b><span class="tiny">${a.n} (${a.desde} a ${a.hasta}) y ${b.n} (${b.desde} a ${b.hasta}). Elegí dónde va.</span></div><button class="btn sm" onclick="quitarAsig(${b.id})">Sacarlo de ${b.n}</button></div>`).join('')}
+  <div class="card"><div class="row" style="margin-bottom:10px;flex-wrap:wrap">${Object.entries(COL_T).map(([k,c])=>`<span class="row tiny" style="gap:5px"><span class="swatch" style="background:${c}"></span>${k}</span>`).join('')}<span class="tiny" style="margin-left:auto">Tocá un bloque para cambiar a la persona o el horario</span></div>
+  <div style="display:grid;grid-template-columns:170px 1fr;gap:0">
+    <div></div><div style="position:relative;height:20px">${[7,8,9,10,11,12,13,14,15,16,17,18].map(h=>`<span class="tiny" style="position:absolute;left:${pos(h)}%;transform:translateX(-50%)">${h}</span>`).join('')}</div>
+    ${gente.map(p=>`<div style="padding:8px 6px;border-top:1px solid var(--line)"><b style="font-size:13.5px">${p.n}</b><div class="tiny">${p.tipo}</div></div><div style="position:relative;border-top:1px solid var(--line);height:52px;background:repeating-linear-gradient(90deg,transparent,transparent calc(${100/(H1-H0)}% - 1px),#EFEBE0 calc(${100/(H1-H0)}% - 1px),#EFEBE0 ${100/(H1-H0)}%)">${xs.filter(a=>a.persona===p.n).map(a=>`<div onclick="verAsig(${a.id})" title="${a.n}" style="position:absolute;top:7px;bottom:7px;left:${pos(hm(a.desde))}%;width:calc(${pos(hm(a.hasta))-pos(hm(a.desde))}% - 3px);background:${COL_T[a.tipo]};color:#fff;border-radius:8px;padding:3px 7px;font-size:11.5px;line-height:1.25;overflow:hidden;cursor:pointer;${enChoque(a)?'outline:3px solid var(--bad);outline-offset:-1px':''}"><b>${a.n}</b><br>${a.desde}–${a.hasta} · ${a.lugar}</div>`).join('')}</div>`).join('')}
+  </div></div>
+  <div class="card" style="margin-top:14px"><h3>${ico('team')}Libres este día</h3><div class="row" style="flex-wrap:wrap;gap:6px">${libres.map(p=>`<span class="pill p-n">${p.n} · ${p.tipo}</span>`).join('')||'<span class="tiny">Todo el equipo está asignado.</span>'}</div></div>`;
+};
+function verAsig(id){const a=ASIG.find(x=>x.id===id);modal(a.n,`<div class="row" style="margin-bottom:10px"><span class="pill" style="background:${COL_T[a.tipo]};color:#fff">${a.tipo}</span><span class="tiny">${fdia(fechaDia(a.d))} · ${a.lugar}</span></div>
+  <label class="f">Persona<select id="aper">${PERSONAS.map(p=>`<option ${p.n===a.persona?'selected':''}>${p.n}</option>`).join('')}</select></label><div class="frow"><label class="f">Desde<input id="ades" value="${a.desde}"></label><label class="f">Hasta<input id="ahas" value="${a.hasta}"></label></div><div class="stat-row"><span>Qué hace</span><b>${a.tarea}</b></div>`,
+  `<button class="btn" onclick="quitarAsig(${id})">${ico('x')}Quitar</button><button class="btn pri" onclick="guardarAsig(${id})">Guardar</button>`);}
+function guardarAsig(id){const a=ASIG.find(x=>x.id===id);a.persona=$('#aper').value;a.desde=$('#ades').value;a.hasta=$('#ahas').value;closeModal();VIEWS[view]();toast(enChoque(a)?a.persona+' queda en dos lugares a la vez: revisalo.':'Cambio guardado. '+a.persona+' recibe el aviso por WhatsApp.');}
+function quitarAsig(id){const a=ASIG.find(x=>x.id===id);ASIG=ASIG.filter(x=>x.id!==id);closeModal();VIEWS[view]();toast(a.persona+' sale de '+a.n+'. Le avisamos por WhatsApp.');}
+function nuevaAsig(){
+  const d=diaPlan;
+  const trabajos=[...proyectos.filter(p=>p.et==='obra').map(p=>['Proyecto',p.id,p.n,p.b]),...puestas.filter(p=>p.estado==='Agendada').map(p=>['Puesta a punto',p.id,p.cli,p.b]),...abonos.filter(a=>a.dia===d).map(a=>['Mantenimiento',a.cli,a.cli,a.b])];
+  modal('Asignar · '+fdia(fechaDia(d)),`<label class="f">Trabajo<select id="nat">${trabajos.map((t,i)=>`<option value="${i}">${t[0]} · ${t[2]} (${t[3]})</option>`).join('')}</select></label>
+  <label class="f">Persona<select id="nap">${PERSONAS.map(p=>{const ocupado=ASIG.some(a=>a.d===d&&a.persona===p.n);const nodisp=p.disp&&!p.disp.includes(d);return `<option ${ocupado||nodisp?'':''}>${p.n}${ocupado?' · ya tiene trabajo ese día':nodisp?' · no trabaja ese día':' · libre'}</option>`;}).join('')}</select></label>
+  <div class="frow"><label class="f">Desde<input id="nad" value="08:00"></label><label class="f">Hasta<input id="nah" value="12:00"></label></div><div id="nawarn"></div>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" id="naok">Asignar</button>`);
+  const chk=()=>{const p=$('#nap').value.split(' · ')[0],de=hm($('#nad').value),ha=hm($('#nah').value);const c=ASIG.find(a=>a.d===d&&a.persona===p&&de<hm(a.hasta)&&hm(a.desde)<ha);$('#nawarn').innerHTML=c?`<div class="alert" style="background:var(--bad-soft)">${ico('alert')}<div><b>${p} ya está en ${c.n} de ${c.desde} a ${c.hasta}</b><span class="tiny">Si lo asignás igual, queda marcado en rojo en la planificación.</span></div></div>`:'';$('#naok').textContent=c?'Asignar igual':'Asignar';};
+  ['#nap','#nad','#nah'].forEach(s=>{$(s).onchange=chk;$(s).oninput=chk;});chk();
+  $('#naok').onclick=()=>{const t=trabajos[+$('#nat').value],p=$('#nap').value.split(' · ')[0];asignar(d,p,t[0],t[1],t[2],t[3],$('#nad').value,$('#nah').value,t[0]==='Mantenimiento'?'Mantenimiento':'Apoyo en '+t[2]);closeModal();VIEWS[view]();toast(p+' asignado a '+t[2]+'. Le llega el aviso por WhatsApp.');};
+}
+VIEWS.jornaleros=()=>{
+  const jor=PERSONAS.filter(p=>p.tipo==='Jornalero');
+  const dias=p=>ASIG.filter(a=>a.persona===p.n).reduce((s,a)=>s.add(a.d),new Set()).size+6;
+  $('#pane').innerHTML=`<div class="grid3"><div class="card kpi"><div class="lab">${ico('team')}Jornaleros</div><div class="val">${jor.length}</div><div class="d n">trabajan según la semana</div></div><div class="card kpi"><div class="lab">${ico('cal')}Jornales esta quincena</div><div class="val">${sum(jor,dias)}</div><div class="d n">días trabajados</div></div><div class="card kpi"><div class="lab">${ico('cash')}A pagar el viernes</div><div class="val">${usd(sum(jor,p=>dias(p)*p.jornal))}</div><div class="d n">sale de la planificación, no de un cuaderno</div></div></div>
+  <div class="card"><h3>${ico('team')}Jornaleros<button class="btn pri sm act" onclick="nuevoUsuario()">${ico('plus')}Sumar jornalero</button></h3><div class="tw"><table><tr><th>Nombre</th><th>Celular</th><th>Puede trabajar</th><th class="num">Jornal</th><th class="num">Días en la quincena</th><th class="num">A pagar</th><th></th></tr>${jor.map(p=>`<tr><td><b>${p.n}</b></td><td class="tiny">${p.tel}</td><td>${['L','M','X','J','V','S'].map((x,i)=>`<span class="pill ${p.disp.includes(i+1)?'p-lime':'p-n'}" style="padding:1px 6px;margin-right:2px">${x}</span>`).join('')}</td><td class="num">${usd(p.jornal)}</td><td class="num">${dias(p)}</td><td class="num"><b>${usd(dias(p)*p.jornal)}</b></td><td class="num"><button class="btn sm" onclick="pagarJornal('${esc(p.n)}',${dias(p)*p.jornal})">Pagar</button></td></tr>`).join('')}</table></div><p class="tiny">Los días salen de lo que cada uno tuvo asignado y marcó en "Mi día". Al pagar, el movimiento entra solo en Entradas y salidas.</p></div>`;
+};
+function pagarJornal(n,m){MOVS.unshift({fecha:new Date(),tipo:'Salida',concepto:'Jornales de '+n,cat:'Jornales',linea:'General',medio:'Transferencia',monto:m});VIEWS[view]();toast('Pago a '+n+' registrado: '+usd(m)+'. Ya está en Entradas y salidas.');}
+
+// ================= Mi día (la vista del jardinero) =================
+let personaMiDia = null;
+VIEWS.midia=()=>{
+  const yo=personaMiDia||(PER(usuarioAct.n)?usuarioAct.n:'Bruno Silva'), d=Math.min(6,Math.max(1,HOY.getDay()||1));
+  const hoy=ASIG.filter(a=>a.d===d&&a.persona===yo).sort((a,b)=>hm(a.desde)-hm(b.desde)), man=ASIG.filter(a=>a.d===d+1&&a.persona===yo).sort((a,b)=>hm(a.desde)-hm(b.desde));
+  const p=PER(yo), con=a=>ASIG.filter(x=>x.d===a.d&&x.ref===a.ref&&x.persona!==yo&&x.desde===a.desde).map(x=>x.persona.split(' ')[0]);
+  const LLEVAR={'Proyecto':'Palas, carretilla, guantes','Mantenimiento':'Cortadora, bordeadora, sopladora','Puesta a punto':'Tijeras, bordeadora, bolsas de residuos','Huerta':'Plantines, compost, regadera'};
+  $('#pane').innerHTML=`${usuarioAct.rol!=='jornalero'?`<div class="tabs"><span class="tiny">Ver el día de</span><select class="inp" onchange="personaMiDia=this.value;VIEWS.midia()">${PERSONAS.map(x=>`<option ${x.n===yo?'selected':''}>${x.n}</option>`).join('')}</select><span class="tiny">Así lo ve cada uno en su celular.</span></div>`:''}
+  <div style="max-width:560px">
+  <div class="hero" style="margin-bottom:14px"><div><h2>Hola, ${yo.split(' ')[0]}.</h2><p>${(x=>x[0].toUpperCase()+x.slice(1))(fdia(fechaDia(d)))} · ${hoy.length?hoy.length+' trabajo'+(hoy.length>1?'s':''):'Hoy no tenés trabajo asignado'}</p></div></div>
+  ${hoy.map(a=>{const k='m'+a.id,st=midiaHechos[k];return `<div class="card" style="margin-bottom:10px;border-left:5px solid ${COL_T[a.tipo]}"><div class="row"><b style="font-size:22px">${a.desde}</b><span class="tiny">hasta ${a.hasta}</span><span class="pill" style="margin-left:auto;background:${COL_T[a.tipo]};color:#fff">${a.tipo}</span></div>
+    <div style="font-size:17px;font-weight:700;margin:6px 0 2px">${a.n}</div><div class="muted">${DIRS[a.lugar]||a.lugar}, ${a.lugar}</div>
+    <div class="stat-row" style="margin-top:8px"><span class="muted">Qué hacer</span><b>${a.tarea}</b></div>${con(a).length?`<div class="stat-row"><span class="muted">Con</span><b>${con(a).join(', ')}</b></div>`:''}<div class="stat-row"><span class="muted">Llevar</span><b>${LLEVAR[a.tipo]}</b></div>
+    <div class="row" style="margin-top:10px"><button class="btn" onclick="toast('Se abre el mapa con la dirección')">${ico('pin')}Cómo llegar</button>${st==='fin'?'<span class="pill p-ok" style="margin-left:auto">Terminado</span>':`<button class="btn ${st?'':'pri'}" style="margin-left:auto" onclick="midiaHechos['${k}']=${st?"'fin'":"'llegue'"};VIEWS.midia();toast('${st?'Trabajo terminado. Las horas quedan cargadas.':'Llegada registrada a las '+new Date().toTimeString().slice(0,5)}')">${st?'Terminé':'Llegué'}</button>`}</div></div>`;}).join('')}
+  ${man.length?`<div class="card"><h3>${ico('cal')}Mañana</h3>${man.map(a=>`<div class="list-it"><b style="width:52px">${a.desde}</b><div style="flex:1"><b>${a.n}</b><div class="tiny">${a.lugar} · ${a.tarea}</div></div></div>`).join('')}</div>`:''}
+  ${p&&p.jornal?`<div class="card" style="margin-top:10px"><h3>${ico('cash')}Mis jornales</h3><div class="stat-row"><span>Días trabajados en la quincena</span><b>${ASIG.filter(a=>a.persona===yo).reduce((s,a)=>s.add(a.d),new Set()).size+6}</b></div><div class="stat-row"><span>Jornal</span><b>${usd(p.jornal)}</b></div></div>`:''}
+  </div>`;
+};
+
+// ================= Cobros y cotizaciones =================
+const COTIZ = [
+  {cli:'Familia Ferrés',b:'Carrasco',linea:'Proyecto',ref:'P-118',visita:-62,vPaga:true,diseno:'Entregado',final:null,estado:'Aprobada',sena:true},
+  {cli:'Familia Arocena',b:'Colinas de Carrasco',linea:'Proyecto',ref:'P-121',visita:-40,vPaga:true,diseno:'Entregado',final:null,estado:'Aprobada',sena:true},
+  {cli:'Martina Olivera',b:'Pocitos',linea:'Proyecto',ref:'P-123',visita:-24,vPaga:true,diseno:'Entregado',final:null,estado:'Aprobada',sena:true},
+  {cli:'Familia Methol',b:'Barra de Carrasco',linea:'Proyecto',ref:'P-125',visita:-15,vPaga:true,diseno:'Entregado',final:null,estado:'Enviada',sena:false},
+  {cli:'Hotel Costa Azul',b:'Atlántida',linea:'Proyecto',ref:'P-127',visita:-13,vPaga:true,diseno:'Entregado',final:null,estado:'Enviada',sena:false},
+  {cli:'Diego Albanell',b:'Pando, Canelones',linea:'Proyecto',ref:'P-126',visita:-7,vPaga:true,diseno:'En curso',final:null,estado:'Cotizando',sena:false},
+  {cli:'Familia Rodríguez',b:'Punta Carretas',linea:'Puesta a punto',ref:'PP-41',visita:-9,vPaga:true,diseno:'No lleva',final:680,estado:'Aprobada',sena:true},
+  {cli:'Edificio Las Gaviotas',b:'Malvín',linea:'Puesta a punto',ref:'PP-42',visita:-8,vPaga:true,diseno:'No lleva',final:1450,estado:'Aprobada',sena:false},
+  {cli:'Gonzalo Techera',b:'Shangrilá',linea:'Proyecto',ref:'',visita:-2,vPaga:false,diseno:'Sin empezar',final:null,estado:'Cotizando',sena:false},
+  {cli:'Valentina Pereyra',b:'Lagomar',linea:'Mantenimiento',ref:'',visita:-5,vPaga:true,diseno:'No lleva',final:180,estado:'Enviada',sena:false,mensual:true},
+  {cli:'Florencia Castro',b:'Punta Gorda',linea:'Puesta a punto',ref:'PP-44',visita:2,vPaga:false,diseno:'No lleva',final:null,estado:'Visita agendada',sena:false},
+  {cli:'Familia Bordaberry',b:'Carrasco',linea:'Proyecto',ref:'',visita:-30,vPaga:true,diseno:'Entregado',final:9800,estado:'Rechazada',sena:false},
+];
+const VISITA_USD = 60;
+const finalDe = c => ['Cotizando','Visita agendada'].includes(c.estado)?null:c.final!=null?c.final:(c.ref&&PR(c.ref)?Math.round(presupuesto(PR(c.ref)).total):null);
+const estPillC = e => `<span class="pill ${e==='Aprobada'?'p-ok':e==='Rechazada'?'p-bad':e==='Enviada'?'p-warn':'p-sky'}">${e}</span>`;
+VIEWS.cotizaciones=()=>{
+  const env=COTIZ.filter(c=>c.estado==='Enviada'),apr=COTIZ.filter(c=>c.estado==='Aprobada'),visPend=COTIZ.filter(c=>c.visita<=0&&!c.vPaga);
+  $('#pane').innerHTML=`<div class="row" style="margin-bottom:14px"><span class="muted">Cada trabajo, desde la visita hasta la cotización final. Es la misma planilla de Excel que usan hoy, ordenada.</span><button class="btn" style="margin-left:auto" onclick="importarExcel()">${ico('doc')}Importar Excel</button><button class="btn pri" onclick="go('consultas')">${ico('plus')}Nueva desde una consulta</button></div>
+  <div class="grid4"><div class="card kpi"><div class="lab">Visitas cobradas en el mes</div><div class="val">${usd(COTIZ.filter(c=>c.vPaga&&c.visita>-31&&c.visita<=0).length*VISITA_USD)}</div><div class="d ${visPend.length?'neg':''}">${visPend.length} visita${visPend.length===1?'':'s'} sin cobrar</div></div><div class="card kpi"><div class="lab">Cotizaciones enviadas</div><div class="val">${usd(sum(env,c=>finalDe(c)||0))}</div><div class="d n">${env.length} esperando respuesta</div></div><div class="card kpi"><div class="lab">Aprobadas</div><div class="val">${usd(sum(apr,c=>finalDe(c)||0))}</div><div class="d">${apr.filter(c=>!c.sena).length} sin seña todavía</div></div><div class="card kpi"><div class="lab">Se aprueban</div><div class="val">${pct(apr.length/(apr.length+COTIZ.filter(c=>c.estado==='Rechazada').length+env.length)*100)}</div><div class="d n">de las cotizaciones finales</div></div></div>
+  <div class="card"><div class="tw"><table><tr><th>Cliente</th><th>Línea</th><th>Visita</th><th>Visita cobrada</th><th>Diseño</th><th class="num">Cotización final</th><th>Estado</th><th>Seña</th></tr>
+  ${COTIZ.map((c,i)=>`<tr class="cl" onclick="verCotiz(${i})"><td><b>${c.cli}</b><div class="tiny">${c.b}</div></td><td><span class="pill ${c.linea==='Proyecto'?'p-ok':c.linea==='Mantenimiento'?'p-lime':'p-warn'}">${c.linea}</span></td><td>${fcorta(addD(c.visita))}${c.visita>0?' <span class="tiny">agendada</span>':''}</td><td>${c.visita>0?'<span class="tiny">—</span>':c.vPaga?'<span class="pill p-ok">'+usd(VISITA_USD)+' pagada</span>':'<span class="pill p-bad">Pendiente</span>'}</td><td class="tiny">${c.diseno}</td><td class="num">${finalDe(c)?usd(finalDe(c))+(c.mensual?' /mes':''):'<span class="tiny">—</span>'}</td><td>${estPillC(c.estado)}</td><td>${c.estado==='Aprobada'?(c.sena?'<span class="pill p-ok">Cobrada</span>':'<span class="pill p-warn">Pendiente</span>'):''}</td></tr>`).join('')}</table></div></div>`;
+};
+function verCotiz(i){const c=COTIZ[i],f=finalDe(c);const pasos=[['Visita',c.visita<=0],['Visita cobrada',c.vPaga],['Diseño',c.diseno==='Entregado'||c.diseno==='No lleva'],['Cotización final',!!f&&c.estado!=='Cotizando'],['Aprobada',c.estado==='Aprobada'],['Seña cobrada',c.sena]];
+  modal(c.cli+' · '+c.linea,`<div class="steps">${pasos.map(([n,ok],k)=>`<div class="st"><div class="dot ${ok?'done':''}">${ok?ico('check'):''}</div><div><b>${n}</b>${k===0?`<div class="tiny">${fdia(addD(c.visita))} · ${c.b}</div>`:k===1?`<div class="tiny">${usd(VISITA_USD)}, se descuenta si aprueba el trabajo</div>`:k===3&&f?`<div class="tiny">${usd(f)}${c.mensual?' por mes':''}</div>`:''}</div><span></span></div>`).join('')}</div>`,
+  `${!c.vPaga&&c.visita<=0?`<button class="btn" onclick="COTIZ[${i}].vPaga=true;closeModal();VIEWS[view]();toast('Cobro de la visita registrado. Entró en Entradas y salidas.')">Cobrar visita</button>`:''}${c.ref&&PR(c.ref)?`<button class="btn" onclick="closeModal();abrirProyecto('${c.ref}')">${ico('plan')}Ver proyecto</button>`:''}${c.estado==='Enviada'?`<button class="btn pri" onclick="COTIZ[${i}].estado='Aprobada';closeModal();VIEWS[view]();toast('Aprobada. Se pidió la seña por WhatsApp.')">Marcar aprobada</button>`:c.estado==='Aprobada'&&!c.sena?`<button class="btn pri" onclick="COTIZ[${i}].sena=true;closeModal();VIEWS[view]();toast('Seña cobrada.')">Cobrar seña</button>`:`<button class="btn pri" onclick="closeModal();toast('Cotización enviada a ${esc(c.cli)} por WhatsApp')">${ico('msg')}Enviar</button>`}`);}
+function importarExcel(){modal('Importar desde Excel',`<div class="list-it" style="border:1.5px dashed var(--line);border-radius:12px;padding:12px"><div class="av">${ico('doc')}</div><div style="flex:1"><b>Cobros Pura Vida 2026.xlsx</b><div class="tiny">3 hojas · 148 filas</div></div><span class="pill p-ok">Leído</span></div>
+  <h4 style="margin:14px 0 6px">Así se ordenan las columnas</h4>${[['Cliente','Cliente'],['Fecha visita','Visita'],['Cotiz. visita / pagó','Visita cobrada'],['Diseño','Diseño'],['Cotización final','Cotización final'],['Entradas / Salidas','Entradas y salidas']].map(([a,b])=>`<div class="stat-row"><span class="muted">${a}</span><b>${b}</b></div>`).join('')}<p class="tiny">Lo que no se reconoce queda marcado para revisar a mano. Nada se pierde.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="closeModal();toast('148 filas importadas: 61 trabajos y 87 movimientos de plata')">Importar</button>`);}
+
+// Estados de cuenta
+function cuentaDe(cli){
+  const movs=[], m=HOY.getMonth();
+  const ab=abonos.find(a=>a.cli===cli); const debe={'Familia Castro':1,'Edificio Mirador':2,'Familia Costa':1}[cli]||0;
+  if(ab)[2,1,0].forEach((k,i)=>{const f=new Date(HOY.getFullYear(),m-k,1);movs.push({f,c:'Abono '+MESES[f.getMonth()]+' ('+ab.frec.toLowerCase()+')',d:ab.monto});if(k>=debe){const fp=new Date(f.getTime()+6*DAY);movs.push({f:fp,c:'Pago por transferencia',h:ab.monto});}});
+  proyectos.filter(p=>p.cli===cli&&p.cobrado>0).forEach(p=>{const t=presupuesto(p).total;movs.push({f:addD(p.ini-5),c:p.n+': hitos facturados',d:t*Math.max(p.cobrado,p.et==='obra'?.8:p.cobrado)});movs.push({f:addD(p.ini-3),c:p.n+': cobrado',h:t*p.cobrado});});
+  puestas.filter(p=>p.cli===cli&&p.estado==='Hecha').forEach(p=>{movs.push({f:addD(p.dia),c:'Puesta a punto '+p.id,d:p.precio});if(p.pago)movs.push({f:addD(p.dia+2),c:'Pago',h:p.precio});});
+  movs.sort((a,b)=>a.f-b.f);let s=0;movs.forEach(x=>{s+=(x.d||0)-(x.h||0);x.s=s;});
+  return {movs,saldo:s,fact:sum(movs,x=>x.d||0),cob:sum(movs,x=>x.h||0)};
+}
+const clientesCuenta = () => [...new Set([...abonos.map(a=>a.cli),...proyectos.filter(p=>p.cobrado>0).map(p=>p.cli),...puestas.filter(p=>p.estado==='Hecha').map(p=>p.cli)])];
+VIEWS.cuentas=()=>{
+  const cs=clientesCuenta().map(c=>({c,...cuentaDe(c)})).sort((a,b)=>b.saldo-a.saldo);
+  $('#pane').innerHTML=`<div class="grid3"><div class="card kpi"><div class="lab">${ico('cash')}Por cobrar</div><div class="val">${usd(sum(cs,x=>Math.max(0,x.saldo)))}</div><div class="d ${cs.some(x=>x.saldo>1)?'neg':''}">${cs.filter(x=>x.saldo>1).length} clientes con saldo</div></div><div class="card kpi"><div class="lab">${ico('check')}Cobrado en el mes</div><div class="val">${usd(sum(MOVS.filter(x=>x.tipo==='Entrada'&&x.fecha.getMonth()===HOY.getMonth()),x=>x.monto))}</div><div class="d n">abonos, hitos y visitas</div></div><div class="card kpi"><div class="lab">${ico('link')}Estados de cuenta</div><div class="val">${cs.length}</div><div class="d">cada cliente lo ve en su link</div></div></div>
+  <div class="card"><div class="tw"><table><tr><th>Cliente</th><th>Qué tiene</th><th class="num">Facturado</th><th class="num">Cobrado</th><th class="num">Saldo</th><th></th></tr>${cs.map(x=>`<tr class="cl" onclick="verCuenta('${esc(x.c)}')"><td><b>${x.c}</b></td><td class="tiny">${[abonos.some(a=>a.cli===x.c)?'Mantenimiento':'',proyectos.some(p=>p.cli===x.c)?'Proyecto':'',puestas.some(p=>p.cli===x.c)?'Puesta a punto':''].filter(Boolean).join(' · ')}</td><td class="num">${usd(x.fact)}</td><td class="num">${usd(x.cob)}</td><td class="num">${x.saldo>1?`<span class="pill p-bad">${usd(x.saldo)}</span>`:'<span class="pill p-ok">Al día</span>'}</td><td class="num"><button class="btn sm" onclick="event.stopPropagation();toast('Estado de cuenta enviado a ${esc(x.c)} por WhatsApp, con su link')">${ico('msg')}Mandar</button></td></tr>`).join('')}</table></div></div>`;
+};
+function verCuenta(cli){const x=cuentaDe(cli);modal('Estado de cuenta · '+cli,`<table><tr><th>Fecha</th><th>Concepto</th><th class="num">Debe</th><th class="num">Haber</th><th class="num">Saldo</th></tr>${x.movs.map(m=>`<tr><td>${fcorta(m.f)}</td><td>${m.c}</td><td class="num">${m.d?usd(m.d):''}</td><td class="num">${m.h?usd(m.h):''}</td><td class="num">${usd(m.s)}</td></tr>`).join('')}<tr class="tot"><td colspan="4">Saldo</td><td class="num">${usd(x.saldo)}</td></tr></table>`,
+  `<button class="btn" onclick="closeModal();portalCliente('${esc(cli)}')">${ico('eye')}Así lo ve el cliente</button>${x.saldo>1?`<button class="btn" onclick="closeModal();toast('Cobro registrado. ${esc(cli)} queda al día.')">Registrar cobro</button>`:''}<button class="btn pri" onclick="closeModal();toast('Estado de cuenta enviado a ${esc(cli)}')">${ico('msg')}Mandar por WhatsApp</button>`,true);}
+
+// Entradas y salidas
+let MOVS=[]; let filtroMov={tipo:'Todos',linea:'Todas'};
+(()=>{const add=(dd,tipo,concepto,cat,linea,medio,monto)=>MOVS.push({fecha:addD(-dd),tipo,concepto,cat,linea,medio,monto:Math.round(monto)});
+  abonos.forEach((a,i)=>{if(!['Familia Castro','Edificio Mirador','Familia Costa'].includes(a.cli))add(HOY.getDate()-5-(i%4)+ (HOY.getDate()<8?0:0),'Entrada','Abono '+MESES[HOY.getMonth()===0?11:HOY.getMonth()-1]+' · '+a.cli,'Cobro de mantenimiento','Mantenimiento','Transferencia',a.monto);});
+  add(3,'Entrada','Hito plantación · Jardín Ferrés','Cobro de proyecto','Proyecto','Transferencia',presupuesto(PR('P-118')).total*.4);
+  add(9,'Entrada','Seña 40% · Casa Arocena','Cobro de proyecto','Proyecto','Transferencia',presupuesto(PR('P-121')).total*.4);
+  add(6,'Entrada','Puesta a punto PP-39 · Familia Sosa','Cobro de puesta a punto','Puesta a punto','Efectivo',920);
+  [2,7,9,13,15,24].forEach((d,i)=>add(d,'Entrada','Visita técnica · '+['Gonzalo Techera','Diego Albanell','Familia Rodríguez','Hotel Costa Azul','Familia Methol','Martina Olivera'][i],'Cobro de visita','Proyecto','Transferencia',VISITA_USD));
+  add(2,'Salida','Vivero Carrasco · OC-341','Compra de plantas','Proyecto','Transferencia',sum(ordenes[ordenes.length-1].items,([id,q])=>q*S(id).costo));
+  add(5,'Salida','Nativas del Sur · OC-344','Compra de plantas','Proyecto','Transferencia',sum(ordenes[0].items,([id,q])=>q*S(id).costo));
+  [1,8,15,22].forEach(d=>add(d,'Salida','Jornales de la semana','Jornales','General','Transferencia',1680+((d*37)%240)));
+  [4,11,18,25].forEach(d=>add(d,'Salida','Combustible camioneta y máquinas','Combustible','General','Tarjeta',160+((d*13)%60)));
+  add(10,'Salida','Service bordeadora Stihl','Herramientas y maquinaria','Mantenimiento','Efectivo',85);
+  add(12,'Salida','Sustrato y mulch · Corralón Las Piedras','Materiales','Proyecto','Transferencia',940);
+  add(20,'Salida','Alquiler del depósito','Alquiler','General','Transferencia',450);
+  add(16,'Salida','Publicidad en Instagram','Publicidad','General','Tarjeta',120);
+  add(26,'Salida','Sueldos del equipo fijo','Sueldos','General','Transferencia',6200);
+  MOVS.sort((a,b)=>b.fecha-a.fecha);})();
+VIEWS.caja=()=>{
+  const ms=MOVS.filter(m=>(filtroMov.tipo==='Todos'||m.tipo===filtroMov.tipo)&&(filtroMov.linea==='Todas'||m.linea===filtroMov.linea));
+  const ent=sum(MOVS.filter(m=>m.tipo==='Entrada'),m=>m.monto),sal=sum(MOVS.filter(m=>m.tipo==='Salida'),m=>m.monto);
+  const cats={};MOVS.filter(m=>m.tipo==='Salida').forEach(m=>cats[m.cat]=(cats[m.cat]||0)+m.monto);const cs=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const lin=['Proyecto','Puesta a punto','Mantenimiento'].map(l=>[l,sum(MOVS.filter(m=>m.tipo==='Entrada'&&m.linea===l),m=>m.monto)]);
+  $('#pane').innerHTML=`<div class="tabs"><select class="inp" onchange="filtroMov.tipo=this.value;VIEWS.caja()">${['Todos','Entrada','Salida'].map(t=>`<option ${filtroMov.tipo===t?'selected':''} value="${t}">${t==='Todos'?'Entradas y salidas':t==='Entrada'?'Solo entradas':'Solo salidas'}</option>`).join('')}</select><select class="inp" onchange="filtroMov.linea=this.value;VIEWS.caja()">${['Todas','Proyecto','Puesta a punto','Mantenimiento','General'].map(t=>`<option ${filtroMov.linea===t?'selected':''}>${t}</option>`).join('')}</select><button class="btn" style="margin-left:auto" onclick="importarExcel()">${ico('doc')}Importar Excel</button><button class="btn pri" onclick="nuevoMov()">${ico('plus')}Nuevo movimiento</button></div>
+  <div class="grid4"><div class="card kpi"><div class="lab">${ico('cash')}Entradas, 30 días</div><div class="val">${usd(ent)}</div></div><div class="card kpi"><div class="lab">${ico('cash')}Salidas, 30 días</div><div class="val">${usd(sal)}</div></div><div class="card kpi" style="background:var(--ok-soft)"><div class="lab">Quedó</div><div class="val" style="color:var(--ok)">${usd(ent-sal)}</div></div><div class="card kpi"><div class="lab">${ico('plan')}Entró por línea</div>${lin.map(([l,v])=>`<div class="stat-row" style="padding:3px 0"><span class="tiny">${l}</span><b style="font-size:13px">${usd(v)}</b></div>`).join('')}</div></div>
+  <div class="grid2"><div class="card"><div class="tw"><table><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Línea</th><th>Medio</th><th class="num">Monto</th></tr>${ms.map(m=>`<tr><td>${fcorta(m.fecha)}</td><td><b>${m.concepto}</b></td><td class="tiny">${m.cat}</td><td class="tiny">${m.linea}</td><td class="tiny">${m.medio}</td><td class="num"><b style="color:${m.tipo==='Entrada'?'var(--ok)':'var(--ink)'}">${m.tipo==='Entrada'?'+':'-'} ${usd(m.monto)}</b></td></tr>`).join('')}</table></div></div>
+  <div class="card"><h3>${ico('chart')}En qué se va la plata</h3>${cs.map(([k,v])=>`<div style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><span>${k}</span><b>${usd(v)}</b></div><div class="bar"><i style="width:${v/cs[0][1]*100}%"></i></div></div>`).join('')}</div></div>`;
+};
+function nuevoMov(){modal('Nuevo movimiento',`<div class="frow"><label class="f">Tipo<select id="nmt"><option>Entrada</option><option selected>Salida</option></select></label><label class="f">Monto US$<input id="nmm" type="number" value="250"></label></div><label class="f">Concepto<input id="nmc" value="Compra de herramientas"></label><div class="frow"><label class="f">Categoría<select id="nmk">${['Compra de plantas','Materiales','Jornales','Combustible','Herramientas y maquinaria','Cobro de proyecto','Cobro de mantenimiento','Cobro de puesta a punto','Cobro de visita','Otros'].map(c=>`<option>${c}</option>`).join('')}</select></label><label class="f">Línea<select id="nml">${['General','Proyecto','Puesta a punto','Mantenimiento'].map(c=>`<option>${c}</option>`).join('')}</select></label></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="MOVS.unshift({fecha:new Date(),tipo:$('#nmt').value,concepto:$('#nmc').value,cat:$('#nmk').value,linea:$('#nml').value,medio:'Transferencia',monto:+$('#nmm').value||0});closeModal();VIEWS[view]();toast('Movimiento registrado')">Guardar</button>`);}
+
+// ================= Portal del cliente =================
+let SOLIC = [
+  {id:1,cli:'Familia Castro',tipo:'Reclamo',txt:'El riego del cantero de la entrada no está funcionando desde el sábado.',dias:0,estado:'Nuevo',asig:''},
+  {id:2,cli:'Edificio Mirador',tipo:'Estado de cuenta',txt:'Necesitamos el estado de cuenta para la reunión de copropietarios.',dias:1,estado:'Nuevo',asig:''},
+  {id:3,cli:'Familia Iglesias',tipo:'Pedido extra',txt:'¿Pueden podar el ceibo del fondo en la próxima visita?',dias:2,estado:'En curso',asig:'Agustín Méndez'},
+  {id:4,cli:'Lucía Bentancor',tipo:'Consulta',txt:'¿Conviene sumar más lavanda en el cantero del frente?',dias:4,estado:'Resuelto',asig:'Lolo Diaz'},
+  {id:5,cli:'Club de Golf del Este',tipo:'Reclamo',txt:'Quedaron restos de poda en el estacionamiento.',dias:6,estado:'Resuelto',asig:'Agustín Méndez'},
+];
+VIEWS.solicitudes=()=>{
+  $('#pane').innerHTML=`<div class="row" style="margin-bottom:14px"><span class="muted">Los clientes piden, reclaman o consultan desde su link, con una ficha. Llega acá ordenado, en vez de mensajes sueltos de WhatsApp.</span></div>
+  <div class="grid3"><div class="card kpi"><div class="lab">${ico('alert')}Nuevos</div><div class="val">${SOLIC.filter(s=>s.estado==='Nuevo').length}</div></div><div class="card kpi"><div class="lab">${ico('cal')}En curso</div><div class="val">${SOLIC.filter(s=>s.estado==='En curso').length}</div></div><div class="card kpi"><div class="lab">${ico('check')}Resueltos en el mes</div><div class="val">${SOLIC.filter(s=>s.estado==='Resuelto').length+11}</div><div class="d">respuesta promedio: 5 horas</div></div></div>
+  <div class="card">${SOLIC.map((s,i)=>`<div class="list-it"><div class="av" style="background:${s.tipo==='Reclamo'?'var(--bad-soft);color:var(--bad)':'var(--brand-soft)'}">${ico(s.tipo==='Reclamo'?'alert':s.tipo==='Estado de cuenta'?'cash':'msg')}</div><div style="flex:1"><b>${s.cli}</b> <span class="pill p-n">${s.tipo}</span><div class="muted" style="font-size:14px">${s.txt}</div><div class="tiny">Hace ${s.dias?s.dias+' día'+(s.dias>1?'s':''):'un rato'}${s.asig?' · lo tiene '+s.asig:''}</div></div>
+    <span class="pill ${s.estado==='Nuevo'?'p-bad':s.estado==='En curso'?'p-warn':'p-ok'}">${s.estado}</span>${s.estado!=='Resuelto'?`<select class="inp" onchange="SOLIC[${i}].asig=this.value;SOLIC[${i}].estado='En curso';VIEWS.solicitudes();renderNav();toast('Asignado a '+this.value+'. Le llega por WhatsApp.')"><option value="">Asignar a</option>${PERSONAS.slice(0,5).concat([{n:'Lolo Diaz'},{n:'Valentina Ruiz'}]).map(p=>`<option ${p.n===s.asig?'selected':''}>${p.n}</option>`).join('')}</select><button class="btn sm pri" onclick="SOLIC[${i}].estado='Resuelto';VIEWS.solicitudes();renderNav();toast('Resuelto. ${esc(s.cli)} recibe el aviso en su link.')">Resuelto</button>`:''}</div>`).join('')}</div>`;
+};
+VIEWS.links=()=>{
+  $('#pane').innerHTML=`<div class="card"><h3>${ico('link')}Links de clientes<span class="act tiny">Cada cliente con mantenimiento tiene su link: no hace falta usuario ni contraseña</span></h3><div class="tw"><table><tr><th>Cliente</th><th>Mantenimiento</th><th>Próxima visita</th><th class="num">Saldo</th><th></th></tr>${abonos.map(a=>{const c=cuentaDe(a.cli);return `<tr><td><b>${a.cli}</b><div class="tiny">puravida.customerp.dev/c/${a.cli.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z]+/g,'-')}</div></td><td>${a.frec}</td><td style="text-transform:capitalize">${fdia(fechaDia(a.dia)>=HOY?fechaDia(a.dia):new Date(fechaDia(a.dia).getTime()+7*DAY))}</td><td class="num">${c.saldo>1?`<span class="pill p-bad">${usd(c.saldo)}</span>`:'<span class="pill p-ok">Al día</span>'}</td><td class="num" style="white-space:nowrap"><button class="btn sm" onclick="portalCliente('${esc(a.cli)}')">${ico('eye')}Ver</button> <button class="btn sm pri" onclick="toast('Link enviado a ${esc(a.cli)} por WhatsApp')">${ico('msg')}Mandar link</button></td></tr>`;}).join('')}</table></div></div>`;
+};
+function portalCliente(cli){
+  const a=abonos.find(x=>x.cli===cli), c=cuentaDe(cli), prox=a?fdia(fechaDia(a.dia)>=HOY?fechaDia(a.dia):new Date(fechaDia(a.dia).getTime()+7*DAY)):null;
+  modal('Así lo ve '+cli,`<div style="max-width:380px;margin:0 auto;border:8px solid var(--brand-deep);border-radius:28px;overflow:hidden;background:var(--cream)">
+    <div style="background:var(--brand-deep);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px"><svg width="26" height="26" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#fff"/><path d="M20 5c5 4 9 9 9 15a9 9 0 0 1-18 0c0-6 4-11 9-15z" fill="#1E8A3C"/></svg><b>Pura Vida · Tu jardín</b></div>
+    <div style="padding:14px">
+      <div style="font-size:18px;font-weight:800">Hola, ${cli.replace('Familia ','familia ')}.</div>
+      ${a?`<div class="card" style="margin-top:10px;padding:12px"><div class="tiny">Próxima visita</div><b style="text-transform:capitalize">${prox}</b><div class="tiny">Mantenimiento ${a.frec.toLowerCase()} · ${a.m2} m²</div></div>
+      <div class="card" style="margin-top:8px;padding:12px"><div class="tiny">Última visita</div><b>Corte, bordes, revisión de riego y fertilización</b><div class="tiny" style="margin-top:4px">${ico('eye')} Ver las 6 fotos</div></div>`:''}
+      <div class="card" style="margin-top:8px;padding:12px"><div class="row" style="justify-content:space-between"><div><div class="tiny">Estado de cuenta</div><b style="font-size:18px;color:${c.saldo>1?'var(--bad)':'var(--ok)'}">${c.saldo>1?usd(c.saldo)+' a pagar':'Al día'}</b></div><button class="btn sm" onclick="toast('Se abre el estado de cuenta completo')">Ver detalle</button></div>${c.saldo>1?`<div class="tiny" style="margin-top:6px">Transferencia a BROU 001234567-00001 · Pura Vida Paisajismo</div>`:''}</div>
+      <div class="card" style="margin-top:8px;padding:12px" id="pform"><b>¿Necesitás algo?</b><label class="f" style="margin-top:8px">Qué es<select id="pft"><option>Reclamo</option><option>Pedido extra</option><option>Consulta</option><option>Estado de cuenta</option></select></label><label class="f">Contanos<textarea id="pfx" rows="3">Se secaron dos plantas del cantero del fondo.</textarea></label><button class="btn pri" style="width:100%;justify-content:center" onclick="enviarSolic('${esc(cli)}')">Enviar</button></div>
+    </div></div>`,'',false);
+}
+function enviarSolic(cli){SOLIC.unshift({id:Date.now(),cli,tipo:$('#pft').value,txt:$('#pfx').value,dias:0,estado:'Nuevo',asig:''});closeModal();renderNav();if(view==='solicitudes')VIEWS.solicitudes();toast('Pedido recibido. Le llegó a Pura Vida y el cliente ve el estado en su link.');}
+
 // ---------- Búsqueda ----------
 function openK(){
   modal('Buscar',`<input id="kq" placeholder="Ferrés, Stipa, Carrasco..." style="width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:10px"><div id="kr"></div>`);
@@ -769,6 +1030,7 @@ function openK(){
 }
 $('#openK').onclick=openK;
 
+pintarUsuario();
 go('inicio');
 </script>
 </body>

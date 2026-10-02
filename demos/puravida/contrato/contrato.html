@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Contrato CustomERP · Pura Vida Paisajismo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:0}
+:root{--rojo:#EC3314;--papel:#F2EDE6;--tinta:#1A1916;--gris:#5E5A54;--tenue:#8D877F;--linea:#D6CFC5}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;font-family:"IBM Plex Sans",system-ui,sans-serif;color:var(--tinta);font-size:9.6pt;line-height:1.5}
+.page{width:210mm;height:297mm;position:relative;overflow:hidden;page-break-after:always;background:var(--papel);padding:17mm 17.5mm 20mm}
+.page:last-child{page-break-after:auto}
+h1,h2,h3{margin:0;font-weight:700}
+h2{font-size:15.5pt;margin:0 0 3.5mm;letter-spacing:-.01em}
+h2::after{content:".";color:var(--rojo)}
+h3{font-size:10.2pt;margin-bottom:1.5mm}
+p{margin:0 0 3mm}
+.mono{font-family:"IBM Plex Mono",monospace}
+.lab{font-family:"IBM Plex Mono",monospace;font-size:7pt;letter-spacing:.2em;text-transform:uppercase;color:var(--gris)}
+.sec{margin-top:8mm}
+/* encabezado y pie */
+.head{display:flex;justify-content:space-between;align-items:center;border-bottom:1.5px solid var(--tinta);padding-bottom:2.8mm;margin-bottom:8mm}
+.logo{display:inline-flex;align-items:center;font-weight:700;font-size:13pt;letter-spacing:-.02em}
+.logo i{display:inline-block;width:4.2mm;height:4.2mm;background:var(--rojo);border-radius:1mm;margin-left:.4mm;margin-top:1mm}
+.foot{position:absolute;left:17.5mm;right:17.5mm;bottom:10mm;border-top:1px solid var(--linea);padding-top:2.5mm;display:flex;justify-content:space-between;font-size:7.5pt;color:var(--gris)}
+/* portada */
+.cover{padding:0}
+.band{background:var(--rojo);color:#fff;padding:15mm 17.5mm 10mm}
+.biglogo{display:inline-flex;align-items:flex-end;font-weight:700;font-size:25pt;letter-spacing:-.02em}
+.biglogo span{display:inline-grid;place-items:end center;width:9mm;height:9mm;background:#fff;color:var(--rojo);border-radius:2mm;font-size:5.5pt;padding-bottom:.8mm;margin-left:.6mm;margin-bottom:1.8mm;font-weight:700}
+.band h1{font-size:30pt;line-height:1.05;margin:12mm 0 4mm;letter-spacing:-.02em}
+.band .sub{font-size:13pt;line-height:1.45;max-width:150mm;opacity:.95}
+.meta{border-top:1.5px solid #fff;margin-top:9mm;padding-top:4mm;display:flex;gap:10mm}
+.meta .lab{color:#fff;opacity:.9;font-size:6.5pt;margin-bottom:1mm}
+.meta div{font-size:9.5pt}
+.cover .body{padding:6mm 17.5mm 0}.cover td{padding:1.7mm 3mm}.cover .sec{margin-top:5mm}
+/* tablas */
+table{width:100%;border-collapse:collapse}
+th{background:var(--tinta);color:#fff;font-family:"IBM Plex Mono",monospace;font-size:7pt;letter-spacing:.14em;text-transform:uppercase;text-align:left;padding:2.6mm 3mm;font-weight:500}
+td{padding:2.6mm 3mm;border-bottom:1px solid var(--linea);vertical-align:top;font-size:9.2pt}
+td:first-child{font-weight:700}
+td.n{text-align:right;font-family:"IBM Plex Mono",monospace;font-weight:500;white-space:nowrap}
+tr.tot td{font-weight:700;border-bottom:1.5px solid var(--tinta)}
+/* bloques */
+.demo{display:inline-flex;align-items:center;gap:4mm;background:var(--tinta);color:#fff;padding:3.2mm 5mm;margin-top:1.5mm}
+.demo .lab{color:#A9A39B;font-size:6.5pt}
+.demo b{font-family:"IBM Plex Mono",monospace;font-size:11.5pt}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm;margin-bottom:5mm}
+.stat{border-top:2px solid var(--tinta);padding-top:2mm}
+.stat b{display:block;font-family:"IBM Plex Mono",monospace;font-size:19pt;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.stat span{font-size:8.2pt;color:var(--gris);line-height:1.35;display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4mm}
+.box{border:1px solid var(--tinta);background:#fff;padding:4mm 4.5mm}
+.box.r{border-color:var(--rojo)}
+.box p,.box li{font-size:9pt}
+.box .lab{font-size:6.5pt;margin-bottom:1.5mm}
+.box.r .lab{color:var(--rojo)}
+.box .num{font-family:"IBM Plex Mono",monospace;font-size:7.5pt;color:var(--rojo);margin-bottom:1mm}
+.chips{display:flex;flex-wrap:wrap;gap:2mm 0;align-items:center;margin-bottom:5mm}
+.chip{border:1px solid var(--tinta);background:#fff;padding:1.3mm 2.5mm;font-size:8.2pt;font-weight:600}
+.arr{color:var(--rojo);font-weight:700;margin:0 2mm;font-family:"IBM Plex Mono",monospace}
+ul{margin:0;padding-left:4.5mm}
+li{margin-bottom:1.2mm}
+li::marker{color:var(--tinta)}
+.note{font-size:8.2pt;color:var(--gris);margin-top:2.5mm}
+.price{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:3mm}
+.price .box b.big{display:block;font-family:"IBM Plex Mono",monospace;font-size:22pt;font-weight:700;letter-spacing:-.02em;margin:1mm 0 1.5mm}
+.sign{border-top:1.5px solid var(--tinta);margin-top:7mm;padding-top:5mm;display:flex;gap:5mm;align-items:center}
+.clogo{width:19mm;height:19mm;background:var(--rojo);border-radius:4mm;position:relative;flex:none}
+.clogo::before{content:"";position:absolute;left:3mm;top:3mm;width:13mm;height:13mm;border-radius:50%;border:3.2mm solid #fff;border-right-color:transparent;box-sizing:border-box;transform:rotate(-45deg)}
+.clogo span{position:absolute;right:2.5mm;bottom:4mm;background:#fff;color:var(--rojo);font-size:4.5pt;font-weight:700;padding:.3mm .7mm;border-radius:.6mm}
+</style>
+<style>
+.cl{margin-bottom:4.2mm}
+.cl h3{font-size:10.4pt;display:flex;gap:2.5mm;align-items:baseline;margin-bottom:1.2mm}
+.cl h3 span{font-family:"IBM Plex Mono",monospace;color:var(--rojo);font-size:8.5pt}
+.cl p{margin:0 0 1.6mm;text-align:justify}
+.blank{display:inline-block;min-width:32mm;border-bottom:1px solid var(--tinta);height:3.6mm;vertical-align:-1mm}
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:5mm}
+.parts .box p{margin:0 0 1mm}
+.mods td{font-size:8.8pt;padding:2mm 3mm}
+.nuevo{display:inline-block;background:var(--rojo);color:#fff;font-family:"IBM Plex Mono",monospace;font-size:6pt;letter-spacing:.1em;padding:.4mm 1.4mm;margin-left:1.5mm;vertical-align:1px}
+.firmas{display:grid;grid-template-columns:1fr 1fr;gap:10mm;margin-top:14mm}
+.firma{border-top:1.5px solid var(--tinta);padding-top:2.5mm;font-size:9pt}
+.firma .lab{display:block;margin-bottom:3mm}
+.firma .linea{border-bottom:1px solid var(--tinta);height:6mm;margin-bottom:1.5mm}
+.ini{font-family:"IBM Plex Mono",monospace}
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="page cover">
+  <div class="band">
+    <div class="biglogo">Custom<span>ERP</span></div>
+    <h1>Contrato de desarrollo<br>y servicio del sistema</h1>
+    <div class="sub">Sistema de gestión a medida de Pura Vida Paisajismo.</div>
+    <div class="meta">
+      <div><div class="lab">Cliente</div>Pura Vida Paisajismo</div>
+    </div>
+  </div>
+  <div class="body">
+    <div class="cl"><h3><span>01</span>Objeto</h3><p>CustomERP desarrolla, pone en marcha y mantiene un sistema de gestión a medida para Pura Vida Paisajismo, con los módulos que se detallan en la cláusula 2. El sistema ordena las tres líneas del negocio (proyectos, puestas a punto y mantenimiento) y la administración que comparten: cotizaciones, cobranzas, facturas y movimientos de plata.</p><p>Funciona en la web, desde la computadora o el celular, con una dirección propia. Cada persona entra con su usuario y ve lo que le corresponde: administradores, empleados, jefes de proyecto y jornaleros. Los clientes acceden por un link propio, sin usuario ni contraseña.</p></div>
+
+
+  </div>
+  <div class="foot"><span>CustomERP · Contrato · Pura Vida Paisajismo</span><span>Iniciales <span class="ini">____ ____</span> · 1 de 4</span></div>
+</section>
+
+<!-- 1b -->
+<section class="page">
+  <div class="head"><span class="logo">Custom<i></i></span><span class="lab">Contrato · Pura Vida Paisajismo</span></div>
+  <div class="cl"><h3><span>02</span>Módulos incluidos</h3>
+    <table class="mods">
+      <tr><th style="width:25%">Módulo</th><th>Qué incluye</th></tr>
+      <tr><td>Inicio</td><td>El día del estudio: obras, puestas a punto y mantenimientos, quién está dónde, clima de la semana con alertas y consultas nuevas.</td></tr>
+      <tr><td>Comercial</td><td>Consultas de Instagram, WhatsApp y la web con su canal de origen, seguimiento hasta la aprobación y ficha de cada cliente.</td></tr>
+      <tr><td>Proyectos y puestas a punto</td><td>Proyectos con plano por zonas, paleta vegetal, técnica o sistema de cada obra, plantas y materiales, cronograma, costos contra presupuesto y cobro por hitos. Puestas a punto: trabajos de una sola vez.</td></tr>
+      <tr><td>Mantenimiento</td><td>Abonos semanales, quincenales o mensuales, agenda de visitas, checklist con reporte al cliente, huertas y cosechas, y calendario de estación.</td></tr>
+      <tr><td>Cobros y cotizaciones<span class="nuevo">NUEVO</span></td><td>De la visita (fecha y cobro) al diseño y la cotización final, seña y saldo. Estados de cuenta por cliente y entradas y salidas de plata. Migración de los Excel actuales.</td></tr>
+      <tr><td>Portal del cliente<span class="nuevo">NUEVO</span></td><td>Un link para cada cliente con su estado de cuenta, próximas visitas y reportes, y una ficha para pedidos, reclamos y consultas que llegan ordenados al estudio.</td></tr>
+      <tr><td>Plantas</td><td>Paleta vegetal, stock del depósito, faltantes para las obras y pedidos a viveros.</td></tr>
+      <tr><td>Equipo</td><td>Planificación diaria por persona, con horario y lugar, y aviso cuando alguien queda en dos lugares. Jornaleros con sus jornales, cuadrillas, horas por obra y maquinaria. "Mi día" en el celular de cada trabajador.</td></tr>
+      <tr><td>Usuarios y accesos</td><td>Roles de administrador, administración, jefe de proyecto y jardinero o jornalero, con lo que puede ver y hacer cada uno.</td></tr>
+      <tr><td>Resultados</td><td>Estado de resultados por línea de negocio y margen de cada obra.</td></tr>
+    </table>
+  </div>
+
+  <div class="cl"><h3><span>03</span>Alcance y cambios</h3><p>El trabajo comprende lo detallado en la cláusula 2. Lo que no figure allí se cotiza aparte y solo se realiza con la aprobación previa y por escrito del cliente. Las modificaciones y mejoras leves están incluidas en la mensualidad, según la cláusula 6.</p><p>Qué datos son obligatorios y cuáles opcionales en cada pantalla, y los detalles de funcionamiento de cada módulo, se definen entre las partes durante la puesta en marcha.</p></div>
+
+  <div class="foot"><span>CustomERP · Contrato · Pura Vida Paisajismo</span><span>Iniciales <span class="ini">____ ____</span> · 2 de 4</span></div>
+</section>
+
+<!-- 2 -->
+<section class="page">
+  <div class="head"><span class="logo">Custom<i></i></span><span class="lab">Contrato · Pura Vida Paisajismo</span></div>
+
+  <div class="cl"><h3><span>04</span>Precio</h3>
+    <div class="price" style="margin-top:2mm">
+      <div class="box"><div class="lab">Matrícula de implementación</div><b class="big">USD <span class="blank" style="min-width:22mm;height:7mm"></span></b><p style="margin:0">50% de seña a la firma de este contrato y 50% en el go live.</p></div>
+      <div class="box r"><div class="lab">Mensualidad</div><b class="big">USD <span class="blank" style="min-width:22mm;height:7mm"></span></b><p style="margin:0">Por mes, a partir del go live, mientras el contrato esté vigente.</p></div>
+    </div>
+    <p>Se entiende por go live el día en que el sistema pasa a usarse en la operación diaria del estudio. La mensualidad se abona dentro de los primeros diez días de cada mes.</p>
+  </div>
+
+  <div class="cl"><h3><span>05</span>Puesta en marcha</h3><p>Con la seña, CustomERP comienza el trabajo. El plazo estimado hasta el go live es de cinco semanas desde que el cliente entrega la información de la cláusula 8. El sistema se prueba con el equipo antes del go live.</p></div>
+
+  <div class="cl"><h3><span>06</span>Qué incluye la mensualidad</h3><p>Soporte cuando algo no funciona o hay una duda; modificaciones y mejoras leves; ayuda para migrar datos o conectar aplicaciones; y el alojamiento del sistema y sus datos.</p><p>La mensualidad es la garantía de que CustomERP sigue presente después de la entrega: el sistema no queda congelado y se ajusta a medida que el estudio lo usa.</p></div>
+
+  <div class="cl"><h3><span>07</span>Plazo del contrato</h3><p>Este contrato tiene un plazo de <span class="blank" style="min-width:18mm"></span> meses a partir de su firma. Al vencer, se renueva por períodos iguales salvo que alguna de las partes avise lo contrario con treinta días de anticipación.</p></div>
+
+  <div class="cl"><h3><span>08</span>Lo que aporta el cliente</h3><p>Los Excel actuales de cobros y de entradas y salidas; la lista de clientes con sus abonos; el equipo y los jornaleros con sus jornales; las plantas y los viveros con los que trabaja; y una persona como referente. Los costos de servicios de terceros (por ejemplo, mensajería o dominios propios) no están incluidos en este contrato.</p></div>
+
+  <div class="foot"><span>CustomERP · Contrato · Pura Vida Paisajismo</span><span>Iniciales <span class="ini">____ ____</span> · 3 de 4</span></div>
+</section>
+
+<!-- 3 -->
+<section class="page">
+  <div class="head"><span class="logo">Custom<i></i></span><span class="lab">Contrato · Pura Vida Paisajismo</span></div>
+
+  <div class="cl"><h3><span>09</span>Confidencialidad</h3><p>Toda la información que el cliente comparta es de uso exclusivo de su negocio y de la puesta en marcha de su sistema. CustomERP no la comparte ni la usa con otras personas, empresas o aplicaciones, ni de ninguna otra manera, durante la vigencia del contrato ni después.</p><p>A su vez, el sistema por dentro, cómo está construido y la documentación que se entregue son confidenciales y el cliente no los comparte con terceros.</p></div>
+
+  <div class="cl"><h3><span>10</span>Los datos son del cliente</h3><p>Toda la información cargada en el sistema pertenece al cliente. Si el contrato termina, CustomERP le entrega sus datos exportados, sin costo, dentro de los treinta días siguientes.</p></div>
+
+  <div class="cl"><h3><span>11</span>El sistema</h3><p>El desarrollo, el código y la documentación del sistema son de CustomERP. El cliente tiene derecho a usarlo mientras el contrato esté vigente y al día.</p></div>
+
+  <div class="cl"><h3><span>12</span>Terminación</h3><p>Cualquiera de las partes puede terminar el contrato avisando por escrito con treinta días de anticipación. Los importes ya abonados no se devuelven, y se aplica lo previsto en la cláusula 10 sobre los datos.</p></div>
+
+  <div class="cl"><h3><span>13</span>Comunicaciones y jurisdicción</h3><p>Las comunicaciones entre las partes son válidas por correo electrónico o WhatsApp a los contactos indicados en este contrato. Para cualquier diferencia, las partes se someten a la ley y los tribunales de Montevideo, Uruguay.</p></div>
+
+  <p style="margin-top:6mm">En prueba de conformidad, las partes firman dos ejemplares de un mismo tenor.</p>
+
+  <div class="firmas">
+    <div class="firma"><span class="lab">El proveedor</span><b style="font-size:11pt">CustomERP</b><div style="color:var(--gris)">Representado por Guillermo Stewart</div><div style="color:var(--gris)">sales@customerp.dev · 093 836 535</div><div class="linea" style="margin-top:14mm"></div><b>Guillermo Stewart</b><div style="color:var(--gris)">Firma</div></div>
+    <div class="firma"><span class="lab">El cliente</span><b style="font-size:11pt">Pura Vida Paisajismo</b><div style="color:var(--gris)">Representado por Lolo Diaz</div><div style="color:var(--gris)">Contacto: <span class="blank" style="min-width:30mm"></span></div><div class="linea" style="margin-top:14mm"></div><b>Lolo Diaz</b><div style="color:var(--gris)">Firma</div></div>
+  </div>
+
+  <div class="foot"><span>CustomERP · Contrato · Pura Vida Paisajismo</span><span>Iniciales <span class="ini">____ ____</span> · 4 de 4</span></div>
+</section>
+</body>
+
+</html>
