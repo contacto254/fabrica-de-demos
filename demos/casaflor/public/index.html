@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Casa Flor · Gestión del hotel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F1EA; --panel:#FFFFFF; --ink:#22302F; --ink-2:#5B6867; --ink-3:#9AA4A2; --line:#E6E0D5;
+  --brand:#5E8F92; --brand-deep:#2D4B4D; --brand-soft:#E3EEEE; --sage:#8FB5B8; --sand:#E9DFCF; --wood:#B08D57; --wood-soft:#F4ECDD;
+  --ok:#3D8B62; --ok-soft:#E1F1E7; --warn:#C68A22; --warn-soft:#FBEFD6; --bad:#C2513E; --bad-soft:#F9E3DE; --sky:#4A7FB0; --sky-soft:#E4EEF7;
+  --r:10px; --r-lg:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:"Nunito Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:14.5px}
+button,input,select,textarea{font:inherit;color:inherit}
+.ic{width:1.15em;height:1.15em;flex:none;vertical-align:-.15em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.app{display:grid;grid-template-columns:236px 1fr;height:100vh}
+aside{background:var(--brand-deep);color:#E5EEEE;display:flex;flex-direction:column;padding:18px 12px;overflow:auto}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px 18px}
+.logo b{display:block;font-size:17px;font-weight:800;letter-spacing:3px}
+.logo small{display:block;font-size:10.5px;color:#A9C4C5;letter-spacing:2.5px;text-transform:uppercase;margin-top:2px}
+.nav{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:9px 10px;border-radius:var(--r);cursor:pointer;color:#E5EEEE;text-align:left;font-weight:600;font-size:14.5px}
+.nav:hover{background:rgba(255,255,255,.07)}
+.nav.on{background:#fff;color:var(--brand-deep)}
+.nav .cnt{margin-left:auto;background:var(--sand);color:var(--brand-deep);border-radius:20px;font-size:11px;padding:0 7px;font-weight:800}
+.side-foot{margin-top:auto;padding:12px 10px 4px;font-size:12.5px;color:#A9C4C5;border-top:1px solid rgba(255,255,255,.12)}
+.side-foot .row{margin-top:6px}
+main{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+header{display:flex;align-items:center;gap:12px;padding:12px 24px;background:var(--panel);border-bottom:1px solid var(--line)}
+header h1{font-size:21px;margin:0;font-weight:800}
+header .sub{color:var(--ink-3);font-size:13px}
+.search{margin-left:auto;display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:var(--r);padding:7px 12px;color:var(--ink-3);cursor:pointer;min-width:220px;background:var(--bg)}
+.search kbd{margin-left:auto;font-size:11px;border:1px solid var(--line);border-radius:5px;padding:0 5px;background:#fff}
+.user{display:flex;align-items:center;gap:8px;font-weight:600}
+.av{width:32px;height:32px;border-radius:50%;background:var(--brand-soft);color:var(--brand-deep);display:grid;place-items:center;font-weight:800;font-size:12px;flex:none}
+.content{padding:18px 24px 40px;overflow:auto;flex:1}
+.mtabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:-4px 0 18px;overflow-x:auto}
+.mtab{border:0;background:none;padding:10px 14px;font-weight:700;color:var(--ink-2);border-bottom:2.5px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+.mtab.on{color:var(--brand-deep);border-color:var(--brand)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1.45fr 1fr;gap:14px;margin-bottom:14px}
+.grid2e{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px}
+.card h3{margin:0 0 12px;font-size:15.5px;display:flex;align-items:center;gap:8px;font-weight:800}
+.card h3 .act{margin-left:auto}
+.kpi .lab{color:var(--ink-2);font-size:13px;display:flex;align-items:center;gap:6px}
+.kpi .val{font-size:26px;font-weight:800;margin:6px 0 2px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:12.5px;color:var(--ok);font-weight:700}
+.kpi .d.neg{color:var(--bad)}.kpi .d.n{color:var(--ink-3)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--ink-3);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:700;white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tr.cl{cursor:pointer}tr.cl:hover td{background:#FAF8F3}
+tr.tot td{font-weight:800;background:#FAF8F3;border-top:2px solid var(--line)}
+.num{text-align:right;white-space:nowrap}
+.muted{color:var(--ink-2)}.tiny{font-size:12.5px;color:var(--ink-3)}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.p-ok{background:var(--ok-soft);color:var(--ok)}.p-warn{background:var(--warn-soft);color:#93650F}.p-bad{background:var(--bad-soft);color:var(--bad)}.p-n{background:#EFEBE3;color:var(--ink-2)}.p-br{background:var(--brand-soft);color:var(--brand-deep)}.p-wood{background:var(--wood-soft);color:#7D6235}.p-sky{background:var(--sky-soft);color:var(--sky)}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;border-radius:var(--r);padding:8px 13px;cursor:pointer;font-weight:700;font-size:13.5px;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn.pri{background:var(--brand-deep);border-color:var(--brand-deep);color:#fff}
+.btn.pri:hover{background:#223A3C}
+.btn.sm{padding:5px 9px;font-size:12.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.tab{border:1px solid var(--line);background:#fff;border-radius:20px;padding:6px 13px;cursor:pointer;font-weight:700;font-size:13px;color:var(--ink-2)}
+.tab.on{background:var(--brand-deep);border-color:var(--brand-deep);color:#fff}
+.inp{border:1px solid var(--line);border-radius:var(--r);padding:7px 11px;background:#fff}
+.bar{height:8px;background:#EFEBE3;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brand);border-radius:6px}
+.row{display:flex;align-items:center;gap:10px}
+.list-it{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.list-it:last-child{border-bottom:0}
+.hero{background:linear-gradient(115deg,var(--brand-deep),#4E7E81);color:#fff;border-radius:var(--r-lg);padding:20px 22px;margin-bottom:14px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;position:relative;overflow:hidden}
+.hero h2{margin:0 0 4px;font-size:23px;font-weight:800}
+.hero p{margin:0;color:#D6E6E6}
+.hero .flor{position:absolute;right:-30px;top:-30px;opacity:.13}
+.hero .btn{margin-left:auto;color:var(--ink);position:relative}
+.overlay{position:fixed;inset:0;background:rgba(34,48,47,.45);display:grid;place-items:center;z-index:50;padding:20px}
+.modal{background:#fff;border-radius:var(--r-lg);width:min(560px,100%);max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal.wide{width:min(820px,100%)}
+.modal .mh{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;z-index:2}
+.modal .mh h2{margin:0;font-size:19px;font-weight:800}
+.modal .mb{padding:18px 20px}
+.modal .mf{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;position:sticky;bottom:0;background:#fff;flex-wrap:wrap}
+.x{margin-left:auto;border:0;background:none;cursor:pointer;color:var(--ink-3);padding:4px}
+label.f{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2);margin:0 0 12px}
+label.f input,label.f select,label.f textarea{display:block;width:100%;margin-top:5px;border:1px solid var(--line);border-radius:var(--r);padding:9px 11px;background:#fff}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.toasts{position:fixed;bottom:22px;right:22px;display:flex;flex-direction:column;gap:8px;z-index:60}
+.toast{background:var(--brand-deep);color:#fff;padding:12px 16px;border-radius:var(--r);display:flex;gap:10px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.2);animation:up .25s;max-width:420px}
+.toast .ic{color:var(--sage)}
+@keyframes up{from{transform:translateY(10px);opacity:0}}
+.stat-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
+.stat-row:last-child{border:0}
+.empty{color:var(--ink-3);text-align:center;padding:24px 0}
+.kres{border-bottom:1px solid var(--line);padding:10px 14px;cursor:pointer;display:flex;gap:10px;align-items:center}
+.kres:hover{background:var(--brand-soft)}
+/* rack */
+.rack{display:grid;grid-template-columns:150px 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.rk-h{display:grid;background:#FAF8F3;border-bottom:1px solid var(--line)}
+.rk-h div{font-size:11px;text-align:center;padding:6px 0;color:var(--ink-2);border-left:1px solid var(--line);line-height:1.2}
+.rk-h div.we{background:#F3EEE4}.rk-h div.hoy{background:var(--brand-soft);color:var(--brand-deep);font-weight:800}
+.rk-room{padding:8px 10px;border-bottom:1px solid var(--line);font-size:13px;height:46px;display:flex;flex-direction:column;justify-content:center}
+.rk-room b{font-size:13.5px}
+.rk-line{position:relative;border-bottom:1px solid var(--line);height:46px}
+.rk-bar{position:absolute;top:6px;bottom:6px;border-radius:8px;padding:3px 8px;font-size:11.5px;color:#fff;overflow:hidden;white-space:nowrap;cursor:pointer;line-height:1.3;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.rk-bar:hover{filter:brightness(1.08)}
+.rk-free{position:absolute;top:0;bottom:0;cursor:copy}
+.rk-free:hover{background:var(--brand-soft)}
+/* habitaciones */
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.rc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;cursor:pointer;border-top:5px solid var(--line)}
+.rc:hover{box-shadow:0 6px 18px rgba(45,75,77,.1)}
+.rc b{font-size:16px}
+.chk{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.chk .bx{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;flex:none}
+.chk.on .bx{background:var(--brand);border-color:var(--brand);color:#fff}
+.slotgrid{display:grid;gap:6px}
+.slot{border:1px dashed var(--line);border-radius:10px;padding:8px;min-height:44px;font-size:12.5px;cursor:pointer;background:#FDFCF9}
+.slot.busy{border-style:solid;background:var(--brand-soft);border-color:transparent}
+.slot.busy b{display:block}
+.slot:hover{border-color:var(--brand)}
+.wave{display:flex;align-items:flex-end;gap:3px;height:34px}
+.wave i{display:block;width:6px;background:var(--sky);border-radius:3px 3px 0 0;opacity:.75}
+.portal{background:var(--bg);border-radius:14px;padding:16px}
+@media (max-width:1150px){.grid4{grid-template-columns:repeat(2,1fr)}.grid3,.grid2,.grid2e{grid-template-columns:1fr}.search{display:none}}
+</style>
+</head>
+<body>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-inicio" viewBox="0 0 24 24"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-4 3-6 6.5-6s6 2 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2 .6 3.3 2.6 3.5 6"/></symbol>
+  <symbol id="i-bed" viewBox="0 0 24 24"><path d="M3 18V7M3 13h18v5M21 13a3 3 0 0 0-3-3h-7v3"/><circle cx="7" cy="10.5" r="1.5"/></symbol>
+  <symbol id="i-spa" viewBox="0 0 24 24"><path d="M12 20c-4-2-7-5-7-9 3 0 5 1 7 3 2-2 4-3 7-3 0 4-3 7-7 9z"/><path d="M12 14c0-3 1-6 3-8-1 3-1 5-3 8zM12 14c0-3-1-6-3-8 1 3 1 5 3 8z"/></symbol>
+  <symbol id="i-cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 15-14-1 10-6 15-14 15"/><path d="M5 19 13 11"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+  <symbol id="i-in" viewBox="0 0 24 24"><path d="M10 17l5-5-5-5M15 12H3M14 4h5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-5"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M15 17l5-5-5-5M20 12H8M10 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 19c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"/><path d="M5 11c0-4 3-7 7-7 2 0 3 1 3 2-3 0-5 2-5 5"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></symbol>
+  <symbol id="i-tool" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></symbol>
+  <symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h6"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24"><path d="M3 13l2-5h14l2 5v5h-3M3 13v5h3M3 13h18"/><circle cx="7.5" cy="17.5" r="1.5"/><circle cx="16.5" cy="17.5" r="1.5"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="13" rx="1"/><path d="M3 12h18M12 8v13M12 8c-2-4-6-4-6-1s6 1 6 1zM12 8c2-4 6-4 6-1s-6 1-6 1z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4v10l-9 4-9-4z"/><path d="M3 7l9 4 9-4M12 11v10"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></symbol>
+  <symbol id="i-cup" viewBox="0 0 24 24"><path d="M4 8h13v5a6 6 0 0 1-6 6H10a6 6 0 0 1-6-6zM17 10h2a2 2 0 0 1 0 4h-2M8 2v3M12 2v3"/></symbol>
+</svg>
+
+<div class="app">
+  <aside>
+    <div class="logo"><svg width="40" height="40" viewBox="-50 -50 100 100" id="flor-mini"></svg><div><b>CASA FLOR</b><small>Hotel boutique</small></div></div>
+    <div id="nav"></div>
+    <div class="side-foot"><div class="row"><svg class="ic"><use href="#i-pin"/></svg>Calle Explorador 9, La Barra</div><div class="row"><svg class="ic"><use href="#i-link"/></svg>Conectado a Cloudbeds</div></div>
+  </aside>
+  <main>
+    <header>
+      <div><h1 id="title">Hoy</h1><div class="sub" id="subtitle"></div></div>
+      <div class="search" id="openK"><svg class="ic"><use href="#i-search"/></svg>Buscar huésped, reserva<kbd>Ctrl K</kbd></div>
+      <div class="user"><div class="av">AL</div><div><div>Alfonso</div><div class="tiny">Socio</div></div></div>
+    </header>
+    <div class="content" id="view"></div>
+  </main>
+</div>
+<div id="layer"></div>
+<div class="toasts" id="toasts"></div>
+
+<script>
+// ================= Utilidades =================
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const usd = n => 'US$ ' + Math.round(n).toLocaleString('es-UY');
+const pct = n => Math.round(n) + '%';
+const ico = id => `<svg class="ic"><use href="#i-${id}"/></svg>`;
+const sum = (a,f) => a.reduce((s,x)=>s+f(x),0);
+const ini = n => n.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();
+const esc = s => String(s).replace(/'/g,"\\'");
+let seed = 9; const rnd = () => (seed = (seed*9301+49297)%233280)/233280;
+const DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','setiembre','octubre','noviembre','diciembre'];
+const HOY = new Date(); HOY.setHours(12,0,0,0);
+const DAY = 86400000;
+const addD = n => new Date(HOY.getTime()+n*DAY);
+const fdia = d => DIAS[d.getDay()].slice(0,3)+' '+d.getDate();
+const fcorta = d => d.getDate()+'/'+(d.getMonth()+1);
+const cap = s => s[0].toUpperCase()+s.slice(1);
+function florSVG(size, color, sw){ let p=''; for(let i=0;i<36;i++){ const a=i*10; p+=`<ellipse cx="0" cy="-30" rx="5.2" ry="17" transform="rotate(${a})" fill="none" stroke="${color}" stroke-width="${sw}"/>`; } return p+`<circle r="10" fill="none" stroke="${color}" stroke-width="${sw}"/>`; }
+$('#flor-mini').innerHTML = `<circle r="49" fill="#F5F1EA"/>` + florSVG(1,'#5E8F92',2.2);
+
+// ================= Habitaciones (de casaflor.com.uy) =================
+const TIPOS = {
+  STD:{n:'Standard',m2:18,desc:'Terraza privada al jardín',media:230,alta:420},
+  SEA:{n:'Sea View',m2:25,desc:'Planta alta, vista al mar y al atardecer',media:290,alta:520},
+  MAS:{n:'Master',m2:36,desc:'Living, terraza sobre la piscina, vista al mar',media:380,alta:680},
+  CON:{n:'Conservatory',m2:45,desc:'Conservatorio compartido, sofá cama',media:340,alta:620},
+  BIG:{n:'BIG',m2:65,desc:'Living y escritorio, terraza privada',media:450,alta:850},
+};
+const ROOMS = [
+  {id:'S1',t:'STD',piso:'Planta baja'},{id:'S2',t:'STD',piso:'Planta baja'},{id:'S3',t:'STD',piso:'Planta baja'},{id:'S4',t:'STD',piso:'Planta baja'},{id:'S5',t:'STD',piso:'Planta baja'},{id:'S6',t:'STD',piso:'Planta baja'},
+  {id:'C1',t:'CON',piso:'Primer piso'},{id:'C2',t:'CON',piso:'Primer piso'},{id:'BIG',t:'BIG',piso:'Primer piso'},
+  {id:'V1',t:'SEA',piso:'Planta alta'},{id:'V2',t:'SEA',piso:'Planta alta'},{id:'M',t:'MAS',piso:'Planta alta'},
+];
+const RM = id => ROOMS.find(r=>r.id===id);
+const temporada = d => { const m=d.getMonth(), day=d.getDate(); return (m===11&&day>=20)||m===0||m===1||(m===2&&day<=10) ? 'alta' : 'media'; };
+const tarifa = (t,d) => TIPOS[t][temporada(d)];
+
+// ================= Canales =================
+const CANALES = {
+  directo:{n:'Web directa (Cloudbeds)',com:0,col:'#2D4B4D'},
+  wa:{n:'WhatsApp o mail',com:0,col:'#5E8F92'},
+  booking:{n:'Booking.com',com:17,col:'#3E6DB0'},
+  expedia:{n:'Expedia',com:18,col:'#B9852D'},
+  michelin:{n:'Guía Michelin',com:15,col:'#B23A3A'},
+  agencia:{n:'Agencia de viajes',com:12,col:'#7E6AA8'},
+};
+
+// ================= Huéspedes =================
+const GUESTS = [
+  {id:1,n:'Martina Castañeda',pais:'Argentina',vis:4,pref:'Almohada firme · café de especialidad doble',nota:'Aniversario el 18/10',surf:'Intermedio',mail:'martina.c@gmail.com'},
+  {id:2,n:'Rafael Monteiro',pais:'Brasil',vis:1,pref:'Sin gluten',nota:'Viaja con su pareja, primera vez en Uruguay',surf:'Principiante',mail:'rafael.monteiro@uol.com.br'},
+  {id:3,n:'Emily Carter',pais:'Estados Unidos',vis:1,pref:'Vegetariana',nota:'Llegó por la Guía Michelin',surf:'No',mail:'emily.carter@gmail.com'},
+  {id:4,n:'Tomás Pereyra Iraola',pais:'Argentina',vis:3,pref:'Habitación en planta baja · trae perro chico',nota:'',surf:'Avanzado',mail:'tpi@outlook.com'},
+  {id:5,n:'Camille Dubois',pais:'Francia',vis:1,pref:'Masaje a la llegada',nota:'Escribe una guía de viajes',surf:'No',mail:'camille.dubois@free.fr'},
+  {id:6,n:'Oliver Bennett',pais:'Reino Unido',vis:2,pref:'Late check-out siempre que se pueda',nota:'Trabaja de forma remota: escritorio',surf:'Intermedio',mail:'oliver.bennett@gmail.com'},
+  {id:7,n:'Juliana Azevedo',pais:'Brasil',vis:2,pref:'Alergia a frutos secos',nota:'Cumpleaños el 22/10',surf:'No',mail:'ju.azevedo@gmail.com'},
+  {id:8,n:'Florencia Arocena',pais:'Uruguay',vis:5,pref:'Habitación Sea View',nota:'Huésped frecuente',surf:'No',mail:'florencia.arocena@gmail.com'},
+  {id:9,n:'Lukas Becker',pais:'Alemania',vis:1,pref:'Bicicleta todos los días',nota:'',surf:'Intermedio',mail:'lukas.becker@web.de'},
+  {id:10,n:'Sofía Lynch',pais:'Argentina',vis:2,pref:'Cuna para bebé',nota:'Viaja con bebé de 8 meses',surf:'No',mail:'sofia.lynch@gmail.com'},
+  {id:11,n:'James Whitaker',pais:'Estados Unidos',vis:1,pref:'Traslado desde Laguna del Sauce',nota:'',surf:'Principiante',mail:'jwhitaker@me.com'},
+  {id:12,n:'Lucía Gil',pais:'España',vis:1,pref:'Sin lactosa',nota:'',surf:'No',mail:'lucia.gil@gmail.com'},
+  {id:13,n:'Matías Bordaberry',pais:'Uruguay',vis:3,pref:'Mesa en la terraza para desayunar',nota:'',surf:'Avanzado',mail:'mbordaberry@gmail.com'},
+  {id:14,n:'Valentina Ricci',pais:'Italia',vis:1,pref:'Reflexología',nota:'Luna de miel',surf:'No',mail:'vale.ricci@libero.it'},
+  {id:15,n:'Diego Fernández Llorente',pais:'Argentina',vis:2,pref:'Vino tinto Garzón en la habitación',nota:'',surf:'Intermedio',mail:'dfllorente@gmail.com'},
+  {id:16,n:'Ana Beatriz Costa',pais:'Brasil',vis:1,pref:'Manicura y pedicura',nota:'',surf:'No',mail:'anabeatriz.costa@gmail.com'},
+];
+const G = id => GUESTS.find(g=>g.id===id);
+
+// ================= Reservas =================
+const folio = r => { const cargos=r.total+sum(r.extras,e=>e.m); const pag=sum(r.pagos,p=>p.m); return {cargos,pag,saldo:cargos-pag}; };
+const noches = r => r.fin-r.ini;
+let RES = [], resN = 2400;
+function nuevaRes(room,gid,ini,noches,ch,extra={}){ const d0=addD(ini); let total=0; for(let k=0;k<noches;k++) total+=tarifa(RM(room).t,addD(ini+k)); const r=Object.assign({id:'CF-'+(++resN),room,gid,ini,fin:ini+noches,ad:2,ch,total,extras:[],pagos:[],pre:false,estado:'Confirmada'},extra); RES.push(r); return r; }
+(()=>{
+  // Más huéspedes para que el rack no repita siempre las mismas caras
+  const NOM={Argentina:[['Joaquín','Lucas','Agustina','Carolina','Federico','Paula','Nicolás','Victoria'],['Etchevehere','Bunge','Lanusse','Ocampo','Zuberbühler','Pueyrredón','Alvear','Achával']],
+    Brasil:[['Pedro','Mariana','Gustavo','Fernanda','Thiago','Beatriz'],['Oliveira','Siqueira','Lacerda','Moraes','Pacheco','Teixeira']],
+    Uruguay:[['Santiago','Inés','Rodrigo','Magdalena','Gonzalo'],['Mailhos','Jackson','Shaw','Strauch','Arrarte']],
+    'Estados Unidos':[['Michael','Sarah','David','Hannah'],['Brooks','Sullivan','Harper','Reed']],
+    Chile:[['Benjamín','Josefina','Cristóbal'],['Larraín','Errázuriz','Matte']],
+    Alemania:[['Anna','Felix'],['Hoffmann','Wagner']],Francia:[['Louise','Hugo'],['Moreau','Laurent']],'Reino Unido':[['Charlotte','Harry'],['Hughes','Cooper']]};
+  const PREFS=['Desayuno temprano','Sin preferencias registradas','Almohada baja','Agua sin gas en la habitación','Bicicleta para ir a la playa','Toallas de playa extra','Late check-out si hay lugar'];
+  const pesos=[['Argentina',30],['Brasil',22],['Uruguay',12],['Estados Unidos',10],['Chile',8],['Alemania',4],['Francia',4],['Reino Unido',4]];
+  let gid=GUESTS.length;
+  for(let i=0;i<90;i++){ let x=rnd()*94,p='Argentina'; for(const [k,w] of pesos){ if(x<w){p=k;break;} x-=w; }
+    const [ns,as]=NOM[p]; const n=ns[Math.floor(rnd()*ns.length)]+' '+as[Math.floor(rnd()*as.length)];
+    if(GUESTS.some(g=>g.n===n)) continue;
+    GUESTS.push({id:++gid,n,pais:p,vis:rnd()<.2?2:1,pref:PREFS[Math.floor(rnd()*PREFS.length)],nota:'',surf:rnd()<.3?'Intermedio':'No',mail:n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(' ','.')+'@gmail.com'}); }
+    const chans=['directo','directo','wa','booking','booking','expedia','michelin','agencia'];
+  const ch=()=>chans[Math.floor(rnd()*chans.length)];
+  const libre=(g,a,b)=>!RES.some(r=>r.gid===g&&r.ini<b&&r.fin>a);
+  const ricos=[2,3,9,15,16,12,6,8,1,13];
+  const pick=(a,b)=>{ if(a>0&&a<16){ const i=ricos.findIndex(g=>libre(g,a-20,b+20)); if(i>=0) return ricos.splice(i,1)[0]; }
+    for(let k=0;k<40;k++){ const g=GUESTS[16+Math.floor(rnd()*(GUESTS.length-16))]; if(libre(g.id,a,b)) return g.id; } return GUESTS[GUESTS.length-1].id; };
+  // Cómo está cada habitación hoy: [huésped, llegó, se va, canal, estado especial]
+  const HOYP={S1:[13,-2,2,'directo'],S2:[1,0,4,'booking'],S3:[6,-4,0,'expedia'],S4:[4,-3,1,'wa'],S5:[10,-1,3,'directo'],S6:[11,0,3,'michelin'],
+    C1:[12,-3,0,'booking','out'],C2:null,BIG:[14,-2,4,'agencia'],V1:[8,-5,0,'directo'],V2:[7,-1,8,'wa'],M:[5,0,3,'michelin']};
+  ROOMS.forEach(rm=>{
+    const a=HOYP[rm.id]; let fwd, back;
+    if(a){ const r=nuevaRes(rm.id,a[0],a[1],a[2]-a[1],a[3]); if(a[4]==='out') r.salio=true; fwd=a[2]+(rnd()<.5?1:2); back=a[1]; }
+    else { fwd=3; back=-2; }
+    let d=fwd;
+    while(d<80){ if(rnd()<(addD(d).getMonth()>=11?.12:.4)){ d+=1+Math.floor(rnd()*3); continue; }
+      const n=2+Math.floor(rnd()*3)+(addD(d).getMonth()===11||addD(d).getMonth()===0?2:0);
+      nuevaRes(rm.id,pick(d,d+n),d,n,ch()); d+=n+(rnd()<.5?0:1); }
+    let e=back;
+    while(e>-60){ e-=1+Math.floor(rnd()*2); const n=2+Math.floor(rnd()*3); if(e-n<-60) break; nuevaRes(rm.id,pick(e-n,e),e-n,n,ch()); e-=n; }
+  });
+  RES.forEach(r=>{
+    if(r.fin<0||r.salio) r.estado='Check-out'; else if(r.ini<0) r.estado='Check-in';
+    if(r.ini>=0&&r.ini<=6) r.pre=rnd()<.6; if(r.ini<0) r.pre=true;
+  });
+  const lleg=id=>RES.find(r=>r.room===id&&r.ini===0);
+  lleg('S2').pre=true; lleg('S6').pre=true; lleg('S6').traslado=true; lleg('M').pre=false;
+  const EX=[['Masaje descontracturante',95],['Botella de Garzón Tannat Reserva',45],['Clase de surf con instructor (2 h)',70],['Tabla de quesos de la zona',30],['Traslado a José Ignacio',40],['Sauna privada',40],['Reflexología',80]];
+  RES.filter(r=>r.ini<0).forEach((r,i)=>{
+    const k=Math.min(noches(r),1+(i%3)); for(let j=0;j<k;j++){ const e=EX[(i+j*2)%EX.length]; r.extras.push({n:e[0],m:e[1],f:addD(r.ini+j)}); }
+    r.pagos.push({n:r.ch==='directo'||r.ch==='wa'?'Seña 30% por transferencia':'Prepago vía '+CANALES[r.ch].n,m:Math.round(r.total*.3)});
+    if(r.estado==='Check-out') r.pagos.push({n:'Pago en el check-out',m:folio(r).saldo});
+  });
+})();
+const enCasa = () => RES.filter(r=>r.estado==='Check-in');
+const llegadas = d => RES.filter(r=>r.ini===d&&r.estado!=='Cancelada');
+const salidas = d => RES.filter(r=>r.fin===d&&r.estado!=='Cancelada');
+const resDe = (room,d) => RES.find(r=>r.room===room&&r.ini<=d&&r.fin>d&&r.estado!=='Cancelada');
+
+// ================= Housekeeping =================
+const EQUIPO = [
+  {n:'Ana Silveira',rol:'Recepción, mañana'},{n:'Diego Larrosa',rol:'Recepción, tarde'},
+  {n:'Rosa Méndez',rol:'Housekeeping'},{n:'Carla Núñez',rol:'Housekeeping'},
+  {n:'Pablo Techera',rol:'Mantenimiento y piscina'},{n:'Lucía Pintos',rol:'Desayuno'},
+  {n:'Valeria Sosa',rol:'Masajista'},{n:'Inés Acosta',rol:'Manos y pies, reflexología'},
+];
+let HK = {};
+ROOMS.forEach(rm=>{ const r=resDe(rm.id,0); const sal=salidas(0).find(x=>x.room===rm.id); const lle=llegadas(0).find(x=>x.room===rm.id);
+  HK[rm.id]={estado: sal&&sal.estado==='Check-out'?'Sucia':(r&&r.ini<0)||sal?'Ocupada':lle?(rm.id==='M'?'Sucia':'Inspeccionada'):rnd()<.25?'Limpia':'Inspeccionada', asig: ['S1','S2','S3','S4','S5','S6'].includes(rm.id)?'Rosa Méndez':'Carla Núñez', checks:[]}; });
+HK['C2'].estado='Bloqueada'; HK['C2'].motivo='Pérdida en la ducha';
+let TICKETS = [
+  {id:1,room:'C2',t:'Pérdida en la ducha del baño',p:'Alta',est:'En curso',asig:'Pablo Techera',dias:0},
+  {id:2,room:'Piscina',t:'Medición de cloro y pH antes del finde',p:'Media',est:'Pendiente',asig:'Pablo Techera',dias:0},
+  {id:3,room:'Sauna',t:'Revisar el termostato: tarda en calentar',p:'Media',est:'Pendiente',asig:'Pablo Techera',dias:1},
+  {id:4,room:'V1',t:'Cambiar lámpara de la terraza',p:'Baja',est:'Resuelto',asig:'Pablo Techera',dias:3},
+];
+const CHECK_HK = ['Cambio de ropa de cama','Baño y amenities','Toallas de playa','Terraza barrida','Cafetera y café de especialidad repuestos','Flor fresca en la mesa de luz','Control de minibar'];
+
+// ================= Spa y experiencias =================
+const SPA = [
+  {id:'sauna',n:'Sauna privada',min:60,p:40,quien:'Sauna'},
+  {id:'masaje',n:'Masaje descontracturante',min:60,p:95,quien:'Valeria Sosa'},
+  {id:'piedras',n:'Masaje con piedras calientes',min:75,p:120,quien:'Valeria Sosa'},
+  {id:'reflexo',n:'Reflexología',min:50,p:80,quien:'Inés Acosta'},
+  {id:'mani',n:'Manicura',min:45,p:45,quien:'Inés Acosta'},
+  {id:'pedi',n:'Pedicura',min:60,p:55,quien:'Inés Acosta'},
+];
+const EXPER = [
+  {n:'Clase de surf con instructor (2 h)',p:70,cat:'Surf'},{n:'Alquiler de tabla y traje, por día',p:25,cat:'Surf'},
+  {n:'Traslado desde Laguna del Sauce',p:60,cat:'Traslados'},{n:'Traslado a José Ignacio',p:40,cat:'Traslados'},
+  {n:'Botella de Garzón Tannat Reserva',p:45,cat:'Bodega'},{n:'Tabla de quesos de la zona',p:30,cat:'Bodega'},
+  {n:'Picnic en la playa Montoya',p:65,cat:'Experiencias'},{n:'Visita guiada a talleres de artistas locales',p:50,cat:'Experiencias'},
+  {n:'Late check-out hasta las 16 h',p:0,cat:'Estadía',pct:.5},
+];
+let AGENDA = [];
+(()=>{ const ec=enCasa(); const add=(svc,h,ri)=>{const r=ec[ri%Math.max(ec.length,1)];if(r)AGENDA.push({svc,h,res:r.id,d:0});};
+  add('masaje',11,0);add('reflexo',12,1);add('sauna',18,2);add('piedras',16,3);add('mani',15,4);add('sauna',19,5);add('masaje',17,6);
+  const ll=llegadas(0)[1]; if(ll) AGENDA.push({svc:'masaje',h:18,res:ll.id,d:0}); })();
+
+// ================= Compras a productores locales =================
+const PROVEEDORES = [
+  {n:'Tostadores del Este',q:'Café de especialidad',km:4,local:true,mes:620},
+  {n:'Panadería de masa madre La Barra',q:'Pan, medialunas y budines',km:1,local:true,mes:980},
+  {n:'Granja Las Garzas',q:'Huevos de campo',km:35,local:true,mes:310},
+  {n:'Huerta orgánica Los Talas',q:'Frutas, verduras y hierbas',km:18,local:true,mes:540},
+  {n:'Quesería del Sauce',q:'Quesos y dulce de leche',km:22,local:true,mes:420},
+  {n:'Apicultores de Pan de Azúcar',q:'Miel',km:30,local:true,mes:110},
+  {n:'Lavadero Punta Blanco',q:'Ropa blanca y toallas',km:9,local:true,mes:1650},
+  {n:'Amenities Naturales del Uruguay',q:'Shampoo, jabones y cremas',km:130,local:true,mes:480},
+  {n:'Distribuidora Mayorista Maldonado',q:'Limpieza y descartables',km:12,local:false,mes:390},
+  {n:'Importadora de vinos',q:'Vinos importados',km:140,local:false,mes:300},
+];
+let STOCK = [
+  {n:'Café de especialidad (kg)',st:3.5,min:4,prov:'Tostadores del Este',u:'kg',dia:.6},
+  {n:'Huevos de campo (docenas)',st:6,min:5,prov:'Granja Las Garzas',u:'doc',dia:1.5},
+  {n:'Miel (frascos)',st:9,min:4,prov:'Apicultores de Pan de Azúcar',u:'u',dia:.3},
+  {n:'Amenities: kit de baño',st:38,min:30,prov:'Amenities Naturales del Uruguay',u:'kits',dia:6},
+  {n:'Toallas de playa',st:22,min:24,prov:'Lavadero Punta Blanco',u:'u',dia:5},
+  {n:'Garzón Tannat Reserva',st:7,min:6,prov:'Importadora de vinos',u:'bot',dia:.5},
+  {n:'Leña para la chimenea (bolsas)',st:5,min:6,prov:'Distribuidora Mayorista Maldonado',u:'u',dia:1},
+];
+
+// ================= Navegación =================
+let view='hoy', modActual='hoy', rackIni=-2, filtroCanal='todos', mesRes=HOY.getMonth();
+const ultimaTab={};
+const MODS = [
+  ['hoy','Hoy','inicio',[['hoy','Hoy']],''],
+  ['reservas','Reservas','cal',[['rack','Disponibilidad'],['llegadas','Llegadas y salidas'],['lista','Todas las reservas']],'Las 12 habitaciones y sus reservas, de todos los canales'],
+  ['huespedes','Huéspedes','users',[['huespedes','Fichas'],['precheck','Check-in online']],'Quién viene, qué prefiere y qué celebra'],
+  ['habitaciones','Habitaciones','bed',[['hk','Limpieza'],['mant','Mantenimiento']],'Estado de cada habitación y lo que hay que arreglar'],
+  ['spa','Spa y experiencias','spa',[['agenda','Agenda del spa'],['exper','Experiencias y extras']],'Sauna, masajes, surf, traslados y lo que se carga a la habitación'],
+  ['caja','Caja y facturación','cash',[['folios','Cuentas abiertas'],['canales','Comisiones de canales'],['facturas','Facturas']],'Cada estadía con su cuenta, sus pagos y su factura'],
+  ['compras','Compras locales','leaf',[['proveedores','Productores'],['stock','Insumos y amenities']],'Lo que se compra, a quién y a cuántos kilómetros'],
+  ['resultados','Resultados','chart',[['resultados','Cómo viene el año'],['temporada','Verano 2027']],'Ocupación, tarifa, ingresos y canales'],
+];
+const TITLES={};MODS.forEach(m=>m[3].forEach(([k,l])=>TITLES[k]=[l]));
+const modDe = k => MODS.find(m=>m[0]===k)||MODS.find(m=>m[3].some(t=>t[0]===k));
+function renderNav(){
+  const ll=llegadas(0).length, tk=TICKETS.filter(t=>t.est!=='Resuelto').length;
+  $('#nav').innerHTML='<div style="height:4px"></div>'+MODS.map(m=>`<button class="nav ${modActual===m[0]?'on':''}" data-go="${m[0]}">${ico(m[2])}${m[1]}${m[0]==='reservas'&&ll?`<span class="cnt">${ll}</span>`:''}${m[0]==='habitaciones'&&tk?`<span class="cnt">${tk}</span>`:''}</button>`).join('');
+}
+function go(k){
+  const m=modDe(k);if(!m)return;
+  const tab=m[3].some(t=>t[0]===k)?k:(ultimaTab[m[0]]||m[3][0][0]);
+  modActual=m[0];view=tab;ultimaTab[m[0]]=tab;renderNav();
+  $('#title').textContent=m[1];
+  $('#subtitle').textContent=m[4]||(cap(DIAS[HOY.getDay()])+' '+HOY.getDate()+' de '+MESES[HOY.getMonth()]+' · La Barra');
+  $('#view').innerHTML=(m[3].length>1?`<div class="mtabs">${m[3].map(([t,l])=>`<button class="mtab ${t===tab?'on':''}" data-go="${t}">${l}</button>`).join('')}</div>`:'')+'<div id="pane"></div>';
+  VIEWS[tab]();$('#view').scrollTop=0;
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){closeModal();go(b.dataset.go);}});
+function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=ico('check')+'<span>'+msg+'</span>';$('#toasts').appendChild(t);while($('#toasts').children.length>3)$('#toasts').firstChild.remove();setTimeout(()=>t.remove(),3800);}
+function modal(title,body,foot,wide){$('#layer').innerHTML=`<div class="overlay" id="ov"><div class="modal ${wide?'wide':''}"><div class="mh"><h2>${title}</h2><button class="x" data-close>${ico('x')}</button></div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:''}</div></div>`;}
+function closeModal(){$('#layer').innerHTML='';}
+document.addEventListener('click',e=>{if(e.target.id==='ov'||e.target.closest('[data-close]'))closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();openK();}});
+const chPill = c => `<span class="pill" style="background:${CANALES[c].col}1A;color:${CANALES[c].col}">${CANALES[c].n}</span>`;
+const hkPill = e => ({'Limpia':'<span class="pill p-sky">Limpia</span>','Inspeccionada':'<span class="pill p-ok">Lista</span>','Sucia':'<span class="pill p-warn">Sucia</span>','Ocupada':'<span class="pill p-br">Ocupada</span>','Bloqueada':'<span class="pill p-bad">Bloqueada</span>'}[e]);
+const HK_COL = {'Limpia':'var(--sky)','Inspeccionada':'var(--ok)','Sucia':'var(--warn)','Ocupada':'var(--brand)','Bloqueada':'var(--bad)'};
+const flag = p => ({Argentina:'AR',Brasil:'BR','Estados Unidos':'US','Reino Unido':'UK',Francia:'FR',Alemania:'DE',Uruguay:'UY','España':'ES',Italia:'IT'}[p]||'');
+
+// ================= Vistas =================
+const VIEWS={};
+
+VIEWS.hoy=()=>{
+  const ll=llegadas(0), sa=salidas(0), ec=enCasa(), ocup=ROOMS.filter(rm=>resDe(rm.id,0)).length;
+  const sem=[0,1,2,3,4,5,6].map(d=>ROOMS.filter(rm=>resDe(rm.id,d)).length);
+  const OLAS=[[1.1,'Montoya','Sur, 8 nudos'],[1.4,'Manantiales','Noroeste, offshore'],[0.8,'Bikini','Sur, 10 nudos']];
+  $('#pane').innerHTML=`
+  <div class="hero"><svg class="flor" width="260" height="260" viewBox="-50 -50 100 100">${florSVG(1,'#fff',1.4)}</svg><div style="position:relative"><h2>Buen día, Alfonso.</h2><p>Hoy llegan ${ll.length} huéspedes y se van ${sa.length}. Hay ${ocup} de 12 habitaciones ocupadas esta noche. El spa tiene ${AGENDA.filter(a=>a.d===0).length} turnos.</p></div><button class="btn" data-go="rack">${ico('cal')}Ver disponibilidad</button></div>
+  <div class="grid4">
+    <div class="card kpi"><div class="lab">${ico('bed')}Ocupación esta noche</div><div class="val">${pct(ocup/12*100)}</div><div class="d n">${ocup} de 12 habitaciones</div></div>
+    <div class="card kpi"><div class="lab">${ico('in')}Llegadas</div><div class="val">${ll.length}</div><div class="d ${ll.some(r=>!r.pre)?'neg':''}">${ll.filter(r=>!r.pre).length} sin check-in online</div></div>
+    <div class="card kpi"><div class="lab">${ico('out')}Salidas</div><div class="val">${sa.length}</div><div class="d n">${usd(sum(sa,r=>Math.max(0,folio(r).saldo)))} por cobrar</div></div>
+    <div class="card kpi"><div class="lab">${ico('chart')}Próximos 7 días</div><div class="val">${pct(sum(sem,x=>x)/(12*7)*100)}</div><div class="d">ocupación ya reservada</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>${ico('in')}Llegan hoy<button class="btn sm act" data-go="llegadas">Llegadas y salidas</button></h3>
+      ${ll.map(r=>{const g=G(r.gid);return `<div class="list-it" style="cursor:pointer" onclick="verRes('${r.id}')"><div class="av">${ini(g.n)}</div><div style="flex:1"><b>${g.n}</b> <span class="tiny">${flag(g.pais)}</span><div class="tiny">${RM(r.room).id} · ${TIPOS[RM(r.room).t].n} · ${noches(r)} noches · ${CANALES[r.ch].n}</div>${g.nota?`<div class="tiny" style="color:var(--wood)">${ico('star')} ${g.nota}</div>`:''}</div><div style="text-align:right">${r.pre?'<span class="pill p-ok">Check-in online hecho</span>':'<span class="pill p-warn">Falta check-in online</span>'}${r.traslado?'<div class="tiny" style="margin-top:4px">'+ico('car')+' Traslado 14:30 desde Laguna del Sauce</div>':''}${HK[r.room].estado!=='Inspeccionada'&&HK[r.room].estado!=='Limpia'?'<div class="tiny" style="color:var(--bad);margin-top:4px">Habitación todavía '+HK[r.room].estado.toLowerCase()+'</div>':''}</div></div>`}).join('')||'<div class="empty">Hoy no hay llegadas.</div>'}
+    </div>
+    <div class="card"><h3>${ico('wave')}El mar hoy<span class="act tiny">Para recomendar dónde surfear</span></h3>
+      ${OLAS.map(([h,p,v])=>`<div class="list-it"><div class="wave">${[.5,.8,1,.7,.9,.6,.4].map(x=>`<i style="height:${x*h*22}px"></i>`).join('')}</div><div style="flex:1"><b>${p}</b><div class="tiny">${h.toString().replace('.',',')} m · viento ${v}</div></div>${p==='Manantiales'?'<span class="pill p-ok">El mejor hoy</span>':''}</div>`).join('')}
+      <div class="stat-row" style="margin-top:6px"><span class="muted">${ico('sun')} Máxima</span><b>21° · atardecer 19:41</b></div>
+      <button class="btn" style="width:100%;justify-content:center;margin-top:8px" onclick="toast('Recomendación de surf enviada por WhatsApp a los ${ec.filter(r=>G(r.gid).surf!=='No').length} huéspedes que surfean')">${ico('msg')}Mandar la recomendación a los que surfean</button></div>
+  </div>
+  <div class="grid2e">
+    <div class="card"><h3>${ico('bed')}Habitaciones<button class="btn sm act" data-go="hk">Limpieza</button></h3><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px">${ROOMS.map(rm=>`<div onclick="verHab('${rm.id}')" style="cursor:pointer;border-radius:10px;padding:8px 6px;text-align:center;background:#fff;border:1px solid var(--line);border-top:4px solid ${HK_COL[HK[rm.id].estado]}"><b>${rm.id}</b><div class="tiny" style="font-size:10.5px">${HK[rm.id].estado==='Inspeccionada'?'Lista':HK[rm.id].estado}</div></div>`).join('')}</div>
+      <div class="tiny" style="margin-top:10px">${Object.keys(HK_COL).map(k=>`<span style="margin-right:10px"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${HK_COL[k]}"></span> ${k==='Inspeccionada'?'Lista':k}</span>`).join('')}</div></div>
+    <div class="card"><h3>${ico('spa')}Spa hoy<button class="btn sm act" data-go="agenda">Agenda</button></h3>${AGENDA.filter(a=>a.d===0).sort((a,b)=>a.h-b.h).slice(0,6).map(a=>{const s=SPA.find(x=>x.id===a.svc),r=RES.find(x=>x.id===a.res);return `<div class="list-it"><b style="width:46px">${a.h}:00</b><div style="flex:1"><b>${s.n}</b><div class="tiny">${G(r.gid).n} · ${r.room} · ${s.quien}</div></div><span class="tiny">${usd(s.p)}</span></div>`}).join('')}</div>
+  </div>`;
+};
+
+// ---------- Reservas ----------
+VIEWS.rack=()=>{
+  const N=21, dias=[...Array(N)].map((_,i)=>rackIni+i);
+  const W=d=>((d-rackIni)/N*100);
+  const ocup=dias.map(d=>ROOMS.filter(rm=>resDe(rm.id,d)).length);
+  $('#pane').innerHTML=`<div class="tabs"><button class="btn sm" onclick="rackIni-=7;VIEWS.rack()">${ico('left')}</button><b>${fcorta(addD(rackIni))} al ${fcorta(addD(rackIni+N-1))}</b><button class="btn sm" onclick="rackIni+=7;VIEWS.rack()">${ico('right')}</button><button class="btn sm" onclick="rackIni=-2;VIEWS.rack()">Hoy</button>
+  <span style="margin-left:12px" class="row">${Object.entries(CANALES).map(([k,c])=>`<span class="tiny row" style="gap:4px"><span style="width:10px;height:10px;border-radius:3px;background:${c.col};display:inline-block"></span>${c.n.split(' (')[0]}</span>`).join('')}</span>
+  <button class="btn pri" style="margin-left:auto" onclick="nuevaReserva()">${ico('plus')}Nueva reserva</button></div>
+  <div class="rack"><div class="rk-room" style="background:#FAF8F3;height:auto;border-bottom:1px solid var(--line)"><span class="tiny">Habitación</span></div>
+  <div class="rk-h" style="grid-template-columns:repeat(${N},1fr)">${dias.map((d,i)=>{const f=addD(d);return `<div class="${d===0?'hoy':[0,6].includes(f.getDay())?'we':''}">${DIAS[f.getDay()].slice(0,2)}<br><b>${f.getDate()}</b><br><span style="font-size:10px">${ocup[i]}/12</span></div>`}).join('')}</div>
+  ${ROOMS.map(rm=>`<div class="rk-room"><b>${rm.id} · ${TIPOS[rm.t].n}</b><span class="tiny">${TIPOS[rm.t].m2} m² · ${HK[rm.id].estado==='Bloqueada'?'<span style="color:var(--bad)">bloqueada</span>':rm.piso}</span></div><div class="rk-line" style="background:repeating-linear-gradient(90deg,transparent,transparent calc(${100/N}% - 1px),var(--line) calc(${100/N}% - 1px),var(--line) ${100/N}%)">
+    ${dias.filter(d=>!resDe(rm.id,d)).map(d=>`<div class="rk-free" style="left:${W(d)}%;width:${100/N}%" title="Libre: reservar" onclick="nuevaReserva('${rm.id}',${d})"></div>`).join('')}
+    ${RES.filter(r=>r.room===rm.id&&r.estado!=='Cancelada'&&r.fin>rackIni&&r.ini<rackIni+N).map(r=>{const a=Math.max(r.ini,rackIni),b=Math.min(r.fin,rackIni+N);return `<div class="rk-bar" onclick="verRes('${r.id}')" style="left:calc(${W(a)}% + ${r.ini>=rackIni?'50% / '+N:'0px'});width:calc(${(b-a)/N*100}% - ${r.ini>=rackIni?'50% / '+N:'0px'} + ${r.fin<=rackIni+N?'50% / '+N:'0px'} - 3px);background:${CANALES[r.ch].col}"><b>${G(r.gid).n.split(' ')[0]} ${G(r.gid).n.split(' ').slice(-1)}</b> · ${flag(G(r.gid).pais)}</div>`}).join('')}
+  </div>`).join('')}</div>
+  <p class="tiny" style="margin-top:8px">Las reservas de Booking, Expedia y la web entran solas desde Cloudbeds. Tocá un día libre para reservar.</p>`;
+};
+function verRes(id){const r=RES.find(x=>x.id===id),g=G(r.gid),f=folio(r),rm=RM(r.room);
+  modal(`${r.id} · ${g.n}`,`<div class="row" style="margin-bottom:12px;flex-wrap:wrap">${chPill(r.ch)}<span class="pill ${r.estado==='Check-in'?'p-ok':r.estado==='Check-out'?'p-n':'p-br'}">${r.estado==='Check-in'?'En el hotel':r.estado}</span>${r.pre?'<span class="pill p-ok">Check-in online hecho</span>':'<span class="pill p-warn">Sin check-in online</span>'}</div>
+  <div class="grid2e" style="margin-bottom:0"><div><div class="stat-row"><span class="muted">Habitación</span><b>${rm.id} · ${TIPOS[rm.t].n}</b></div><div class="stat-row"><span class="muted">Llega</span><b>${cap(fdia(addD(r.ini)))}</b></div><div class="stat-row"><span class="muted">Se va</span><b>${cap(fdia(addD(r.fin)))}</b></div><div class="stat-row"><span class="muted">Noches</span><b>${noches(r)} · ${r.ad} adultos</b></div><div class="stat-row"><span class="muted">Tarifa</span><b>${usd(r.total/noches(r))} por noche, con desayuno</b></div></div>
+  <div><div class="stat-row"><span class="muted">País</span><b>${g.pais}</b></div><div class="stat-row"><span class="muted">Visitas</span><b>${g.vis===1?'Primera vez':g.vis+'ª vez'}</b></div><div class="stat-row"><span class="muted">Prefiere</span><b style="text-align:right">${g.pref}</b></div>${g.nota?`<div class="stat-row"><span class="muted">Nota</span><b style="color:var(--wood);text-align:right">${g.nota}</b></div>`:''}<div class="stat-row"><span class="muted">Comisión del canal</span><b>${CANALES[r.ch].com?usd(r.total*CANALES[r.ch].com/100)+' ('+CANALES[r.ch].com+'%)':'Sin comisión'}</b></div></div></div>
+  <div class="card" style="margin-top:14px;padding:12px 14px;background:#FAF8F3"><div class="stat-row"><span>Alojamiento</span><b>${usd(r.total)}</b></div>${r.extras.map(e=>`<div class="stat-row"><span>${e.n}</span><b>${usd(e.m)}</b></div>`).join('')}${r.pagos.map(p=>`<div class="stat-row"><span class="muted">${p.n}</span><b style="color:var(--ok)">- ${usd(p.m)}</b></div>`).join('')}<div class="stat-row"><b>Saldo</b><b>${usd(f.saldo)}</b></div></div>`,
+  `${!r.pre&&r.estado==='Confirmada'?`<button class="btn" onclick="closeModal();portalHuesped('${r.id}')">${ico('link')}Mandar check-in online</button>`:''}${r.estado==='Check-in'||(r.ini<=0&&r.fin>0)?`<button class="btn" onclick="cargarExtra('${r.id}')">${ico('plus')}Cargar extra</button>`:''}${r.estado==='Confirmada'&&r.ini===0?`<button class="btn pri" onclick="hacerCheckin('${r.id}')">${ico('in')}Hacer check-in</button>`:''}${(r.estado==='Check-in'||r.ini<0)&&r.fin>=0&&r.estado!=='Check-out'?`<button class="btn pri" onclick="checkout('${r.id}')">${ico('out')}Check-out</button>`:''}`,true);}
+function hacerCheckin(id){const r=RES.find(x=>x.id===id);r.estado='Check-in';HK[r.room].estado='Ocupada';closeModal();go(view);toast(`${G(r.gid).n} en la habitación ${r.room}. Bienvenida enviada con la clave del wifi y el horario del desayuno.`);}
+function nuevaReserva(room,d){
+  room=room||'S1';d=d==null?3:d;
+  modal('Nueva reserva',`<div class="frow"><label class="f">Habitación<select id="nrr">${ROOMS.map(rm=>`<option value="${rm.id}" ${rm.id===room?'selected':''}>${rm.id} · ${TIPOS[rm.t].n}</option>`).join('')}</select></label><label class="f">Huésped<select id="nrg">${GUESTS.map(g=>`<option value="${g.id}">${g.n} (${flag(g.pais)})</option>`).join('')}<option value="nuevo">Huésped nuevo</option></select></label></div>
+  <div class="frow"><label class="f">Llega en (días)<input id="nrd" type="number" value="${d}"></label><label class="f">Noches<input id="nrn" type="number" value="3" min="1"></label></div>
+  <label class="f">Canal<select id="nrc">${Object.entries(CANALES).filter(([k])=>['directo','wa','agencia'].includes(k)).map(([k,c])=>`<option value="${k}">${c.n}</option>`).join('')}</select></label><div id="nrinfo"></div>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" id="nrok">Confirmar reserva</button>`);
+  const upd=()=>{const rm=$('#nrr').value,d0=+$('#nrd').value||0,n=Math.max(1,+$('#nrn').value||1);const choque=RES.find(r=>r.room===rm&&r.estado!=='Cancelada'&&r.ini<d0+n&&r.fin>d0);let t=0;for(let k=0;k<n;k++)t+=tarifa(RM(rm).t,addD(d0+k));
+    $('#nrinfo').innerHTML=choque?`<div class="card" style="background:var(--bad-soft);border:0;padding:12px">${ico('alert')} <b>Ocupada:</b> ${G(choque.gid).n} del ${fcorta(addD(choque.ini))} al ${fcorta(addD(choque.fin))}. Elegí otra habitación o fecha.</div>`:`<div class="stat-row"><span>Del ${cap(fdia(addD(d0)))} al ${fdia(addD(d0+n))}</span><b>${n} noches</b></div><div class="stat-row"><span>Temporada</span><b>${temporada(addD(d0))==='alta'?'Alta':'Media'}</b></div><div class="stat-row"><span>Total con desayuno</span><b>${usd(t)}</b></div>`;$('#nrok').disabled=!!choque;};
+  ['#nrr','#nrd','#nrn'].forEach(s=>{$(s).oninput=upd;$(s).onchange=upd;});upd();
+  $('#nrok').onclick=()=>{let gid=$('#nrg').value;if(gid==='nuevo'){GUESTS.push({id:GUESTS.length+1,n:'Huésped nuevo',pais:'Argentina',vis:1,pref:'A completar en el check-in online',nota:'',surf:'No',mail:''});gid=GUESTS.length;}const r=nuevaRes($('#nrr').value,+gid,+$('#nrd').value||0,Math.max(1,+$('#nrn').value||1),$('#nrc').value);closeModal();go(view);toast(`Reserva ${r.id} confirmada. Se bloqueó en Cloudbeds para todos los canales y le llegó el mail de confirmación.`);};
+}
+VIEWS.llegadas=()=>{
+  const col=(t,list,ic,d)=>`<div class="card"><h3>${ico(ic)}${t}</h3>${list.map(r=>{const g=G(r.gid),f=folio(r);return `<div class="list-it" style="cursor:pointer" onclick="verRes('${r.id}')"><div class="av">${ini(g.n)}</div><div style="flex:1"><b>${g.n}</b><div class="tiny">${r.room} · ${noches(r)} noches · ${CANALES[r.ch].n}</div></div>${d==='in'?(r.pre?'<span class="pill p-ok">Online hecho</span>':'<span class="pill p-warn">Pendiente</span>'):(f.saldo>1?`<span class="pill p-warn">Saldo ${usd(f.saldo)}</span>`:'<span class="pill p-ok">Pagado</span>')}</div>`}).join('')||'<div class="empty">Nada</div>'}</div>`;
+  $('#pane').innerHTML=[0,1].map(d=>`<h3 style="margin:${d?18:0}px 0 10px">${d?'Mañana, '+fdia(addD(1)):'Hoy'}</h3><div class="grid2e">${col('Llegan',llegadas(d),'in','in')}${col('Se van',salidas(d),'out','out')}</div>`).join('');
+};
+VIEWS.lista=()=>{
+  const rs=RES.filter(r=>r.fin>=-3&&(filtroCanal==='todos'||r.ch===filtroCanal)).sort((a,b)=>a.ini-b.ini).slice(0,60);
+  $('#pane').innerHTML=`<div class="tabs"><select class="inp" onchange="filtroCanal=this.value;VIEWS.lista()"><option value="todos">Todos los canales</option>${Object.entries(CANALES).map(([k,c])=>`<option value="${k}" ${filtroCanal===k?'selected':''}>${c.n}</option>`).join('')}</select><span class="tiny">${rs.length} reservas desde hace 3 días</span></div>
+  <div class="card"><div class="tw"><table><tr><th>Reserva</th><th>Huésped</th><th>Habitación</th><th>Llega</th><th class="num">Noches</th><th>Canal</th><th class="num">Total</th><th class="num">Comisión</th></tr>${rs.map(r=>{const g=G(r.gid);return `<tr class="cl" onclick="verRes('${r.id}')"><td><b>${r.id}</b></td><td>${g.n} <span class="tiny">${flag(g.pais)}</span></td><td>${r.room}</td><td>${fdia(addD(r.ini))}</td><td class="num">${noches(r)}</td><td>${chPill(r.ch)}</td><td class="num"><b>${usd(r.total)}</b></td><td class="num">${CANALES[r.ch].com?usd(r.total*CANALES[r.ch].com/100):'—'}</td></tr>`}).join('')}</table></div></div>`;
+};
+
+// ---------- Huéspedes ----------
+VIEWS.huespedes=()=>{
+  const cuenta=g=>RES.filter(r=>r.gid===g.id);
+  $('#pane').innerHTML=`<div class="grid4"><div class="card kpi"><div class="lab">${ico('users')}Huéspedes en la base</div><div class="val">1.284</div><div class="d n">desde la apertura</div></div><div class="card kpi"><div class="lab">${ico('star')}Vuelven</div><div class="val">27%</div><div class="d">reservan directo la segunda vez</div></div><div class="card kpi"><div class="lab">${ico('globe')}Extranjeros</div><div class="val">71%</div><div class="d n">Argentina, Brasil y Estados Unidos al frente</div></div><div class="card kpi"><div class="lab">${ico('gift')}Celebran algo este mes</div><div class="val">${GUESTS.filter(g=>/Aniversario|Cumpleaños|Luna de miel/.test(g.nota)).length}</div><div class="d">aniversarios, cumpleaños y lunas de miel</div></div></div>
+  <div class="card"><div class="tw"><table><tr><th>Huésped</th><th>País</th><th>Visitas</th><th>Prefiere</th><th>Surf</th><th>Próxima estadía</th></tr>${GUESTS.map(g=>{const prox=cuenta(g).filter(r=>r.fin>0).sort((a,b)=>a.ini-b.ini)[0];return `<tr class="cl" onclick="verHuesped(${g.id})"><td><div class="row"><div class="av">${ini(g.n)}</div><div><b>${g.n}</b>${g.nota?`<div class="tiny" style="color:var(--wood)">${g.nota}</div>`:''}</div></div></td><td>${g.pais}</td><td>${g.vis>1?`<span class="pill p-br">${g.vis} visitas</span>`:'<span class="pill p-n">Primera</span>'}</td><td class="tiny">${g.pref}</td><td>${g.surf}</td><td>${prox?(prox.ini<=0?'<span class="pill p-ok">En el hotel</span>':fdia(addD(prox.ini))):'<span class="tiny">—</span>'}</td></tr>`}).join('')}</table></div></div>`;
+};
+function verHuesped(id){const g=G(id),rs=RES.filter(r=>r.gid===id);
+  modal(g.n,`<div class="row" style="margin-bottom:12px"><span class="pill p-n">${g.pais}</span><span class="pill p-br">${g.vis===1?'Primera vez':g.vis+' visitas'}</span><span class="tiny">${g.mail}</span></div>
+  <div class="stat-row"><span class="muted">Prefiere</span><b>${g.pref}</b></div><div class="stat-row"><span class="muted">Surf</span><b>${g.surf}</b></div>${g.nota?`<div class="stat-row"><span class="muted">Nota</span><b style="color:var(--wood)">${g.nota}</b></div>`:''}
+  <h4 style="margin:14px 0 6px">Estadías</h4>${rs.map(r=>`<div class="list-it" style="cursor:pointer" onclick="verRes('${r.id}')"><b>${r.id}</b><span style="flex:1">${r.room} · ${fdia(addD(r.ini))} · ${noches(r)} noches</span>${chPill(r.ch)}</div>`).join('')||'<div class="tiny">Estadías anteriores a la apertura del sistema.</div>'}
+  <p class="tiny" style="margin-top:10px">Todo lo que dice esta ficha lo ve recepción, limpieza y el desayuno, para que nadie le tenga que volver a preguntar.</p>`,
+  `<button class="btn" onclick="closeModal();toast('Mail enviado a ${esc(g.n)}')">${ico('mail')}Escribirle</button>`);}
+VIEWS.precheck=()=>{
+  const prox=RES.filter(r=>r.ini>=0&&r.ini<=7&&r.estado!=='Cancelada').sort((a,b)=>a.ini-b.ini);
+  $('#pane').innerHTML=`<div class="grid3"><div class="card kpi"><div class="lab">${ico('link')}Lo completaron antes de llegar</div><div class="val">${pct(prox.filter(r=>r.pre).length/Math.max(prox.length,1)*100)}</div><div class="d n">de las llegadas de esta semana</div></div><div class="card kpi"><div class="lab">${ico('car')}Pidieron traslado</div><div class="val">${prox.filter(r=>r.traslado).length+3}</div><div class="d n">desde Laguna del Sauce o Carrasco</div></div><div class="card kpi"><div class="lab">${ico('spa')}Reservaron spa por adelantado</div><div class="val">6</div><div class="d">${usd(6*90)} antes de llegar</div></div></div>
+  <div class="card"><h3>${ico('in')}Llegadas de la semana<span class="act tiny">El link se manda solo 5 días antes, en el idioma del huésped</span></h3><div class="tw"><table><tr><th>Huésped</th><th>Llega</th><th>Habitación</th><th>Idioma</th><th>Check-in online</th><th></th></tr>${prox.map(r=>{const g=G(r.gid);return `<tr><td><b>${g.n}</b></td><td>${fdia(addD(r.ini))}</td><td>${r.room}</td><td>${['Brasil'].includes(g.pais)?'Portugués':['Argentina','Uruguay','España'].includes(g.pais)?'Español':'Inglés'}</td><td>${r.pre?'<span class="pill p-ok">Completo</span>':'<span class="pill p-warn">Pendiente</span>'}</td><td class="num"><button class="btn sm" onclick="portalHuesped('${r.id}')">${ico('link')}Ver link</button></td></tr>`}).join('')}</table></div></div>`;
+};
+function portalHuesped(id){const r=RES.find(x=>x.id===id),g=G(r.gid),en=!['Argentina','Uruguay','España'].includes(g.pais);
+  const T=en?{h:'Welcome to Casa Flor',s:'A few details before you arrive',a:'Arrival time',p:'Passport or ID number',pr:'Anything we should know?',tr:'Airport transfer from Laguna del Sauce (US$ 60)',spa:'Book a massage for your first evening',b:'Confirm my details'}:{h:'Bienvenidos a Casa Flor',s:'Unos datos antes de que lleguen',a:'Hora de llegada',p:'Documento o pasaporte',pr:'¿Algo que tengamos que saber?',tr:'Traslado desde Laguna del Sauce (US$ 60)',spa:'Reservar un masaje para la primera tarde',b:'Confirmar mis datos'};
+  modal('Así lo ve '+g.n,`<div class="portal"><div style="text-align:center;margin-bottom:12px"><svg width="54" height="54" viewBox="-50 -50 100 100">${florSVG(1,'#5E8F92',2.2)}</svg><div style="font-weight:800;letter-spacing:3px;margin-top:6px">CASA FLOR</div><div style="font-size:18px;font-weight:800;margin-top:10px">${T.h}, ${g.n.split(' ')[0]}</div><div class="muted">${T.s} · ${fdia(addD(r.ini))} → ${fdia(addD(r.fin))} · ${TIPOS[RM(r.room).t].n} Room</div></div>
+  <div class="card" style="padding:14px"><label class="f">${T.a}<select><option>14:00</option><option selected>16:00</option><option>18:00</option><option>20:00</option></select></label><label class="f">${T.p}<input value="${en?'P 48213377':'32.118.540'}"></label><label class="f">${T.pr}<input value="${g.pref}"></label>
+  <div class="chk on" onclick="this.classList.toggle('on')"><span class="bx">${ico('check')}</span>${T.tr}</div><div class="chk" onclick="this.classList.toggle('on')"><span class="bx">${ico('check')}</span>${T.spa}</div></div></div>`,
+  `<button class="btn" data-close>Cerrar</button><button class="btn pri" onclick="RES.find(x=>x.id==='${id}').pre=true;closeModal();go(view);toast('${esc(g.n)} completó el check-in online. Recepción ya tiene sus datos.')">${T.b}</button>`,true);}
+
+// ---------- Habitaciones ----------
+VIEWS.hk=()=>{
+  $('#pane').innerHTML=`<div class="row" style="margin-bottom:14px;flex-wrap:wrap">${Object.keys(HK_COL).map(k=>`<span class="pill" style="background:#fff;border:1px solid var(--line)"><span style="width:9px;height:9px;border-radius:3px;background:${HK_COL[k]};display:inline-block"></span>${k==='Inspeccionada'?'Lista':k}: ${ROOMS.filter(rm=>HK[rm.id].estado===k).length}</span>`).join('')}<button class="btn" style="margin-left:auto" onclick="toast('Lista del día enviada a Rosa y Carla por WhatsApp')">${ico('msg')}Mandar la lista a las mucamas</button></div>
+  <div class="rooms">${ROOMS.map(rm=>{const h=HK[rm.id],r=resDe(rm.id,0),ll=llegadas(0).find(x=>x.room===rm.id);return `<div class="rc" style="border-top-color:${HK_COL[h.estado]}" onclick="verHab('${rm.id}')"><div class="row" style="justify-content:space-between"><b>${rm.id}</b>${hkPill(h.estado)}</div><div class="tiny">${TIPOS[rm.t].n} · ${TIPOS[rm.t].m2} m²</div><div style="margin-top:8px;font-size:13px">${h.estado==='Bloqueada'?`<span style="color:var(--bad)">${h.motivo}</span>`:ll?`Llega ${G(ll.gid).n.split(' ')[0]}${ll.pre?' a las 16:00':''}`:r&&r.ini<0?`${G(r.gid).n.split(' ')[0]} hasta el ${fcorta(addD(r.fin))}`:'Libre esta noche'}</div><div class="tiny" style="margin-top:6px">${ico('users')} ${h.asig.split(' ')[0]}</div></div>`}).join('')}</div>`;
+};
+function verHab(id){const rm=RM(id),h=HK[id];
+  modal(`${id} · ${TIPOS[rm.t].n}`,`<div class="row" style="margin-bottom:10px">${hkPill(h.estado)}<span class="tiny">${TIPOS[rm.t].m2} m² · ${rm.piso} · ${TIPOS[rm.t].desc}</span></div>
+  <label class="f">Mucama<select id="hka">${EQUIPO.filter(e=>e.rol==='Housekeeping').map(e=>`<option ${e.n===h.asig?'selected':''}>${e.n}</option>`).join('')}</select></label>
+  <div id="hkc">${CHECK_HK.map((c,i)=>`<div class="chk ${h.checks.includes(i)?'on':''}" onclick="this.classList.toggle('on')"><span class="bx">${ico('check')}</span>${c}</div>`).join('')}</div>`,
+  `<button class="btn" onclick="nuevoTicket('${id}')">${ico('tool')}Reportar arreglo</button>${h.estado==='Sucia'?`<button class="btn pri" onclick="hkSet('${id}','Limpia')">Marcar limpia</button>`:h.estado==='Limpia'?`<button class="btn pri" onclick="hkSet('${id}','Inspeccionada')">${ico('check')}Revisada y lista</button>`:h.estado==='Bloqueada'?`<button class="btn pri" onclick="hkSet('${id}','Sucia')">Desbloquear</button>`:''}`);}
+function hkSet(id,e){const h=HK[id];h.asig=$('#hka')?$('#hka').value:h.asig;h.checks=$$('#hkc .chk').map((c,i)=>c.classList.contains('on')?i:-1).filter(i=>i>=0);h.estado=e;if(e!=='Bloqueada')delete h.motivo;closeModal();renderNav();VIEWS[view]?VIEWS[view]():go('hk');toast(`${id}: ${e==='Inspeccionada'?'lista para recibir. Recepción ya lo ve':e.toLowerCase()}.`);}
+VIEWS.mant=()=>{
+  $('#pane').innerHTML=`<div class="row" style="margin-bottom:14px"><span class="muted">Lo que hay que arreglar en habitaciones, piscina, sauna y áreas comunes.</span><button class="btn pri" style="margin-left:auto" onclick="nuevoTicket('Piscina')">${ico('plus')}Nuevo arreglo</button></div>
+  <div class="card"><div class="tw"><table><tr><th>Dónde</th><th>Qué pasa</th><th>Prioridad</th><th>Quién</th><th>Estado</th><th></th></tr>${TICKETS.map((t,i)=>`<tr><td><b>${t.room}</b></td><td>${t.t}</td><td><span class="pill ${t.p==='Alta'?'p-bad':t.p==='Media'?'p-warn':'p-n'}">${t.p}</span></td><td>${t.asig}</td><td><span class="pill ${t.est==='Resuelto'?'p-ok':t.est==='En curso'?'p-sky':'p-warn'}">${t.est}</span></td><td class="num">${t.est!=='Resuelto'?`<button class="btn sm pri" onclick="TICKETS[${i}].est='Resuelto';if(HK['${t.room}']&&HK['${t.room}'].estado==='Bloqueada')HK['${t.room}'].estado='Sucia';renderNav();VIEWS.mant();toast('Arreglo resuelto${t.room==='C2'?'. C2 vuelve a estar disponible para vender':''}')">Resuelto</button>`:''}</td></tr>`).join('')}</table></div></div>
+  <div class="grid3" style="margin-top:14px"><div class="card"><h3>${ico('wave')}Piscina</h3><div class="stat-row"><span>Cloro</span><b>1,4 ppm</b></div><div class="stat-row"><span>pH</span><b>7,4</b></div><div class="stat-row"><span>Última medición</span><b>Hoy 9:10 · Pablo</b></div></div><div class="card"><h3>${ico('sun')}Sauna</h3><div class="stat-row"><span>Horas de uso en el mes</span><b>46 h</b></div><div class="stat-row"><span>Próximo service</span><b>En 12 días</b></div></div><div class="card"><h3>${ico('tool')}Chimenea y leña</h3><div class="stat-row"><span>Leña</span><b style="color:var(--bad)">5 bolsas, pedir</b></div><div class="stat-row"><span>Limpieza de tiraje</span><b>Antes de diciembre</b></div></div></div>`;
+};
+function nuevoTicket(room){modal('Nuevo arreglo',`<label class="f">Dónde<select id="ntr">${['Piscina','Sauna','Áreas comunes',...ROOMS.map(r=>r.id)].map(x=>`<option ${x===room?'selected':''}>${x}</option>`).join('')}</select></label><label class="f">Qué pasa<input id="ntt" value="El aire acondicionado hace ruido"></label><div class="frow"><label class="f">Prioridad<select id="ntp"><option>Alta</option><option selected>Media</option><option>Baja</option></select></label><label class="f">¿Bloquear la habitación?<select id="ntb"><option value="0">No</option><option value="1">Sí, no se puede vender</option></select></label></div>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarTicket()">Avisar a Pablo</button>`);}
+function guardarTicket(){const room=$('#ntr').value;TICKETS.unshift({id:Date.now(),room,t:$('#ntt').value,p:$('#ntp').value,est:'Pendiente',asig:'Pablo Techera',dias:0});if($('#ntb').value==='1'&&HK[room]){HK[room].estado='Bloqueada';HK[room].motivo=$('#ntt').value;}closeModal();renderNav();go('mant');toast('Pablo recibió el aviso por WhatsApp'+(HK[room]&&HK[room].estado==='Bloqueada'?'. '+room+' queda bloqueada en todos los canales':''));}
+
+// ---------- Spa ----------
+VIEWS.agenda=()=>{
+  const horas=[10,11,12,13,14,15,16,17,18,19,20], cols=['Valeria Sosa','Inés Acosta','Sauna'];
+  const hoy=AGENDA.filter(a=>a.d===0);
+  $('#pane').innerHTML=`<div class="grid4"><div class="card kpi"><div class="lab">${ico('spa')}Turnos hoy</div><div class="val">${hoy.length}</div><div class="d">${usd(sum(hoy,a=>SPA.find(s=>s.id===a.svc).p))} cargados a habitaciones</div></div><div class="card kpi"><div class="lab">${ico('chart')}Spa en el mes</div><div class="val">${usd(6840)}</div><div class="d">+22% contra octubre 2025</div></div><div class="card kpi"><div class="lab">${ico('users')}Huéspedes que usan el spa</div><div class="val">41%</div><div class="d n">al menos un servicio por estadía</div></div><div class="card kpi"><div class="lab">${ico('star')}Lo más pedido</div><div class="val" style="font-size:18px;margin-top:10px">Masaje descontracturante</div></div></div>
+  <div class="card"><h3>${ico('cal')}Hoy, ${fdia(HOY)}<span class="act tiny">Tocá un hueco libre para reservar</span></h3><div class="slotgrid" style="grid-template-columns:60px repeat(3,1fr)"><div></div>${cols.map(c=>`<div class="tiny" style="font-weight:800;text-transform:uppercase">${c}</div>`).join('')}
+  ${horas.map(h=>`<div class="tiny" style="padding-top:12px">${h}:00</div>${cols.map(c=>{const a=hoy.find(x=>x.h===h&&SPA.find(s=>s.id===x.svc).quien===c);if(a){const s=SPA.find(x=>x.id===a.svc),r=RES.find(x=>x.id===a.res);return `<div class="slot busy" onclick="verRes('${r.id}')"><b>${s.n}</b>${G(r.gid).n} · ${r.room}</div>`;}return `<div class="slot" onclick="reservarSpa('${c}',${h})"></div>`;}).join('')}`).join('')}</div></div>`;
+};
+function reservarSpa(quien,h){const svcs=SPA.filter(s=>s.quien===quien),ec=enCasa().concat(llegadas(0));
+  modal(`${quien} · ${h}:00`,`<label class="f">Servicio<select id="spv">${svcs.map(s=>`<option value="${s.id}">${s.n} · ${s.min} min · ${usd(s.p)}</option>`).join('')}</select></label><label class="f">Huésped<select id="spr">${ec.map(r=>`<option value="${r.id}">${G(r.gid).n} · ${r.room}</option>`).join('')}</select></label><p class="tiny">Se carga a la cuenta de la habitación y al huésped le llega la confirmación.</p>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarSpa(${h})">Reservar</button>`);}
+function guardarSpa(h){const s=SPA.find(x=>x.id===$('#spv').value),r=RES.find(x=>x.id===$('#spr').value);AGENDA.push({svc:s.id,h,res:r.id,d:0});r.extras.push({n:s.n,m:s.p,f:new Date()});closeModal();go('agenda');toast(`${s.n} a las ${h}:00 para ${G(r.gid).n}. ${usd(s.p)} cargados a la ${r.room}.`);}
+VIEWS.exper=()=>{
+  const cats=[...new Set(EXPER.map(e=>e.cat))];
+  $('#pane').innerHTML=`<div class="grid2"><div>${cats.map(c=>`<div class="card" style="margin-bottom:14px"><h3>${c}</h3>${EXPER.filter(e=>e.cat===c).map(e=>`<div class="list-it"><div style="flex:1"><b>${e.n}</b></div><b>${e.pct?'50% de la noche':usd(e.p)}</b><button class="btn sm" onclick="cargarExtra(null,'${esc(e.n)}')">Cargar</button></div>`).join('')}</div>`).join('')}</div>
+  <div class="card"><h3>${ico('chart')}Extras del mes</h3>${[['Spa y sauna',6840],['Surf',2310],['Bodega y tablas',1980],['Traslados',1620],['Experiencias',860]].map(([n,v])=>`<div style="margin-bottom:11px"><div class="row" style="justify-content:space-between"><span>${n}</span><b>${usd(v)}</b></div><div class="bar"><i style="width:${v/6840*100}%"></i></div></div>`).join('')}<p class="tiny">Cada extra se carga a la habitación en el momento y aparece en la cuenta al hacer el check-out.</p></div></div>`;
+};
+function cargarExtra(id,pre){const ec=enCasa();
+  modal('Cargar a la habitación',`<label class="f">Huésped<select id="cer">${ec.map(r=>`<option value="${r.id}" ${r.id===id?'selected':''}>${r.room} · ${G(r.gid).n}</option>`).join('')}</select></label><label class="f">Qué<select id="cee">${EXPER.filter(e=>!e.pct).concat(SPA.map(s=>({n:s.n,p:s.p}))).map(e=>`<option value="${esc(e.n)}|${e.p}" ${e.n===pre?'selected':''}>${e.n} · ${usd(e.p)}</option>`).join('')}</select></label>`,`<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="guardarExtra()">Cargar</button>`);}
+function guardarExtra(){const r=RES.find(x=>x.id===$('#cer').value);const [n,p]=$('#cee').value.split('|');r.extras.push({n,m:+p,f:new Date()});closeModal();go(view);toast(`${n} cargado a la ${r.room}: ${usd(+p)}`);}
+
+// ---------- Caja ----------
+VIEWS.folios=()=>{
+  const ec=enCasa().sort((a,b)=>a.fin-b.fin);
+  $('#pane').innerHTML=`<div class="grid4"><div class="card kpi"><div class="lab">${ico('cash')}Cuentas abiertas</div><div class="val">${ec.length}</div><div class="d n">huéspedes en el hotel</div></div><div class="card kpi"><div class="lab">${ico('cash')}Saldo a cobrar</div><div class="val">${usd(sum(ec,r=>folio(r).saldo))}</div><div class="d n">al hacer los check-out</div></div><div class="card kpi"><div class="lab">${ico('globe')}Con IVA 0%</div><div class="val">${ec.filter(r=>G(r.gid).pais!=='Uruguay').length}</div><div class="d">turistas extranjeros con tarjeta del exterior</div></div><div class="card kpi"><div class="lab">${ico('doc')}Facturas del mes</div><div class="val">94</div><div class="d">todas aceptadas por DGI</div></div></div>
+  <div class="card"><div class="tw"><table><tr><th>Habitación</th><th>Huésped</th><th>Se va</th><th class="num">Alojamiento</th><th class="num">Extras</th><th class="num">Pagado</th><th class="num">Saldo</th><th></th></tr>${ec.map(r=>{const f=folio(r);return `<tr class="cl" onclick="verRes('${r.id}')"><td><b>${r.room}</b></td><td>${G(r.gid).n}</td><td>${r.fin===0?'<span class="pill p-warn">Hoy</span>':fdia(addD(r.fin))}</td><td class="num">${usd(r.total)}</td><td class="num">${usd(sum(r.extras,e=>e.m))}</td><td class="num">${usd(f.pag)}</td><td class="num"><b>${usd(f.saldo)}</b></td><td class="num"><button class="btn sm ${r.fin===0?'pri':''}" onclick="event.stopPropagation();checkout('${r.id}')">Check-out</button></td></tr>`}).join('')}</table></div></div>`;
+};
+function checkout(id){const r=RES.find(x=>x.id===id),g=G(r.gid),f=folio(r),ext=g.pais!=='Uruguay';
+  modal('Check-out · '+g.n,`${r.extras.length?'':''}<div class="card" style="padding:12px 14px;background:#FAF8F3"><div class="stat-row"><span>Alojamiento · ${noches(r)} noches</span><b>${usd(r.total)}</b></div>${r.extras.map(e=>`<div class="stat-row"><span>${e.n}</span><b>${usd(e.m)}</b></div>`).join('')}${r.pagos.map(p=>`<div class="stat-row"><span class="muted">${p.n}</span><b style="color:var(--ok)">- ${usd(p.m)}</b></div>`).join('')}<div class="stat-row"><b>A cobrar</b><b style="font-size:18px">${usd(f.saldo)}</b></div></div>
+  <label class="f" style="margin-top:14px">Cómo paga<select id="cop"><option value="ext" ${ext?'selected':''}>Tarjeta emitida en el exterior</option><option value="uy" ${ext?'':'selected'}>Tarjeta uruguaya</option><option value="tr">Transferencia</option></select></label>
+  <div id="coiva"></div>`,
+  `<button class="btn" data-close>Cancelar</button><button class="btn pri" onclick="cerrarCuenta('${id}')">${ico('doc')}Cobrar y facturar</button>`);
+  const upd=()=>{const e=$('#cop').value==='ext';$('#coiva').innerHTML=e?`<div class="card" style="background:var(--ok-soft);border:0;padding:12px">${ico('globe')} <b>IVA 0% en el alojamiento.</b> Turista extranjero que paga con tarjeta del exterior: el sistema aplica la exoneración y la deja documentada en la factura.</div>`:`<div class="card" style="background:var(--brand-soft);border:0;padding:12px">El alojamiento lleva IVA tasa mínima. La factura sale con el detalle correspondiente.</div>`;};
+  $('#cop').onchange=upd;upd();}
+function cerrarCuenta(id){const r=RES.find(x=>x.id===id),f=folio(r);r.pagos.push({n:'Pago en el check-out',m:f.saldo});r.estado='Check-out';HK[r.room].estado='Sucia';closeModal();renderNav();go(view);toast(`Check-out de ${G(r.gid).n}. e-Factura enviada por mail. ${r.room} pasa a limpieza. Mañana le llega el pedido de reseña.`);}
+VIEWS.canales=()=>{
+  const ult=RES.filter(r=>r.ini>=-30&&r.ini<0);
+  const pc=Object.entries(CANALES).map(([k,c])=>{const rs=RES.filter(r=>r.ch===k&&r.ini<=60);const v=sum(rs,r=>r.total);return {k,c,n:rs.length,v,com:v*c.com/100};});
+  const tv=sum(pc,x=>x.v),tc=sum(pc,x=>x.com);
+  $('#pane').innerHTML=`<div class="grid3"><div class="card kpi"><div class="lab">${ico('cash')}Comisiones pagadas a canales</div><div class="val">${usd(tc)}</div><div class="d neg">${pct(tc/tv*100)} de lo vendido</div></div><div class="card kpi"><div class="lab">${ico('globe')}Reservas directas</div><div class="val">${pct((pc[0].v+pc[1].v)/tv*100)}</div><div class="d">sin comisión</div></div><div class="card kpi"><div class="lab">${ico('star')}Si 10 reservas de Booking fueran directas</div><div class="val">${usd(10*1250*.17)}</div><div class="d">de ahorro</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('chart')}Por canal</h3><table><tr><th>Canal</th><th class="num">Reservas</th><th class="num">Vendido</th><th class="num">Comisión</th><th class="num">Neto</th></tr>${pc.map(x=>`<tr><td>${chPill(x.k)}</td><td class="num">${x.n}</td><td class="num">${usd(x.v)}</td><td class="num">${x.c.com?usd(x.com)+' <span class="tiny">'+x.c.com+'%</span>':'—'}</td><td class="num"><b>${usd(x.v-x.com)}</b></td></tr>`).join('')}<tr class="tot"><td>Total</td><td class="num">${sum(pc,x=>x.n)}</td><td class="num">${usd(tv)}</td><td class="num">${usd(tc)}</td><td class="num">${usd(tv-tc)}</td></tr></table></div>
+  <div class="card"><h3>${ico('star')}Pasar huéspedes a directo</h3><p class="muted" style="margin-top:0">El 27% de los huéspedes vuelve. Si la segunda vez reservan directo, la comisión queda en casa.</p><div class="stat-row"><span>Huéspedes de OTA que ya vinieron</span><b>${GUESTS.filter(g=>g.vis>1).length}</b></div><div class="stat-row"><span>Código de descuento para la próxima</span><b>VOLVER10 · 10% directo</b></div><button class="btn pri" style="width:100%;justify-content:center;margin-top:10px" onclick="toast('Mail de “volvé directo” enviado a ${GUESTS.filter(g=>g.vis>1).length} huéspedes con su código')">${ico('mail')}Mandar el mail de volver directo</button></div></div>`;
+};
+VIEWS.facturas=()=>{
+  const fs=RES.filter(r=>r.estado==='Check-out'||r.fin<=0).slice(-14).reverse();
+  $('#pane').innerHTML=`<div class="card"><h3>${ico('doc')}Facturas recientes<span class="act tiny">e-Ticket y e-Factura enviados a DGI al hacer el check-out</span></h3><div class="tw"><table><tr><th>Comprobante</th><th>Huésped</th><th>Estadía</th><th>IVA</th><th class="num">Total</th><th>Estado</th></tr>${fs.map((r,i)=>{const g=G(r.gid),f=folio(r);return `<tr><td><b>e-Ticket A ${31420-i}</b></td><td>${g.n}</td><td>${r.room} · ${noches(r)} noches</td><td>${g.pais!=='Uruguay'?'<span class="pill p-ok">0% turista extranjero</span>':'<span class="pill p-n">Tasa mínima</span>'}</td><td class="num">${usd(f.cargos)}</td><td><span class="pill p-ok">Aceptado DGI</span></td></tr>`}).join('')}</table></div></div>`;
+};
+
+// ---------- Compras ----------
+VIEWS.proveedores=()=>{
+  const tot=sum(PROVEEDORES,p=>p.mes),loc=sum(PROVEEDORES.filter(p=>p.local&&p.km<=50),p=>p.mes);
+  $('#pane').innerHTML=`<div class="grid3"><div class="card kpi" style="background:var(--ok-soft)"><div class="lab">${ico('leaf')}Compra local</div><div class="val" style="color:var(--ok)">${pct(loc/tot*100)}</div><div class="d">a menos de 50 km del hotel</div></div><div class="card kpi"><div class="lab">${ico('cash')}Compras del mes</div><div class="val">${usd(tot)}</div><div class="d n">${PROVEEDORES.length} proveedores</div></div><div class="card kpi"><div class="lab">${ico('pin')}Distancia promedio</div><div class="val">${Math.round(sum(PROVEEDORES,p=>p.km*p.mes)/tot)} km</div><div class="d n">ponderada por lo que se compra</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('leaf')}Productores y proveedores</h3><table><tr><th>Proveedor</th><th>Qué</th><th class="num">Distancia</th><th class="num">En el mes</th></tr>${PROVEEDORES.sort((a,b)=>a.km-b.km).map(p=>`<tr><td><b>${p.n}</b></td><td class="tiny">${p.q}</td><td class="num"><span class="pill ${p.km<=50?'p-ok':'p-n'}">${p.km} km</span></td><td class="num">${usd(p.mes)}</td></tr>`).join('')}</table></div>
+  <div class="card"><h3>${ico('cup')}El desayuno, de dónde viene</h3>${PROVEEDORES.filter(p=>['Café','Pan','Huevos','Frutas','Quesos','Miel'].some(k=>p.q.startsWith(k))).map(p=>`<div class="stat-row"><span>${p.q.split(',')[0]}</span><b>${p.n} · ${p.km} km</b></div>`).join('')}<p class="tiny" style="margin-top:10px">Este cuadro sale solo de las compras. Sirve para el código de ética del hotel y para contarle al huésped qué está comiendo.</p><button class="btn" onclick="toast('Tarjeta del desayuno lista para imprimir en español e inglés')">${ico('doc')}Imprimir la tarjeta del desayuno</button></div></div>`;
+};
+VIEWS.stock=()=>{
+  const ocup7=sum([0,1,2,3,4,5,6],d=>ROOMS.filter(rm=>resDe(rm.id,d)).length);
+  $('#pane').innerHTML=`<div class="card"><h3>${ico('box')}Insumos y amenities<span class="act tiny">El consumo se calcula con la ocupación de los próximos 7 días (${ocup7} noches de habitación)</span></h3><div class="tw"><table><tr><th>Insumo</th><th class="num">Hay</th><th class="num">Mínimo</th><th class="num">Alcanza para</th><th>Proveedor</th><th></th></tr>${STOCK.map((s,i)=>{const dias=s.st/(s.dia*ocup7/7/9||1);const falta=s.st<s.min||dias<4;return `<tr><td><b>${s.n}</b></td><td class="num">${String(s.st).replace('.',',')} ${s.u}</td><td class="num">${s.min}</td><td class="num"><span class="pill ${falta?'p-bad':'p-ok'}">${Math.max(0,Math.floor(dias))} días</span></td><td class="tiny">${s.prov}</td><td class="num">${falta?`<button class="btn sm pri" onclick="STOCK[${i}].st+=STOCK[${i}].min*2;VIEWS.stock();toast('Pedido enviado a ${esc(s.prov)} por WhatsApp')">Pedir</button>`:''}</td></tr>`}).join('')}</table></div></div>`;
+};
+
+// ---------- Resultados ----------
+const HIST = [['nov',.58,262],['dic',.81,395],['ene',.94,468],['feb',.91,455],['mar',.62,320],['abr',.41,238],['may',.28,215],['jun',.24,205],['jul',.33,220],['ago',.29,212],['set',.37,228],['oct',.45,241]];
+VIEWS.resultados=()=>{
+  const ult=HIST[HIST.length-1], rev=h=>h[1]*h[2];
+  const mx=Math.max(...HIST.map(h=>h[1]*h[2]*12*30));
+  const tipos=Object.entries(TIPOS).map(([k,t])=>{const rs=ROOMS.filter(r=>r.t===k);const occ=[...Array(30)].reduce((s,_,d)=>s+rs.filter(rm=>resDe(rm.id,d)).length,0)/(rs.length*30);return [t.n,occ,t.media,rs.length];});
+  const nac={};RES.filter(r=>r.ini>-30&&r.ini<60).forEach(r=>{const p=G(r.gid).pais;nac[p]=(nac[p]||0)+1;});const nacs=Object.entries(nac).sort((a,b)=>b[1]-a[1]);const tn=sum(nacs,x=>x[1]);
+  $('#pane').innerHTML=`<div class="grid4"><div class="card kpi"><div class="lab">${ico('bed')}Ocupación de ${MESES[HOY.getMonth()]}</div><div class="val">${pct(ult[1]*100)}</div><div class="d">+8 puntos contra 2025</div></div><div class="card kpi"><div class="lab">${ico('cash')}Tarifa promedio por noche</div><div class="val">${usd(ult[2])}</div><div class="d">+6%</div></div><div class="card kpi"><div class="lab">${ico('chart')}Ingreso por habitación disponible</div><div class="val">${usd(rev(ult))}</div><div class="d n">ocupación por tarifa</div></div><div class="card kpi"><div class="lab">${ico('star')}Llave Michelin</div><div class="val" style="font-size:19px;margin-top:10px">Desde 2025</div><div class="d">la tarifa de temporada alta subió 12%</div></div></div>
+  <div class="grid2"><div class="card"><h3>${ico('chart')}Últimos 12 meses<span class="act tiny">Ingreso de alojamiento por mes</span></h3><div style="display:flex;align-items:flex-end;gap:8px;height:170px">${HIST.map(h=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end"><span class="tiny" style="font-size:10.5px">${pct(h[1]*100)}</span><i style="display:block;width:100%;height:${h[1]*h[2]*360/mx*100}%;background:${['dic','ene','feb'].includes(h[0])?'var(--wood)':'var(--brand)'};border-radius:6px 6px 2px 2px"></i><span class="tiny">${h[0]}</span></div>`).join('')}</div><p class="tiny">En madera, la temporada alta. De abril a setiembre el hotel vive del 30% de ocupación: el spa y los fines de semana largos hacen la diferencia.</p></div>
+  <div class="card"><h3>${ico('globe')}De dónde vienen</h3>${nacs.slice(0,7).map(([p,n])=>`<div style="margin-bottom:9px"><div class="row" style="justify-content:space-between"><span>${p}</span><b>${pct(n/tn*100)}</b></div><div class="bar"><i style="width:${n/nacs[0][1]*100}%"></i></div></div>`).join('')}</div></div>
+  <div class="card"><h3>${ico('bed')}Por tipo de habitación · próximos 30 días</h3><table><tr><th>Tipo</th><th class="num">Habitaciones</th><th style="width:40%">Ocupación reservada</th><th class="num">Tarifa media</th></tr>${tipos.map(([n,o,t,c])=>`<tr><td><b>${n}</b></td><td class="num">${c}</td><td><div class="row"><div class="bar" style="flex:1"><i style="width:${o*100}%"></i></div><span class="tiny">${pct(o*100)}</span></div></td><td class="num">${usd(t)}</td></tr>`).join('')}</table></div>`;
+};
+VIEWS.temporada=()=>{
+  const semanas=[...Array(16)].map((_,i)=>{const d0=new Date(2026,11,7+i*7);const off=Math.round((d0-HOY)/DAY);const occ=sum([0,1,2,3,4,5,6],k=>ROOMS.filter(rm=>resDe(rm.id,off+k)).length)/(84);return [fcorta(d0),occ,off];});
+  const bk=semanas.map((s,i)=>[s[0],Math.min(.97,s[1]+[.05,.1,.25,.45,.5,.48,.4,.35,.3,.28,.22,.18,.12,.08,.05,.03][i]),[.4,.55,.8,.95,.97,.96,.92,.9,.85,.82,.7,.6,.45,.35,.3,.25][i]]);
+  $('#pane').innerHTML=`<div class="grid3"><div class="card kpi"><div class="lab">${ico('cal')}Reservado para el verano</div><div class="val">${pct(sum(bk,x=>x[1])/bk.length*100)}</div><div class="d">de las noches de diciembre a marzo</div></div><div class="card kpi"><div class="lab">${ico('cash')}Ya vendido</div><div class="val">${usd(sum(bk,x=>x[1])*84*560)}</div><div class="d n">alojamiento, temporada alta</div></div><div class="card kpi"><div class="lab">${ico('chart')}Contra el verano pasado a esta altura</div><div class="val">+14%</div><div class="d">más noches reservadas</div></div></div>
+  <div class="card"><h3>${ico('chart')}Semana a semana: reservado hoy contra cómo terminó el verano pasado</h3><div style="display:flex;align-items:flex-end;gap:6px;height:180px">${bk.map(s=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;position:relative"><i style="display:block;width:100%;height:${s[2]*100}%;background:var(--sand);border-radius:5px 5px 2px 2px;position:absolute;bottom:18px"></i><i style="display:block;width:60%;height:${s[1]*100}%;background:var(--brand);border-radius:5px 5px 2px 2px;position:relative;margin-bottom:0"></i><span class="tiny" style="font-size:10px">${s[0]}</span></div>`).join('')}</div>
+  <div class="row tiny" style="margin-top:8px"><span><span style="display:inline-block;width:10px;height:10px;background:var(--brand);border-radius:3px"></span> Reservado hoy</span><span><span style="display:inline-block;width:10px;height:10px;background:var(--sand);border-radius:3px"></span> Cómo terminó el verano pasado</span></div>
+  <p class="tiny">Diciembre y Año Nuevo ya están casi llenos. De mediados de enero en adelante viene por debajo del verano pasado y marzo está flojo: conviene una tarifa de 3 noches con spa incluido.</p><button class="btn pri" onclick="toast('Tarifa “Marzo lento: 3 noches con spa” cargada en Cloudbeds para la web directa')">${ico('plus')}Crear tarifa para marzo</button></div>`;
+};
+
+// ---------- Búsqueda ----------
+function openK(){
+  modal('Buscar',`<input id="kq" placeholder="Nombre, reserva o habitación" style="width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;margin-bottom:10px"><div id="kr"></div>`);
+  const q=$('#kq');q.focus();const run=()=>{const s=q.value.toLowerCase();
+    const r=[...GUESTS.filter(g=>g.n.toLowerCase().includes(s)).map(g=>({t:g.n,d:g.pais,i:'users',f:()=>verHuesped(g.id)})),
+      ...RES.filter(x=>x.id.toLowerCase().includes(s)&&s.length>2).slice(0,5).map(x=>({t:x.id,d:G(x.gid).n,i:'cal',f:()=>verRes(x.id)})),
+      ...ROOMS.filter(rm=>rm.id.toLowerCase()===s||TIPOS[rm.t].n.toLowerCase().includes(s)).map(rm=>({t:rm.id+' · '+TIPOS[rm.t].n,d:HK[rm.id].estado,i:'bed',f:()=>verHab(rm.id)}))].slice(0,9);
+    $('#kr').innerHTML=r.length?r.map((x,j)=>`<div class="kres" data-k="${j}">${ico(x.i)}<b>${x.t}</b><span class="tiny" style="margin-left:auto">${x.d}</span></div>`).join(''):'<div class="empty">Sin resultados</div>';
+    $$('.kres').forEach(el=>el.onclick=()=>{closeModal();r[el.dataset.k].f();});};
+  q.oninput=run;run();
+}
+$('#openK').onclick=openK;
+
+go('hoy');
+</script>
+</body>
+</html>

@@ -71,21 +71,21 @@ cd - >/dev/null || exit 1
 
 echo
 echo "4/5  DNS en Cloudflare"
-ZONE=$(curl -s "$API/zones?name=$ZONA" -H "Authorization: Bearer $CF_TOKEN" \
+ZONE=$(curl -s -m 30 "$API/zones?name=$ZONA" -H "Authorization: Bearer $CF_TOKEN" \
        | grep -o '"id":"[a-f0-9]\{32\}"' | head -1 | cut -d'"' -f4)
 [ -z "$ZONE" ] && { echo "     No pude leer la zona $ZONA. Revisa el token."; exit 1; }
 
 upsert() { # tipo nombre contenido
   local TYPE="$1" NAME="$2" CONTENT="$3" ID BODY RES
-  ID=$(curl -s "$API/zones/$ZONE/dns_records?type=$TYPE&name=$NAME" \
+  ID=$(curl -s -m 30 "$API/zones/$ZONE/dns_records?type=$TYPE&name=$NAME" \
        -H "Authorization: Bearer $CF_TOKEN" \
        | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);console.log(j.result&&j.result[0]?j.result[0].id:"")}catch(e){console.log("")}})')
   # proxied en false a proposito: con el proxy encendido Railway no puede emitir el certificado.
   BODY=$(node -e "console.log(JSON.stringify({type:process.argv[1],name:process.argv[2],content:process.argv[3],ttl:1,proxied:false}))" "$TYPE" "$NAME" "$CONTENT")
   if [ -n "$ID" ]; then
-    RES=$(curl -s -X PUT "$API/zones/$ZONE/dns_records/$ID" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data "$BODY")
+    RES=$(curl -s -m 30 -X PUT "$API/zones/$ZONE/dns_records/$ID" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data "$BODY")
   else
-    RES=$(curl -s -X POST "$API/zones/$ZONE/dns_records" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data "$BODY")
+    RES=$(curl -s -m 30 -X POST "$API/zones/$ZONE/dns_records" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data "$BODY")
   fi
   echo "$RES" | grep -q '"success":true' && echo "     $TYPE $NAME OK" || { echo "     $TYPE $NAME FALLO"; echo "$RES" | head -c 300; echo; }
 }
@@ -97,7 +97,7 @@ upsert CNAME "$HOST" "$CNAME_TARGET"
 echo
 echo "5/5  Esperando el certificado (hasta 3 minutos)"
 for i in $(seq 1 18); do
-  CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 8 "https://$HOST/healthz" 2>/dev/null)
+  CODE=$(curl -s -m 30 -o /dev/null -w '%{http_code}' --max-time 8 "https://$HOST/healthz" 2>/dev/null)
   if [ "$CODE" = "200" ]; then
     echo "     listo"
     echo
